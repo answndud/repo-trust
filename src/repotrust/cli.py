@@ -18,6 +18,10 @@ app = typer.Typer(
     help="Evaluate repository trust signals and generate reports.",
     invoke_without_command=True,
 )
+direct_app = typer.Typer(
+    help="Evaluate repository trust signals and generate reports.",
+    add_completion=False,
+)
 status_console = Console(stderr=True)
 
 
@@ -80,6 +84,88 @@ def scan(
     ] = False,
 ) -> None:
     """Scan a repository target."""
+    _run_scan(
+        target=target,
+        report_format=report_format,
+        output=output,
+        config=config,
+        remote=remote,
+        fail_under=fail_under,
+        verbose=verbose,
+    )
+
+
+@direct_app.command()
+def run(
+    ctx: typer.Context,
+    target: Annotated[
+        str | None,
+        typer.Argument(help="Local path or GitHub URL to scan."),
+    ] = None,
+    report_format: Annotated[
+        ReportFormat,
+        typer.Option(
+            "--format",
+            "-f",
+            help="Report format: markdown, json, or html.",
+        ),
+    ] = ReportFormat.MARKDOWN,
+    output: Annotated[
+        Path | None,
+        typer.Option("--output", "-o", help="Write the report to this file."),
+    ] = None,
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
+    ] = None,
+    remote: Annotated[
+        bool,
+        typer.Option("--remote", help="Use GitHub API remote scan for GitHub URL targets."),
+    ] = False,
+    fail_under: Annotated[
+        int | None,
+        typer.Option("--fail-under", help="Exit with code 1 if total score is below this value."),
+    ] = None,
+    verbose: Annotated[
+        bool,
+        typer.Option("--verbose", "-v", help="Print findings in the terminal summary."),
+    ] = False,
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            help="Show the RepoTrust version and exit.",
+        ),
+    ] = False,
+) -> None:
+    """Scan a repository target."""
+    if version:
+        typer.echo(f"repo-trust {__version__}")
+        raise typer.Exit()
+    if target is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
+    _run_scan(
+        target=target,
+        report_format=report_format,
+        output=output,
+        config=config,
+        remote=remote,
+        fail_under=fail_under,
+        verbose=verbose,
+    )
+
+
+def _run_scan(
+    *,
+    target: str,
+    report_format: ReportFormat,
+    output: Path | None,
+    config: Path | None,
+    remote: bool,
+    fail_under: int | None,
+    verbose: bool,
+) -> None:
     normalized_format = report_format.value
     loaded_config = _load_cli_config(config)
 

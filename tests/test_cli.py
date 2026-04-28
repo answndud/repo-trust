@@ -2,7 +2,7 @@ import json
 
 from typer.testing import CliRunner
 
-from repotrust.cli import app
+from repotrust.cli import app, direct_app
 from repotrust.models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
 from repotrust.scoring import calculate_score
 
@@ -15,6 +15,13 @@ def test_cli_version():
 
     assert result.exit_code == 0
     assert result.stdout.strip() == "repotrust 0.1.0"
+
+
+def test_direct_cli_version():
+    result = runner.invoke(direct_app, ["--version"], prog_name="repo-trust")
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "repo-trust 0.1.0"
 
 
 def test_cli_root_without_command_shows_help():
@@ -52,6 +59,36 @@ def test_cli_scan_json(tmp_path):
     assert data["target"]["kind"] == "local"
     assert "RepoTrust Summary" in result.stderr
     assert "RepoTrust Summary" not in result.stdout
+
+
+def test_direct_cli_scans_target_without_scan_subcommand(tmp_path):
+    result = runner.invoke(direct_app, [str(tmp_path), "--format", "json"], prog_name="repo-trust")
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data["target"]["kind"] == "local"
+    assert "RepoTrust Summary" in result.stderr
+
+
+def test_direct_cli_github_url_without_remote_remains_parse_only():
+    result = runner.invoke(
+        direct_app,
+        ["https://github.com/owner/repo", "--format", "json"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data["target"]["kind"] == "github"
+    assert [finding["id"] for finding in data["findings"]] == ["target.github_not_fetched"]
+
+
+def test_direct_cli_without_target_shows_help():
+    result = runner.invoke(direct_app, [], prog_name="repo-trust")
+
+    assert result.exit_code == 0
+    assert "Usage: repo-trust" in result.stdout
+    assert "TARGET" in result.stdout
 
 
 def test_cli_remote_rejects_local_path(tmp_path):

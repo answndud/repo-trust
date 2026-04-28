@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-README 한국어 사용자 가이드 정리 완료. 현재 active 작업 없음
+`repo-trust TARGET` 기본 사용 흐름 추가 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

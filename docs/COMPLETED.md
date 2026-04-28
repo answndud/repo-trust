@@ -384,3 +384,12 @@
 - 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `64 passed`를 확인했다. `git diff --stat`과 README diff를 검토해 변경 범위가 한국어 사용자 가이드와 active state 문서에 한정됨을 확인했다.
 - 결과: README만 보고도 주요 RepoTrust 기능을 따라 사용할 수 있는 한국어 안내가 준비됐다. 현재 active 작업은 없다.
+
+## 041: `repo-trust TARGET` 기본 CLI 흐름 추가
+
+- 완료일: 2026-04-28
+- 배경: README와 실제 사용 경험이 `.venv/bin/repotrust scan .`처럼 개발 환경 내부 명령에 묶여 보여서, 상용 CLI처럼 `repo-trust "url"` 형태로 사용할 수 있는 기본 진입점이 필요했다.
+- 변경 내용: `pyproject.toml`에 `repo-trust` console script를 추가했다. `src/repotrust/cli.py`에 scan subcommand 없이 target을 받는 direct app을 추가하고, 기존 `repotrust scan TARGET`과 같은 실행 로직을 공유하도록 정리했다. README는 venv 활성화 후 `repo-trust TARGET`을 쓰는 흐름으로 갱신했다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pip install -e '.[dev]'`, `.venv/bin/repo-trust --version`, `.venv/bin/repo-trust https://github.com/openai/codex --format json --output /tmp/repotrust-direct.json`, `.venv/bin/python -m json.tool /tmp/repotrust-direct.json`, `.venv/bin/repotrust scan . --format json --output /tmp/repotrust-legacy.json`, `.venv/bin/python -m json.tool /tmp/repotrust-legacy.json`, `.venv/bin/repo-trust --help`, `.venv/bin/python -m pytest tests/test_cli.py -q`, `.venv/bin/python -m pytest -q`를 실행했고 전체 테스트 `68 passed`를 확인했다.
+- 결과: 새 기본 사용법은 `repo-trust .` 또는 `repo-trust "https://github.com/owner/repo"`이고, 기존 `repotrust scan TARGET`도 호환된다. 현재 active 작업은 없다.
