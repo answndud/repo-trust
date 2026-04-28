@@ -9,11 +9,11 @@ from typing import Annotated
 import typer
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt
 from rich.table import Table
 
 from . import __version__
 from .config import ConfigError, RepoTrustConfig, load_config
+from .console import ConsoleWorkflow, run_console_mode
 from .models import ScanResult
 from .reports import render_report
 from .scanner import ScanInputError, scan as scan_target
@@ -117,7 +117,7 @@ def product_main(
         typer.echo(f"repo-trust {__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        _run_interactive_launcher(ctx)
+        _run_console_shell(ctx)
         raise typer.Exit()
 
 
@@ -279,106 +279,25 @@ def _run_product_scan(
     )
 
 
-def _run_interactive_launcher(ctx: typer.Context) -> None:
-    _print_launcher_header()
-    while True:
-        _print_launcher_menu()
-        choice = Prompt.ask(
-            "Select workflow",
-            choices=["1", "2", "3", "4", "5", "q"],
-            default="1",
-            console=status_console,
-        )
-        if choice == "q":
-            status_console.print("[dim]Session closed.[/dim]")
-            return
-        if choice == "5":
-            status_console.print(ctx.get_help())
-            return
-        _run_launcher_choice(choice)
-        return
-
-
-def _print_launcher_header() -> None:
-    status_console.print(
-        Panel.fit(
-            "[bold cyan]RepoTrust Console[/bold cyan]\n"
-            "[dim]Repository trust intelligence for local paths and GitHub URLs[/dim]\n\n"
-            "[bold]Fast paths[/bold]\n"
-            "  repo-trust html <target>\n"
-            "  repo-trust json <target>\n"
-            "  repo-trust check <target>",
-            title="REPO-TRUST",
-            subtitle=f"v{__version__}",
-            border_style="cyan",
-        )
+def _run_console_shell(ctx: typer.Context) -> None:
+    run_console_mode(
+        console=status_console,
+        help_text=ctx.get_help,
+        version=__version__,
+        run_workflow=_run_console_workflow,
     )
 
 
-def _print_launcher_menu() -> None:
-    table = Table(title="Choose an operation", show_header=True, header_style="bold cyan")
-    table.add_column("No.", justify="center", style="cyan", no_wrap=True)
-    table.add_column("Workflow")
-    table.add_column("Result")
-    table.add_row("1", "Local repository scan", "HTML report in result/")
-    table.add_row("2", "GitHub URL scan", "HTML report in result/")
-    table.add_row("3", "GitHub URL scan", "JSON report in result/")
-    table.add_row("4", "Quick terminal check", "Dashboard only")
-    table.add_row("5", "Show help", "Command reference")
-    table.add_row("q", "Quit", "Exit without scanning")
-    status_console.print(table)
-
-
-def _run_launcher_choice(choice: str) -> None:
-    if choice == "1":
-        target = Prompt.ask("Local path", default=".", console=status_console)
-        _run_product_scan(
-            target=target,
-            report_format=ReportFormat.HTML,
-            output=None,
-            config=None,
-            parse_only=False,
-            fail_under=None,
-            verbose=False,
-        )
-        return
-
-    if choice == "2":
-        target = Prompt.ask("GitHub URL", console=status_console)
-        _run_product_scan(
-            target=target,
-            report_format=ReportFormat.HTML,
-            output=None,
-            config=None,
-            parse_only=False,
-            fail_under=None,
-            verbose=False,
-        )
-        return
-
-    if choice == "3":
-        target = Prompt.ask("GitHub URL", console=status_console)
-        _run_product_scan(
-            target=target,
-            report_format=ReportFormat.JSON,
-            output=None,
-            config=None,
-            parse_only=False,
-            fail_under=None,
-            verbose=False,
-        )
-        return
-
-    target = Prompt.ask("Local path or GitHub URL", default=".", console=status_console)
+def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
     _run_product_scan(
-        target=target,
-        report_format=ReportFormat.MARKDOWN,
+        target=workflow.target,
+        report_format=ReportFormat(workflow.report_format),
         output=None,
         config=None,
-        parse_only=False,
+        parse_only=workflow.parse_only,
         fail_under=None,
-        verbose=True,
-        terminal_only=True,
+        verbose=workflow.verbose,
+        terminal_only=workflow.terminal_only,
     )
 
 

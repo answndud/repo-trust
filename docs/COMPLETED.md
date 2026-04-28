@@ -483,3 +483,12 @@
 - 코드/문서: `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/prd.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `76 passed`를 확인했다. `printf 'q\n' | .venv/bin/repo-trust`로 interactive launcher smoke를 확인했고, `.venv/bin/repo-trust html . --output /tmp/repotrust-richer-dashboard.html`로 richer dashboard smoke를 확인했다.
 - 결과: 사용자는 `repo-trust`만 입력해 메뉴에서 검사 흐름을 선택할 수 있고, 직접 명령을 실행해도 더 풍부한 terminal dashboard를 볼 수 있다. 현재 active 작업은 없다.
+
+## 052: Console Mode product shell 분리
+
+- 완료일: 2026-04-28
+- 배경: 기존 `repo-trust` 무인자 실행은 `cli.py` 안에 prompt, 화면, workflow routing이 섞여 있어 Console Mode와 Command Mode가 코드와 UX 양쪽에서 분리되지 않았다.
+- 변경 내용: `src/repotrust/console.py`를 추가해 Console Mode를 별도 모듈로 분리했다. Console Mode 첫 화면은 제품 헤더, workflow cards, 최근 리포트 요약, command shortcuts를 보여준다. 선택 가능한 workflow는 로컬 HTML, GitHub HTML, GitHub JSON, quick check, recent reports, help, quit으로 확장했다. Help text는 lazy callback으로 처리해 `repo-trust` 실행 시 stdout help가 섞이지 않게 했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`를 실행했고 `34 passed`를 확인했다. Console launcher, local HTML workflow, recent reports workflow, `repo-trust --help` 비-launcher 동작을 테스트로 고정했다.
+- 결과: Console Mode가 Command Mode와 별도 코드 경계로 분리됐고, `repo-trust` 무인자 실행은 최근 리포트 탐색까지 포함하는 제품형 shell 화면으로 동작한다.

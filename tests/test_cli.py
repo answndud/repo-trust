@@ -81,9 +81,9 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "RepoTrust Console" in stderr
-    assert "Choose an operation" in stderr
-    assert "Local repository scan" in stderr
-    assert "GitHub URL scan" in stderr
+    assert "Workflows" in stderr
+    assert "Scan local repository" in stderr
+    assert "Scan GitHub URL" in stderr
 
 
 def test_direct_cli_help_shows_product_commands_without_launcher():
@@ -108,6 +108,22 @@ def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     assert "Category Scores" in result.stderr
     assert "Evidence Snapshot" in result.stderr
     assert "Wrote html report" in result.stderr
+
+
+def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result_dir = tmp_path / "result"
+    result_dir.mkdir()
+    (result_dir / "repo-2026-04-28.html").write_text("<html></html>", encoding="utf-8")
+    (result_dir / "repo-2026-04-28.json").write_text("{}", encoding="utf-8")
+
+    result = runner.invoke(direct_app, [], input="5\n", prog_name="repo-trust")
+
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "Recent Reports" in result.stderr
+    assert "repo-2026-04-28.html" in result.stderr
+    assert "repo-2026-04-28.json" in result.stderr
 
 
 def test_direct_cli_html_github_url_remote_scan_writes_default_output(monkeypatch, tmp_path):
