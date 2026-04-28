@@ -179,23 +179,27 @@ Implementation note: Python 3.11+ includes `tomllib`; Python 3.10 uses the condi
 
 ## Remote GitHub Scan Design
 
-Remote GitHub scan은 v1 이후의 명시적 opt-in 확장으로 설계한다. GitHub URL을 입력했다는 이유만으로 네트워크 scan을 암묵적으로 실행하지 않는다.
+Remote GitHub scan은 legacy `repotrust scan`에서는 명시적 opt-in으로 유지하고, product CLI인 `repo-trust html/json/check`에서는 GitHub URL 리포트 생성을 위한 기본 동작으로 제공한다.
 
 Current implementation boundary:
 
-- `--remote` CLI option exists.
-- `--remote` is rejected for local path targets.
-- GitHub URL without `--remote` remains parse-only.
-- GitHub URL with `--remote` enters `remote.py`, requests repository metadata, and converts repository metadata API failures into findings.
+- Legacy `--remote` CLI option exists on `repotrust scan`.
+- Legacy `--remote` is rejected for local path targets.
+- Legacy GitHub URL without `--remote` remains parse-only.
+- Product `repo-trust html/json/check <github-url>` defaults to remote scan.
+- Product `--parse-only` keeps URL-only behavior without GitHub API access.
+- GitHub URL remote scans enter `remote.py`, request repository metadata, and convert repository metadata API failures into findings.
 - Remote root contents and workflow metadata are converted into `DetectedFiles`.
 - README content and Dependabot config are fetched through read-only contents endpoints.
 - Remote detected files and README content are scored with the existing rule/scoring/report contract.
 
 Interface:
 
-- `repotrust scan <github-url>` 기본 동작은 URL parse-only로 유지한다.
-- `repotrust scan <github-url> --remote`는 명시적으로 GitHub API remote scan을 실행한다.
-- `--remote`는 GitHub URL target에서만 유효하다.
+- `repo-trust html/json/check <github-url>` 기본 동작은 GitHub API remote scan이다.
+- `repo-trust html/json/check <github-url> --parse-only`는 URL parse-only로 유지한다.
+- `repotrust scan <github-url>` 기본 동작은 legacy compatibility를 위해 URL parse-only로 유지한다.
+- `repotrust scan <github-url> --remote`는 legacy path에서 GitHub API remote scan을 실행한다.
+- `--remote`와 `--parse-only`는 각각의 command surface에서 GitHub URL target에만 유효하다.
 - local path scan은 네트워크를 절대 사용하지 않는다.
 
 Authentication:

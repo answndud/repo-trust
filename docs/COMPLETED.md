@@ -465,3 +465,12 @@
 - 코드/문서: `.github/workflows/ci.yml`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다. `.github`에는 `.github/dependabot.yml`만 남았다.
 - 결과: 앞으로 `main`에 push해도 이 저장소의 `ci` GitHub Actions workflow는 실행되지 않는다. 현재 active 작업은 없다.
+
+## 050: CLI UX와 terminal dashboard 재설계
+
+- 완료일: 2026-04-28
+- 배경: 공식 사용법이 `repo-trust URL --remote --format html --output codex.html`처럼 긴 옵션 조합에 의존해 상용 CLI처럼 보이지 않았고, README에서도 입력 명령과 생성 파일 흐름이 충분히 직관적이지 않았다.
+- 변경 내용: `repo-trust`를 `html`, `json`, `check` command group으로 전환했다. `repo-trust html/json/check <github-url>`은 GitHub remote scan을 기본으로 실행하고, 네트워크 없는 URL 파싱은 `--parse-only`로 선택하게 했다. HTML/JSON 명령은 기본적으로 `result/<target>-YYYY-MM-DD.<ext>`에 저장한다. Rich 기반 브랜드 헤더와 `RepoTrust Dashboard`를 stderr에 출력하도록 추가했고, 기존 `repotrust scan`은 legacy compatibility용으로 유지했다.
+- 코드/문서: `src/repotrust/cli.py`, `src/repotrust/rules.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/prd.md`, `docs/trd.md`, `docs/adr.md`, `docs/domain-context.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `74 passed`를 확인했다. `git diff --check`도 통과했다. `.venv/bin/repo-trust --help`, `.venv/bin/repo-trust html . --output /tmp/repotrust-final.html`, `.venv/bin/repo-trust check https://github.com/openai/codex --parse-only` smoke check를 확인했다.
+- 결과: 공식 CLI는 `repo-trust html URL`, `repo-trust json URL`, `repo-trust check URL`, `repo-trust html .` 흐름으로 정리됐고, README도 새 명령 기준의 한국어 사용자 가이드로 갱신됐다. 현재 active 작업은 없다.

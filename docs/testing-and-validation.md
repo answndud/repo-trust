@@ -32,11 +32,11 @@ Add or update tests for:
 Use these when changing CLI or report behavior:
 
 ```bash
-.venv/bin/repotrust scan .
-.venv/bin/repotrust scan . --format json
-.venv/bin/repotrust scan . --format html --output /tmp/repotrust-report.html
+.venv/bin/repo-trust --help
+.venv/bin/repo-trust html . --output /tmp/repotrust-report.html
+.venv/bin/repo-trust json https://github.com/answndud/repo-trust
+.venv/bin/repo-trust check https://github.com/openai/codex --parse-only
 .venv/bin/repotrust scan https://github.com/openai/codex --format json
-.venv/bin/repotrust scan https://github.com/answndud/repo-trust --remote --format json
 ```
 
 For config smoke checks, create an explicit temporary config first:
@@ -53,15 +53,15 @@ security_posture = 0.25
 project_hygiene = 0.20
 EOF
 
-.venv/bin/repotrust scan . --config /tmp/repotrust.toml
+.venv/bin/repo-trust html . --config /tmp/repotrust.toml
 ```
 
 Expected behavior:
 
-- Local paths are scanned.
-- GitHub URLs are parsed but not cloned or fetched.
-- `--remote` is accepted only for GitHub URL targets.
-- `--remote` uses GitHub API read-only metadata and may return auth, rate-limit, not-found, API-error, or partial-scan findings.
+- Local paths are scanned without network access.
+- Product CLI GitHub URL commands use GitHub API read-only metadata by default and never clone repositories.
+- `--parse-only` parses a GitHub URL without GitHub API access.
+- Legacy `repotrust scan` keeps parse-only GitHub URL behavior unless `--remote` is provided.
 - `GITHUB_TOKEN` may be set for private repository access or higher rate limits, but token values must not appear in output.
 - `--fail-under` exits with code `1` when the score is below the threshold.
 - `--config` applies explicit file-based policy to local scans and explicit remote scans when the file exists and is valid.
@@ -71,11 +71,14 @@ Expected behavior:
 
 | Scenario | Expected exit code | Report output | Status output |
 | --- | ---: | --- | --- |
+| `repo-trust html/json` with GitHub URL | 0 unless `--fail-under` fails | dated file in `result/` unless `--output` is set | stderr dashboard |
+| `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | terminal report only | stderr dashboard |
+| `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr dashboard |
 | Existing local path with default threshold | 0 | stdout unless `--output` is set | stderr summary |
 | Missing local path | 0 | finding `target.local_path_missing` | stderr summary |
 | Local path with `--remote` | 2 | no report | usage error on stderr |
-| GitHub URL without `--remote` | 0 | parse-only finding `target.github_not_fetched` | stderr summary |
-| GitHub URL with `--remote` and API/auth/rate-limit failure finding | 0 unless `--fail-under` fails | remote finding in report | stderr summary |
+| Legacy GitHub URL without `--remote` | 0 | parse-only finding `target.github_not_fetched` | stderr summary |
+| Legacy GitHub URL with `--remote` and API/auth/rate-limit failure finding | 0 unless `--fail-under` fails | remote finding in report | stderr summary |
 | Any scan with `--fail-under` above score | 1 | report is still emitted | stderr summary |
 | Any scan with valid `--output` | scan-dependent | report file only, stdout empty | stderr write notice and summary |
 | Invalid config, missing config, invalid option, or missing target | 2 | no report | usage error on stderr |
@@ -90,9 +93,9 @@ Small fixture repositories live under `tests/fixtures/repos/`.
 Generate sample reports from fixtures:
 
 ```bash
-.venv/bin/repotrust scan tests/fixtures/repos/good-python --format markdown
-.venv/bin/repotrust scan tests/fixtures/repos/good-python --format json > /tmp/repotrust-good.json
-.venv/bin/repotrust scan tests/fixtures/repos/risky-install --format html --output /tmp/repotrust-risky.html
+.venv/bin/repo-trust check tests/fixtures/repos/good-python
+.venv/bin/repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-good.json
+.venv/bin/repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
 ```
 
 Validate redirected JSON:

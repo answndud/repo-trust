@@ -5,7 +5,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from repotrust.cli import _resolve_output_path, app, direct_app
+from repotrust.cli import ReportFormat, _default_output_path, _resolve_output_path, app, direct_app
 from repotrust.models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
 from repotrust.scoring import calculate_score
 
@@ -74,36 +74,179 @@ def test_cli_scan_json(tmp_path):
     assert "RepoTrust Summary" not in result.stdout
 
 
-def test_direct_cli_scans_target_without_scan_subcommand(tmp_path):
-    result = runner.invoke(direct_app, [str(tmp_path), "--format", "json"], prog_name="repo-trust")
-
-    assert result.exit_code == 0
-    data = json.loads(result.stdout)
-    assert data["target"]["kind"] == "local"
-    assert "RepoTrust Summary" in result.stderr
-
-
-def test_direct_cli_github_url_without_remote_remains_parse_only():
-    result = runner.invoke(
-        direct_app,
-        ["https://github.com/owner/repo", "--format", "json"],
-        prog_name="repo-trust",
-    )
-
-    assert result.exit_code == 0
-    data = json.loads(result.stdout)
-    assert data["target"]["kind"] == "github"
-    assert [finding["id"] for finding in data["findings"]] == ["target.github_not_fetched"]
-
-
-def test_direct_cli_without_target_shows_help():
+def test_direct_cli_root_shows_product_commands():
     result = runner.invoke(direct_app, [], prog_name="repo-trust")
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
     assert "Usage:" in stdout
     assert "repo-trust" in stdout
-    assert "TARGET" in stdout
+    assert "html" in stdout
+    assert "json" in stdout
+    assert "check" in stdout
+
+
+def test_direct_cli_html_github_url_remote_scan_writes_default_output(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    calls = []
+
+    def fake_scan(target_text, weights=None, remote=False):
+        calls.append((target_text, weights, remote))
+        finding = Finding(
+            id="remote.github_metadata_collected",
+            category=Category.TARGET,
+            severity=Severity.INFO,
+            message="GitHub repository metadata was collected.",
+            evidence="Repository metadata endpoint returned a successful response.",
+            recommendation="Continue remote scan.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        direct_app,
+        ["html", "https://github.com/owner/repo"],
+        prog_name="repo-trust",
+    )
+
+    output = tmp_path / "result" / f"repo-{date.today().isoformat()}.html"
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert output.exists()
+    assert "<!doctype html>" in output.read_text(encoding="utf-8")
+    assert calls == [("https://github.com/owner/repo", None, True)]
+    assert "RepoTrust" in result.stderr
+    assert "RepoTrust Dashboard" in result.stderr
+    assert f"result/repo-{date.today().isoformat()}.html" in plain_output(result.stderr)
+
+
+def test_direct_cli_json_github_url_remote_scan_writes_default_output(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    calls = []
+
+    def fake_scan(target_text, weights=None, remote=False):
+        calls.append((target_text, weights, remote))
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=[],
+            score=calculate_score([]),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        direct_app,
+        ["json", "https://github.com/owner/repo"],
+        prog_name="repo-trust",
+    )
+
+    output = tmp_path / "result" / f"repo-{date.today().isoformat()}.json"
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert output.exists()
+    data = json.loads(output.read_text(encoding="utf-8"))
+    assert data["target"]["kind"] == "github"
+    assert calls == [("https://github.com/owner/repo", None, True)]
+    assert "RepoTrust Dashboard" in result.stderr
+
+
+def test_direct_cli_check_github_url_prints_terminal_dashboard(monkeypatch):
+    def fake_scan(target_text, weights=None, remote=False):
+        finding = Finding(
+            id="remote.github_metadata_collected",
+            category=Category.TARGET,
+            severity=Severity.INFO,
+            message="GitHub repository metadata was collected.",
+            evidence="Repository metadata endpoint returned a successful response.",
+            recommendation="Continue remote scan.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        direct_app,
+        ["check", "https://github.com/owner/repo"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "# RepoTrust Report" in result.stderr
+    assert "RepoTrust Dashboard" in result.stderr
+    assert "remote.github_metadata_collected" in result.stderr
+
+
+def test_direct_cli_parse_only_github_url_skips_remote(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    calls = []
+
+    def fake_scan(target_text, weights=None, remote=False):
+        calls.append((target_text, weights, remote))
+        finding = Finding(
+            id="target.github_not_fetched",
+            category=Category.TARGET,
+            severity=Severity.INFO,
+            message="GitHub URL was parsed without remote metadata collection.",
+            evidence="Remote scan was not requested.",
+            recommendation="Run repo-trust without --parse-only for repository metadata.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        direct_app,
+        ["json", "https://github.com/owner/repo", "--parse-only"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert calls == [("https://github.com/owner/repo", None, False)]
 
 
 def test_cli_remote_rejects_local_path(tmp_path):
@@ -242,6 +385,14 @@ def test_resolve_output_path_keeps_explicit_locations():
     assert _resolve_output_path(Path("/tmp/report.html"), today=date(2026, 4, 28)) == Path(
         "/tmp/report.html"
     )
+
+
+def test_default_output_path_uses_github_repo_name():
+    assert _default_output_path(
+        "https://github.com/OpenAI/codex.git",
+        report_format=ReportFormat.HTML,
+        today=date(2026, 4, 28),
+    ) == Path("result/codex-2026-04-28.html")
 
 
 def test_cli_missing_local_path_reports_finding_without_usage_error(tmp_path):

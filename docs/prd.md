@@ -55,8 +55,10 @@ v0.1.0 baseline에 포함한다:
 
 v0.1.0 이후 post-v1 작업으로 explicit remote scan이 추가됐다:
 
-- 기본 `repotrust scan <github-url>`은 계속 parse-only로 유지한다.
-- `repotrust scan <github-url> --remote`는 사용자가 네트워크 사용을 명시적으로 선택했을 때만 GitHub REST API read-only metadata를 조회한다.
+- 공식 사용자 CLI는 `repo-trust html/json/check <target>` command group이다.
+- `repo-trust html/json/check <github-url>`은 GitHub REST API read-only metadata를 기본으로 조회한다.
+- `repo-trust html/json/check <github-url> --parse-only`는 네트워크 없이 URL만 파싱한다.
+- legacy `repotrust scan <github-url>`은 계속 parse-only로 유지하고, `--remote`를 명시했을 때만 remote scan을 실행한다.
 - Remote scan은 clone하지 않으며 repository metadata, root contents, README content, Dependabot config, GitHub Actions workflow metadata를 기존 `ScanResult`와 report contract에 연결한다.
 - Remote metadata scoring은 보수적으로 유지한다. Archived repository와 disabled issue tracking처럼 명확한 maintenance/support signal만 점수화하고, fork/private/stars/default branch/language/size 같은 context metadata와 release/tag freshness는 아직 점수화하지 않는다.
 
@@ -77,7 +79,7 @@ v0.1.0 이후 post-v1 작업으로 explicit remote scan이 추가됐다:
 
 ## 향후 확장 아이디어
 
-- `--remote` 옵션으로 명시적 GitHub API scan. 기본 GitHub URL scan은 계속 parse-only로 유지하고, remote scan은 사용자가 네트워크 사용을 명시적으로 선택할 때만 실행한다.
+- `repo-trust html/json/check` 기반의 product CLI UX 고도화.
 - dependency vulnerability source 연동.
 - 조직별 policy config.
 - release freshness와 maintainer activity 점수.

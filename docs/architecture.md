@@ -18,7 +18,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 
 ## Data Flow
 
-1. `repotrust scan <target>` enters through `cli.py`.
+1. `repo-trust html/json/check <target>` or legacy `repotrust scan <target>` enters through `cli.py`.
 2. If `--config <path>` is provided, `config.py` loads and validates the local policy file.
 3. `scanner.scan()` calls `targets.parse_target()`.
 4. Local paths are inspected with `detection.detect_files()`.
@@ -26,7 +26,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 6. `scoring.calculate_score()` converts findings into category and total scores.
 7. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
 
-GitHub URLs without `--remote` stop after parsing. The result includes an informational finding that remote scanning is not enabled. GitHub URLs with `--remote` enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
+The product CLI treats GitHub URLs as remote scans by default for `repo-trust html/json/check`. Users can pass `--parse-only` to inspect the URL without GitHub API access. The legacy `repotrust scan` command keeps its original explicit `--remote` opt-in behavior. Remote scans enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
 
 ## Extension Boundaries
 

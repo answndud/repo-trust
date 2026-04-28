@@ -73,9 +73,9 @@ def github_not_fetched_finding() -> Finding:
         id="target.github_not_fetched",
         category=Category.TARGET,
         severity=Severity.INFO,
-        message="GitHub URL parsing is implemented, but remote scanning is not enabled in v1.",
-        evidence="The scanner did not clone the repository or call the GitHub API.",
-        recommendation="Use a local checkout for full analysis until remote scanning is added.",
+        message="GitHub URL was parsed without remote metadata collection.",
+        evidence="The scanner did not clone the repository or call the GitHub API for this run.",
+        recommendation="Run repo-trust html/json/check without --parse-only, or scan a local checkout for file-level analysis.",
     )
 
 

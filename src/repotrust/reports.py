@@ -97,7 +97,7 @@ FINDING_TITLES = {
 
 FINDING_EXPLANATIONS = {
     "target.local_path_missing": "입력한 경로가 존재하지 않거나 디렉터리가 아닙니다. RepoTrust는 로컬 저장소 폴더를 기준으로 파일을 검사하므로 올바른 경로를 다시 지정해야 합니다.",
-    "target.github_not_fetched": "기본 GitHub URL 스캔은 안전하게 URL만 해석합니다. 저장소 파일을 clone하거나 API로 가져오지 않았으므로 README, LICENSE, CI 같은 실제 파일 기반 판단은 아직 하지 않은 상태입니다.",
+    "target.github_not_fetched": "GitHub URL을 원격 조회 없이 파싱만 한 실행입니다. 저장소를 clone하거나 GitHub API로 가져오지 않았으므로 README, LICENSE, CI 같은 실제 파일 기반 판단은 아직 제한적입니다.",
     "readme.missing": "README는 프로젝트 목적, 설치 방법, 사용 방법을 처음 확인하는 문서입니다. README가 없으면 사용자가 안전한 설치 경로를 판단하기 어렵습니다.",
     "readme.too_short": "README 길이가 너무 짧아 프로젝트 목적, 설치 방법, 사용 예시, 문제 해결 방법을 충분히 설명한다고 보기 어렵습니다.",
     "readme.no_project_purpose": "README 상단에서 이 프로젝트가 무엇을 하는지, 누가 쓰는지, 어떤 문제를 해결하는지 명확히 설명하지 않습니다.",
@@ -116,7 +116,7 @@ FINDING_EXPLANATIONS = {
     "security.no_lockfile": "Dependency manifest는 있지만 lockfile이 없습니다. 같은 설치 명령을 나중에 실행했을 때 다른 하위 dependency가 설치될 수 있습니다.",
     "hygiene.no_license": "라이선스 파일이 없으면 재사용, 배포, 회사 프로젝트 dependency 사용 가능 여부를 판단하기 어렵습니다.",
     "hygiene.no_manifest": "표준 dependency manifest를 찾지 못했습니다. 이 저장소가 어떤 패키지 생태계와 설치 방식을 쓰는지 확인하기 어렵습니다.",
-    "remote.github_metadata_collected": "명시적으로 --remote를 사용해서 GitHub API에서 읽기 전용 메타데이터를 가져왔다는 정보성 항목입니다.",
+    "remote.github_metadata_collected": "GitHub API에서 읽기 전용 메타데이터를 가져왔다는 정보성 항목입니다. 새 `repo-trust html/json/check` 명령은 GitHub URL에서 이 remote 조회를 기본으로 사용합니다.",
     "remote.github_rate_limited": "GitHub API 호출 한도를 초과해 원격 조회를 완료하지 못했습니다. 잠시 후 다시 실행하거나 GITHUB_TOKEN을 설정해야 합니다.",
     "remote.github_unauthorized": "private 저장소이거나 token 권한이 부족해 GitHub API가 정보를 제공하지 않았습니다.",
     "remote.github_not_found": "owner/repo URL이 잘못됐거나, 저장소가 private이라 현재 인증 정보로 볼 수 없습니다.",
@@ -322,8 +322,8 @@ def render_html(result: ScanResult) -> str:
         <ul class="next-steps">
           <li>심각도 <strong>high</strong> finding이 있으면 설치 명령을 그대로 실행하지 말고 README나 스크립트 내용을 먼저 검토하세요.</li>
           <li>보안 정책, CI, lockfile, Dependabot이 빠져 있으면 프로젝트 관리자가 보완할 수 있는지 확인하세요.</li>
-          <li>GitHub URL을 <code>--remote</code> 없이 검사했다면 원격 내용은 가져오지 않은 것입니다. 실제 파일 기반 점검이 필요하면 로컬 checkout을 스캔하거나 <code>--remote</code>를 명시하세요.</li>
-          <li>CI에서 사용하려면 <code>repo-trust . --format json --output report.json --fail-under 80</code>처럼 기준 점수를 설정하세요.</li>
+          <li>GitHub URL을 <code>--parse-only</code>로 검사했다면 원격 내용은 가져오지 않은 것입니다. 실제 원격 점검이 필요하면 <code>repo-trust html/json/check URL</code>을 기본 모드로 실행하세요.</li>
+          <li>CI에서 사용하려면 <code>repo-trust json URL --fail-under 80</code>처럼 기준 점수를 설정하세요.</li>
         </ul>
       </section>
     </section>

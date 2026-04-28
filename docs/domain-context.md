@@ -87,11 +87,11 @@ Score change rules:
 
 ## Remote GitHub Scan Findings
 
-GitHub URL scans remain parse-only unless `--remote` is provided. Remote scans use GitHub REST API read-only metadata and keep clone-free behavior.
+Product CLI GitHub URL scans use GitHub REST API read-only metadata by default and keep clone-free behavior. `--parse-only` keeps a URL-only scan. Legacy `repotrust scan` remains parse-only unless `--remote` is provided.
 
 Remote finding interpretation:
 
-- `target.github_not_fetched`: a GitHub URL was parsed without `--remote`; no network scan happened.
+- `target.github_not_fetched`: a GitHub URL was parsed without network access; no remote metadata scan happened.
 - `remote.github_metadata_collected`: repository metadata was fetched successfully. This is informational and does not lower score.
 - `remote.github_archived`: GitHub repository metadata has `archived=true`. This lowers project hygiene because archived repositories are read-only maintenance risk signals.
 - `remote.github_issues_disabled`: GitHub repository metadata has `has_issues=false`. This lightly lowers project hygiene because the public support and bug-reporting path is less obvious.
@@ -122,7 +122,8 @@ Supported:
 
 - Local repository path scanning.
 - GitHub URL parsing.
-- Explicit GitHub API remote scanning with `--remote`.
+- Product GitHub API remote scanning with `repo-trust html/json/check <github-url>`.
+- Legacy explicit GitHub API remote scanning with `repotrust scan <github-url> --remote`.
 - Markdown, JSON, and static HTML reports.
 - Offline file and README checks.
 

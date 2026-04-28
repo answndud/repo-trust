@@ -144,9 +144,9 @@
 - 조직별 policy inheritance가 필요해질 때.
 - rule disable/override 요구가 반복적으로 생길 때.
 
-## ADR-009: Remote GitHub scan은 명시적 `--remote`로만 설계한다
+## ADR-009: Legacy remote GitHub scan은 명시적 `--remote`로만 설계한다
 
-상태: Accepted
+상태: Accepted for legacy `repotrust scan`; product CLI는 ADR-010을 따른다.
 
 결정:
 
@@ -163,6 +163,24 @@
 - clone 없이 metadata를 조회하면 설치 전 신뢰 판단이라는 제품 목적에 맞다.
 - API 실패를 파일 부재로 오해하면 점수 신뢰도가 떨어진다.
 - v1은 local scan과 report contract를 안정화하는 데 집중해야 한다.
+
+## ADR-010: Product CLI는 GitHub URL remote scan을 기본값으로 둔다
+
+상태: Accepted
+
+결정:
+
+- 공식 사용자 CLI는 `repo-trust html/json/check <target>` command group으로 제공한다.
+- `repo-trust html/json/check <github-url>`은 GitHub REST API read-only metadata 조회를 기본으로 실행한다.
+- 네트워크 없는 URL 파싱은 `--parse-only`로 명시한다.
+- `repotrust scan`은 legacy compatibility를 위해 기존 `--remote` opt-in contract를 유지한다.
+- HTML/JSON product commands는 기본적으로 `result/<target>-YYYY-MM-DD.<ext>`에 저장한다.
+
+이유:
+
+- 사용자용 GitHub URL 리포트 명령에서 매번 `--remote --format ... --output ...`을 붙이는 흐름은 제품 CLI처럼 보이지 않는다.
+- `html`, `json`, `check` 명령은 사용자가 원하는 산출물을 먼저 표현하므로 README와 help가 단순해진다.
+- legacy 명령은 자동화와 기존 테스트 contract를 깨지 않으면서 새 UX로 이동할 시간을 제공한다.
 
 재검토 조건:
 

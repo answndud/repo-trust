@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-GitHub Actions CI workflow 제거 완료. 현재 active 작업 없음
+CLI UX and terminal design redesign 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 
