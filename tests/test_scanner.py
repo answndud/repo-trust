@@ -14,6 +14,7 @@ def test_detect_local_files(tmp_path):
     (tmp_path / "README.md").write_text("# Project\n\n## Installation\n\npip install x\n\n## Usage\n\nx\n", encoding="utf-8")
     (tmp_path / "LICENSE").write_text("MIT", encoding="utf-8")
     (tmp_path / "pyproject.toml").write_text("[project]\nname='x'\n", encoding="utf-8")
+    (tmp_path / "pylock.toml").write_text("", encoding="utf-8")
     (tmp_path / "uv.lock").write_text("", encoding="utf-8")
     workflows = tmp_path / ".github" / "workflows"
     workflows.mkdir(parents=True)
@@ -24,7 +25,7 @@ def test_detect_local_files(tmp_path):
     assert detected.readme == "README.md"
     assert detected.license == "LICENSE"
     assert detected.dependency_manifests == ["pyproject.toml"]
-    assert detected.lockfiles == ["uv.lock"]
+    assert detected.lockfiles == ["pylock.toml", "uv.lock"]
     assert detected.ci_workflows == [".github/workflows/ci.yml"]
 
 

@@ -167,6 +167,7 @@ Implementation note: Python 3.11+ includes `tomllib`; Python 3.10 uses the condi
 - clone, fetch, GitHub API call은 하지 않는다.
 - dependency manifest를 읽더라도 실제 vulnerability lookup은 하지 않는다.
 - README command parsing은 skeleton 수준의 regex heuristic이다.
+- Python dependency lockfile은 `pylock.toml`을 사용한다. dependency 변경 시 `pip lock -e '.[dev]' -o pylock.toml`로 갱신한다.
 
 ## Remote GitHub Scan Design
 

@@ -159,3 +159,12 @@
 - 코드/문서: 기능 코드 변경은 없었다. `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`에서 `37 passed`를 확인했다. `good-python` fixture Markdown/JSON report를 생성하고 JSON을 `json.tool`로 검증했다. `risky-install` fixture HTML report를 `/tmp/repotrust-risky.html`로 생성했다. 자체 `repotrust scan . --format json`은 92/100, A, Low risk였고 남은 finding은 `security.no_lockfile`, `hygiene.no_license`였다. 두 finding은 LICENSE와 lockfile 정책 선택 전까지 보류하기로 이미 결정한 항목이다. 임시 config smoke check, GitHub URL parse-only JSON check, `--help`, `scan --help`, `--version`, `--fail-under 95` exit code 1도 확인했다. `git diff --stat`과 주요 diff를 검토해 문서 보정 외 회귀 위험이 없음을 확인했다.
 - 결과: RepoTrust CLI v1은 사용 가능한 MVP 기준으로 완성됐다. 현재 active 작업은 없다. 다음 작업은 사용자가 post-v1 범위를 지정하면 `PLAN.md`에 새로 추가한다.
+
+## 016: 오픈소스 공개 준비
+
+- 완료일: 2026-04-28
+- 배경: 사용자가 RepoTrust를 오픈소스 repo로 공개하기로 결정했고, 자체 scan의 남은 finding은 `hygiene.no_license`, `security.no_lockfile`이었다. 공개 저장소로서 재사용 조건과 dependency 재현성을 명확히 해야 했다.
+- 변경 내용: MIT `LICENSE`를 추가했다. pip 26의 `pip lock`으로 `pylock.toml`을 생성해 별도 도구 설치 없이 pip-compatible lockfile을 커밋하도록 했다. RepoTrust lockfile detection에 `pylock.toml`을 추가했다. README와 개발/검증 문서에는 lockfile 재생성 명령과 MIT license 정보를 반영했다.
+- 코드/문서: `LICENSE`, `pylock.toml`, `src/repotrust/detection.py`, `tests/test_scanner.py`, `README.md`, `docs/development-workflow.md`, `docs/testing-and-validation.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `37 passed`를 확인했다. 자체 `repotrust scan . --format json`은 100/100, A, Low risk, finding 0개였고 detected files에 `LICENSE`와 `pylock.toml`이 포함됨을 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 공개 준비와 lockfile detection에 한정됨을 확인했다.
+- 결과: RepoTrust 저장소는 오픈소스 공개를 위한 license와 lockfile 신호를 갖췄고 자체 RepoTrust Score가 100점이 됐다. 다음 작업은 `GitHub main push`다.

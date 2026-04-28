@@ -15,6 +15,12 @@ Run the CLI:
 .venv/bin/repotrust scan . --format html --output report.html
 ```
 
+Refresh the dependency lockfile after dependency changes:
+
+```bash
+.venv/bin/python -m pip lock -e '.[dev]' -o pylock.toml
+```
+
 ## Change Workflow
 
 1. Read `AGENTS.md` and the relevant file under `docs/`.
@@ -32,6 +38,7 @@ Run the CLI:
 - Keep terminal status output on stderr when report content is printed to stdout.
 - Do not duplicate scanning logic inside renderers.
 - Do not add production dependencies without a clear reason and test coverage.
+- If dependencies change, regenerate `pylock.toml` with `pip lock` and include it in the same change.
 
 ## Report Behavior
 
@@ -42,4 +49,3 @@ Run the CLI:
 ## Deferred Tooling
 
 Do not add repository-local skills, MCP configuration, subagents, hooks, or rules by default. Reconsider only when the project has a repeated workflow that is expensive or error-prone enough to encode.
-

@@ -38,6 +38,12 @@ Run the test suite before handing off changes:
 .venv/bin/python -m pytest -q
 ```
 
+Refresh the lockfile after dependency changes:
+
+```bash
+.venv/bin/python -m pip lock -e '.[dev]' -o pylock.toml
+```
+
 ## Configuration
 
 RepoTrust can load an explicit TOML config file:
@@ -75,3 +81,7 @@ Development fixtures are available under `tests/fixtures/repos/`.
 Keep changes small and explainable. Rule changes should include tests, and report contract changes should update the relevant documentation under `docs/`.
 
 See `AGENTS.md` and `docs/` for the current project workflow, active plan, validation routine, and decision records.
+
+## License
+
+RepoTrust is released under the MIT License. See `LICENSE`.

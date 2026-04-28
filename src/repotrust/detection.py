@@ -20,6 +20,7 @@ LOCKFILES = (
     "yarn.lock",
     "pnpm-lock.yaml",
     "poetry.lock",
+    "pylock.toml",
     "uv.lock",
     "Pipfile.lock",
     "go.sum",
@@ -62,4 +63,3 @@ def _ci_workflows(repo_path: Path) -> list[str]:
         if path.is_file() and path.suffix.lower() in {".yml", ".yaml"}
     ]
     return sorted(workflows)
-
