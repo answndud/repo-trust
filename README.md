@@ -98,6 +98,10 @@ Keep changes small and explainable. Rule changes should include tests, and repor
 
 See `AGENTS.md` and `docs/` for the current project workflow, active plan, validation routine, and decision records.
 
+## Release Notes
+
+See `CHANGELOG.md` for release history and the v0.1.0 pre-tag checklist.
+
 ## License
 
 RepoTrust is released under the MIT License. See `LICENSE`.

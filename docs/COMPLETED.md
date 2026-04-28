@@ -240,3 +240,12 @@
 - 코드/문서: `README.md`, `docs/domain-context.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `50 passed`를 확인했다. 실제 remote smoke `repotrust scan https://github.com/answndud/repo-trust --remote --format json`은 100/100, A, finding 1개(`remote.github_metadata_collected`)를 반환했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote scan UX 문서와 하네스 상태 문서에 한정됨을 확인했다.
 - 결과: Remote scan 사용법과 failure finding 해석이 문서화됐다. 다음 작업은 `v0.1.0 릴리스 준비`다.
+
+## 025: v0.1.0 릴리스 준비
+
+- 완료일: 2026-04-28
+- 배경: CLI v1과 Remote scan MVP가 구현됐고 remote scan UX 문서도 정리됐으므로 첫 release를 위한 변경 요약, 알려진 제한, tag 전 checklist가 필요했다.
+- 변경 내용: `CHANGELOG.md`를 추가해 v0.1.0 주요 기능, 알려진 제한, 검증 결과, pre-tag checklist를 정리했다. README에 release notes 위치를 추가했다.
+- 코드/문서: `CHANGELOG.md`, `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `50 passed`였다. Local self-scan은 100/100, A, finding 0개였고 remote self-scan은 100/100, A, finding 1개(`remote.github_metadata_collected`)였다. `pyproject.toml` version은 `0.1.0`이다.
+- 결과: v0.1.0 tag를 만들 수 있는 release notes와 checklist가 준비됐다. 다음 작업은 `v0.1.0 tag 생성`이다.

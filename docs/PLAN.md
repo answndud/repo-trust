@@ -17,33 +17,25 @@ Remote scan UX를 문서화하고 v0.1.0 릴리스 준비를 완료한다.
 
 ## 현재 우선순위
 
-1. v0.1.0 릴리스 준비
+1. v0.1.0 tag 생성
 2. Remote scan 품질 개선 계획 수립
 
 ## In Progress
 
-### 1. v0.1.0 릴리스 준비
-
-- 작업: `CHANGELOG.md`를 추가하고 v0.1.0 release notes 초안을 작성한다.
-- 배경: CLI v1과 Remote scan MVP가 구현됐으므로 첫 release를 위한 변경 요약과 제한 사항을 정리해야 한다.
-- 완료 기준:
-  - v0.1.0의 주요 기능, 검증 결과, 알려진 제한이 정리된다.
-  - release/tag 생성 전 확인 checklist가 문서화된다.
-  - package metadata와 README가 릴리스 기준으로 어긋나지 않는다.
-- 영향 범위: `CHANGELOG.md`, `README.md`, docs.
-- 검증: `.venv/bin/python -m pytest -q`, package metadata/docs review
-
-## Pending
-
-### 2. v0.1.0 tag 생성
+### 1. v0.1.0 tag 생성
 
 - 작업: 검증 통과 후 `v0.1.0` git tag를 생성한다.
+- 배경: release notes와 pre-tag checklist가 준비됐으므로 실제 tag를 만들 수 있는 상태인지 확인한다.
 - 완료 기준:
   - 테스트와 smoke checks가 통과한다.
   - `git tag v0.1.0`이 생성된다.
   - 사용자가 원하면 tag push까지 진행할 수 있는 상태다.
+- 영향 범위: git tag, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`.
+- 검증: `.venv/bin/python -m pytest -q`, local/remote smoke checks
 
-### 3. Remote scan 품질 개선 계획
+## Pending
+
+### 2. Remote scan 품질 개선 계획
 
 - 작업: release/tag freshness, archived/fork/private 상태, metadata evidence 정책을 다음 backlog로 설계한다.
 - 완료 기준:
@@ -52,5 +44,5 @@ Remote scan UX를 문서화하고 v0.1.0 릴리스 준비를 완료한다.
 
 ## 다음 실행 순서
 
-1. `v0.1.0 릴리스 준비`를 진행한다.
-3. 검증 후 tag 생성 여부를 결정한다.
+1. `v0.1.0 tag 생성`을 진행한다.
+2. tag 생성 후 Remote scan 품질 개선 계획을 수립한다.
