@@ -85,18 +85,35 @@ Score change rules:
 - Do not use score deductions for facts the scanner cannot verify locally.
 - For remote/API-derived signals added later, represent API failure and unknown state as findings rather than silently lowering unrelated categories.
 
+## Remote GitHub Scan Findings
+
+GitHub URL scans remain parse-only unless `--remote` is provided. Remote scans use GitHub REST API read-only metadata and keep clone-free behavior.
+
+Remote finding interpretation:
+
+- `target.github_not_fetched`: a GitHub URL was parsed without `--remote`; no network scan happened.
+- `remote.github_metadata_collected`: repository metadata was fetched successfully. This is informational and does not lower score.
+- `remote.github_unauthorized`: GitHub returned 401 or 403 for repository metadata. The repository may be private, the token may be missing, or the token may not have access.
+- `remote.github_not_found`: GitHub returned 404. The owner/repo may be wrong, private, or not visible to the current token.
+- `remote.github_rate_limited`: GitHub rate limits prevented completion. Retrying later or setting `GITHUB_TOKEN` may help.
+- `remote.github_api_error`: GitHub returned an unexpected non-success response.
+- `remote.github_partial_scan`: some remote endpoints failed, but enough metadata was collected to report partial results. Missing files from failed endpoints should be treated as unknown, not definitely absent.
+- `remote.readme_content_unavailable`: README metadata exists, but content could not be fetched or decoded. Local checkout scanning can provide fuller README and install safety analysis.
+
+Remote scans may use `GITHUB_TOKEN` for authorization and higher rate limits. Token values must never appear in findings, reports, logs, or terminal summaries.
+
 ## Current Scope
 
 Supported:
 
 - Local repository path scanning.
 - GitHub URL parsing.
+- Explicit GitHub API remote scanning with `--remote`.
 - Markdown, JSON, and static HTML reports.
 - Offline file and README checks.
 
 Deferred:
 
-- GitHub API calls.
 - Remote cloning.
 - Contributor profile analysis.
 - Real vulnerability lookup.

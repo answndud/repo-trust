@@ -231,3 +231,12 @@
 - 코드/문서: `docs/trd.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`는 `50 passed`였다. 자체 local scan은 100/100, A, Low risk, finding 0개였다. `good-python` fixture JSON과 `risky-install` fixture HTML smoke check가 통과했다. 실제 GitHub remote scan `repotrust scan https://github.com/answndud/repo-trust --remote --format json`은 100/100, A, Low risk, finding 1개(`remote.github_metadata_collected`)였고 README, LICENSE, SECURITY, pyproject.toml, pylock.toml, Dependabot, workflows를 탐지했다. 기본 GitHub URL scan은 여전히 parse-only finding `target.github_not_fetched`를 반환했다. `git diff --stat`과 주요 diff를 검토해 남은 변경이 completion 문서 정리에 한정됨을 확인했다.
 - 결과: Remote GitHub scan MVP가 완료됐다. 현재 active 작업은 없다. 다음 작업은 사용자가 post-v1 범위를 지정하면 `PLAN.md`에 새로 추가한다.
+
+## 024: Remote scan UX 문서화
+
+- 완료일: 2026-04-28
+- 배경: Remote scan MVP가 구현됐으므로 사용자가 local scan, parse-only GitHub scan, explicit remote scan의 차이를 이해하고 `GITHUB_TOKEN`, rate limit, partial scan finding을 안전하게 해석할 수 있어야 했다.
+- 변경 내용: README에 local checkout scan은 네트워크를 사용하지 않는다는 점, GitHub URL은 기본 parse-only라는 점, `--remote`가 명시적 GitHub API scan이라는 점을 정리했다. `GITHUB_TOKEN` 사용 예시와 token 값이 findings/report/terminal summary에 출력되지 않는 원칙을 추가했다. `docs/domain-context.md`에 remote finding ID별 해석을 추가했다. `docs/testing-and-validation.md`의 remote smoke command와 expected behavior를 현재 동작에 맞게 보정했다.
+- 코드/문서: `README.md`, `docs/domain-context.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `50 passed`를 확인했다. 실제 remote smoke `repotrust scan https://github.com/answndud/repo-trust --remote --format json`은 100/100, A, finding 1개(`remote.github_metadata_collected`)를 반환했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote scan UX 문서와 하네스 상태 문서에 한정됨을 확인했다.
+- 결과: Remote scan 사용법과 failure finding 해석이 문서화됐다. 다음 작업은 `v0.1.0 릴리스 준비`다.

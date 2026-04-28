@@ -13,20 +13,44 @@
 
 ## 현재 목표
 
-Remote GitHub scan MVP 완료. 이후 작업은 사용자가 다음 post-v1 범위를 지정하면 새 active plan으로 추가한다.
+Remote scan UX를 문서화하고 v0.1.0 릴리스 준비를 완료한다.
 
 ## 현재 우선순위
 
-현재 active 작업 없음
+1. v0.1.0 릴리스 준비
+2. Remote scan 품질 개선 계획 수립
 
 ## In Progress
 
-현재 active 작업 없음
+### 1. v0.1.0 릴리스 준비
+
+- 작업: `CHANGELOG.md`를 추가하고 v0.1.0 release notes 초안을 작성한다.
+- 배경: CLI v1과 Remote scan MVP가 구현됐으므로 첫 release를 위한 변경 요약과 제한 사항을 정리해야 한다.
+- 완료 기준:
+  - v0.1.0의 주요 기능, 검증 결과, 알려진 제한이 정리된다.
+  - release/tag 생성 전 확인 checklist가 문서화된다.
+  - package metadata와 README가 릴리스 기준으로 어긋나지 않는다.
+- 영향 범위: `CHANGELOG.md`, `README.md`, docs.
+- 검증: `.venv/bin/python -m pytest -q`, package metadata/docs review
 
 ## Pending
 
-현재 active 작업 없음
+### 2. v0.1.0 tag 생성
+
+- 작업: 검증 통과 후 `v0.1.0` git tag를 생성한다.
+- 완료 기준:
+  - 테스트와 smoke checks가 통과한다.
+  - `git tag v0.1.0`이 생성된다.
+  - 사용자가 원하면 tag push까지 진행할 수 있는 상태다.
+
+### 3. Remote scan 품질 개선 계획
+
+- 작업: release/tag freshness, archived/fork/private 상태, metadata evidence 정책을 다음 backlog로 설계한다.
+- 완료 기준:
+  - 점수화할 항목과 evidence-only 항목이 분리된다.
+  - 다음 recursive loop story가 작게 쪼개진다.
 
 ## 다음 실행 순서
 
-현재 active 작업 없음
+1. `v0.1.0 릴리스 준비`를 진행한다.
+3. 검증 후 tag 생성 여부를 결정한다.

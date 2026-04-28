@@ -15,6 +15,8 @@ The package exposes the `repotrust` CLI after installation.
 
 ## Usage
 
+Local checkout scans inspect files directly and never use the network:
+
 ```bash
 repotrust scan .
 repotrust scan . --format json --output report.json
@@ -24,7 +26,7 @@ repotrust scan . --config /path/to/repotrust.toml
 repotrust --version
 ```
 
-GitHub URLs are parsed by default, but repositories are not cloned or fetched.
+GitHub URLs are parsed by default, but repositories are not cloned or fetched unless `--remote` is explicit:
 
 ```bash
 repotrust scan https://github.com/openai/codex --format json
@@ -35,6 +37,14 @@ Remote GitHub scanning is available behind explicit opt-in. It requests reposito
 ```bash
 repotrust scan https://github.com/openai/codex --remote --format json
 ```
+
+Set `GITHUB_TOKEN` to scan private repositories or reduce rate-limit failures:
+
+```bash
+GITHUB_TOKEN=ghp_example repotrust scan https://github.com/owner/private-repo --remote
+```
+
+RepoTrust uses the token only for GitHub API authorization. Token values are not written to findings, reports, or terminal summaries.
 
 ## Development
 

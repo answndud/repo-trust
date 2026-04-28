@@ -36,7 +36,7 @@ Use these when changing CLI or report behavior:
 .venv/bin/repotrust scan . --format json
 .venv/bin/repotrust scan . --format html --output /tmp/repotrust-report.html
 .venv/bin/repotrust scan https://github.com/openai/codex --format json
-.venv/bin/repotrust scan https://github.com/openai/codex --remote --format json
+.venv/bin/repotrust scan https://github.com/answndud/repo-trust --remote --format json
 ```
 
 For config smoke checks, create an explicit temporary config first:
@@ -61,6 +61,8 @@ Expected behavior:
 - Local paths are scanned.
 - GitHub URLs are parsed but not cloned or fetched.
 - `--remote` is accepted only for GitHub URL targets.
+- `--remote` uses GitHub API read-only metadata and may return auth, rate-limit, not-found, API-error, or partial-scan findings.
+- `GITHUB_TOKEN` may be set for private repository access or higher rate limits, but token values must not appear in output.
 - `--fail-under` exits with code `1` when the score is below the threshold.
 - `--config` applies explicit local policy when the file exists and is valid.
 - JSON report content remains valid JSON when stdout is redirected.

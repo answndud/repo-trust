@@ -12,20 +12,23 @@
 
 ## 현재 작업
 
-현재 active 작업 없음
+v0.1.0 릴리스 준비
 
 ## 개발 상태 요약
 
-현재 active 작업 없음
+Remote scan UX 문서화를 완료했다. 이제 v0.1.0 release notes, 변경 요약, 알려진 제한, tag 전 checklist를 추가한다.
 
 ## Blocker
 
-현재 active 작업 없음
+없음
 
 ## 최근 검증
 
-현재 active 작업 없음
+Remote scan UX 문서화 검증: `.venv/bin/python -m pytest -q`는 `50 passed`; 실제 remote smoke `https://github.com/answndud/repo-trust --remote`는 100/100, A, `remote.github_metadata_collected` finding을 반환했다.
 
 ## 다음 액션
 
-현재 active 작업 없음
+1. `CHANGELOG.md`를 추가한다.
+2. v0.1.0 release notes 초안을 작성한다.
+3. known limitations와 pre-tag checklist를 문서화한다.
+4. 테스트와 diff 리뷰를 실행한다.
