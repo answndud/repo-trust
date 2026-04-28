@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-README GitHub URL HTML/JSON 저장 사용법 보강 완료. 현재 active 작업 없음
+GitHub Actions CI workflow 제거 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

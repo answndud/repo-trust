@@ -456,3 +456,12 @@
 - 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다.
 - 결과: README에서 GitHub URL 검사 결과를 HTML/JSON으로 저장하는 사용법을 바로 확인할 수 있다. 현재 active 작업은 없다.
+
+## 049: GitHub Actions CI workflow 제거
+
+- 완료일: 2026-04-28
+- 배경: 이 프로젝트에서는 push마다 GitHub Actions에서 pytest를 자동 실행하는 기능이 불필요하다고 판단했다.
+- 변경 내용: `.github/workflows/ci.yml`을 삭제해 push/pull_request 자동 CI 실행을 중단했다. `.github/dependabot.yml`은 Actions workflow가 아니므로 유지했다.
+- 코드/문서: `.github/workflows/ci.yml`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다. `.github`에는 `.github/dependabot.yml`만 남았다.
+- 결과: 앞으로 `main`에 push해도 이 저장소의 `ci` GitHub Actions workflow는 실행되지 않는다. 현재 active 작업은 없다.
