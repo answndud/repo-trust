@@ -438,3 +438,12 @@
 - 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다.
 - 결과: README가 실제 사용자 onboarding 흐름에 맞춘 한국어 가이드로 재작성됐다. 현재 active 작업은 없다.
+
+## 047: README 명령 예시 중복 제거와 흐름 개선
+
+- 완료일: 2026-04-28
+- 배경: README에 반복 명령과 `자주 쓰는 명령` 섹션이 남아 있었고, 로컬 검사 다음에 바로 URL 검사가 이어지지 않아 사용 흐름이 어색했다. 입력 명령과 생성 파일 예시도 더 명확히 구분할 필요가 있었다.
+- 변경 내용: `자주 쓰는 명령` 섹션을 제거하고, 로컬 저장소 검사 바로 다음에 GitHub URL 검사 섹션을 배치했다. 각 예시는 `입력할 명령`, `생성되는 파일 예시`, `예상 출력` 라벨로 분리했다. 반복 명령 블록을 줄이기 위해 가상환경 재활성화 안내는 문장으로만 남겼다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다.
+- 결과: README의 실행 흐름이 로컬 검사 → URL 검사 → 리포트 해석으로 이어지고, 입력 명령과 출력 파일 예시가 구분된다. 현재 active 작업은 없다.
