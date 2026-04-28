@@ -3,6 +3,8 @@ import json
 from typer.testing import CliRunner
 
 from repotrust.cli import app
+from repotrust.models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
+from repotrust.scoring import calculate_score
 
 
 runner = CliRunner()
@@ -70,7 +72,35 @@ def test_cli_github_url_without_remote_remains_parse_only():
     assert [finding["id"] for finding in data["findings"]] == ["target.github_not_fetched"]
 
 
-def test_cli_github_url_with_remote_enters_remote_boundary():
+def test_cli_github_url_with_remote_enters_remote_boundary(monkeypatch):
+    calls = []
+
+    def fake_scan(target_text, weights=None, remote=False):
+        calls.append((target_text, weights, remote))
+        finding = Finding(
+            id="remote.github_metadata_collected",
+            category=Category.TARGET,
+            severity=Severity.INFO,
+            message="GitHub repository metadata was collected.",
+            evidence="Repository metadata endpoint returned a successful response.",
+            recommendation="Continue remote scan.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
     result = runner.invoke(
         app,
         ["scan", "https://github.com/owner/repo", "--remote", "--format", "json"],
@@ -79,8 +109,8 @@ def test_cli_github_url_with_remote_enters_remote_boundary():
     assert result.exit_code == 0
     data = json.loads(result.stdout)
     assert data["target"]["kind"] == "github"
-    assert [finding["id"] for finding in data["findings"]] == ["remote.github_not_implemented"]
-    assert "network access" in data["findings"][0]["evidence"]
+    assert [finding["id"] for finding in data["findings"]] == ["remote.github_metadata_collected"]
+    assert calls == [("https://github.com/owner/repo", None, True)]
 
 
 def test_cli_scan_html_output(tmp_path):

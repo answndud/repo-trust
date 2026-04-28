@@ -179,7 +179,8 @@ Current implementation boundary:
 - `--remote` CLI option exists.
 - `--remote` is rejected for local path targets.
 - GitHub URL without `--remote` remains parse-only.
-- GitHub URL with `--remote` enters `remote.py` and currently returns `remote.github_not_implemented` without network access.
+- GitHub URL with `--remote` enters `remote.py`, requests repository metadata, and converts repository metadata API failures into findings.
+- Remote contents and workflow metadata detection are still split into later post-v1 stories.
 
 Interface:
 

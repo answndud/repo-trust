@@ -12,11 +12,11 @@
 
 ## 현재 작업
 
-Remote GitHub scan MVP story 2: GitHub client and failure findings
+Remote GitHub scan MVP story 3: Remote metadata detection
 
 ## 개발 상태 요약
 
-Remote CLI/API boundary story를 완료했다. 이제 GitHub REST client abstraction과 실패 응답을 finding으로 변환하는 동작을 구현한다. 실제 metadata detection은 다음 story로 분리하고, 이번 story는 fake transport 기반 실패 모드 테스트에 집중한다.
+GitHub client와 실패 finding story를 완료했다. 이제 repository metadata, contents, workflow response를 `DetectedFiles`로 변환한다. partial failure는 file absence와 구분하는 finding으로 표현한다.
 
 ## Blocker
 
@@ -24,11 +24,11 @@ Remote CLI/API boundary story를 완료했다. 이제 GitHub REST client abstrac
 
 ## 최근 검증
 
-Remote boundary story 검증: `.venv/bin/python -m pytest -q`는 `40 passed`; GitHub URL parse-only JSON smoke check는 `target.github_not_fetched`; GitHub URL + `--remote` smoke check는 `remote.github_not_implemented`; local path + `--remote`는 exit code 2로 실패했다.
+Remote client/failure story 검증: `.venv/bin/python -m pytest -q`는 `45 passed`. Fake transport tests로 repository success, unauthorized, not found, rate limited, API error, token non-leak를 확인했다.
 
 ## 다음 액션
 
-1. fake transport가 가능한 GitHub client 경계를 설계한다.
-2. repository metadata 요청 실패를 finding으로 변환한다.
-3. unauthorized/not-found/rate-limited/api-error 테스트를 추가한다.
-4. token 값이 report/finding에 노출되지 않는 테스트를 추가한다.
+1. contents API response fixture를 fake transport에 추가한다.
+2. README/LICENSE/SECURITY/manifests/lockfiles를 remote root contents에서 탐지한다.
+3. workflows API response를 `ci_workflows`로 변환한다.
+4. partial failure finding을 추가한다.

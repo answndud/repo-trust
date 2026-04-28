@@ -195,3 +195,12 @@
 - 코드/문서: `src/repotrust/cli.py`, `src/repotrust/scanner.py`, `src/repotrust/remote.py`, `tests/test_cli.py`, `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `40 passed`를 확인했다. GitHub URL parse-only JSON smoke check는 `target.github_not_fetched`를 반환했다. GitHub URL + `--remote` JSON smoke check는 `remote.github_not_implemented`를 반환했다. local path + `--remote`는 exit code 2와 `--remote can only be used with GitHub URL targets` usage error를 반환했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 CLI/API boundary와 문서에 한정됨을 확인했다.
 - 결과: Remote scan의 명시적 opt-in 경계가 생겼고, 다음 story에서 GitHub client와 실패 finding 변환을 구현할 수 있게 됐다. 다음 작업은 `Remote GitHub scan MVP story 2: GitHub client and failure findings`다.
+
+## 020: Remote GitHub scan MVP story 2 - GitHub client and failure findings
+
+- 완료일: 2026-04-28
+- 배경: `--remote` CLI boundary가 생겼으므로 GitHub REST 요청 경계와 실패 모드를 먼저 안정화해야 했다. 실제 repository contents/workflow detection은 다음 story로 분리했다.
+- 변경 내용: `GitHubClient`, `GitHubResponse`, fake 교체 가능한 `GitHubTransport`, 기본 `UrllibGitHubTransport`를 추가했다. `GITHUB_TOKEN`을 읽어 Authorization header에 사용하되 finding/report에는 token 값을 넣지 않도록 했다. repository metadata endpoint의 success, unauthorized, not found, rate limited, generic API error를 stable finding으로 변환했다.
+- 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `tests/test_cli.py`, `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `45 passed`를 확인했다. fake transport tests로 200 success, 401 unauthorized, 404 not found, 403 rate limit, 500 API error를 확인했다. token non-leak test에서 Authorization header에는 token이 들어가지만 finding message/evidence에는 token이 포함되지 않음을 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote client/failure mapping과 문서에 한정됨을 확인했다.
+- 결과: Remote scan은 repository metadata API 실패를 설명 가능한 finding으로 표현할 수 있게 됐다. 다음 작업은 `Remote GitHub scan MVP story 3: Remote metadata detection`이다.

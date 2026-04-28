@@ -17,34 +17,25 @@
 
 ## 현재 우선순위
 
-1. Remote GitHub scan MVP story 2: GitHub client and failure findings를 구현한다.
+1. Remote GitHub scan MVP story 3: Remote metadata detection을 구현한다.
 2. Remote GitHub scan MVP를 작은 작업 단위로 반복 구현한다.
 
 ## In Progress
 
-### 1. Remote GitHub scan MVP story 2: GitHub client and failure findings
-
-- 작업: GitHub REST read-only client와 실패 finding 변환을 구현한다.
-- 배경: `--remote` CLI boundary가 생겼으므로 실제 HTTP metadata 조회 전에 실패 모드와 transport abstraction을 먼저 고정한다.
-- 완료 기준:
-  - HTTP transport는 테스트에서 fake로 대체 가능하다.
-  - unauthorized/not-found/rate-limited/api-error finding이 생성된다.
-  - token 값은 출력되지 않는다.
-  - 실제 네트워크가 필요한 테스트는 추가하지 않는다.
-- 영향 범위: `src/repotrust/remote.py`, tests, docs.
-- 검증: `.venv/bin/python -m pytest -q`, fake transport tests
-
-## Pending
-
-### 2. Remote GitHub scan MVP story 3: Remote metadata detection
+### 1. Remote GitHub scan MVP story 3: Remote metadata detection
 
 - 작업: repository metadata, root contents, README, workflow 목록을 remote detected files로 변환한다.
+- 배경: GitHub client와 실패 finding이 준비됐으므로 remote response를 기존 `DetectedFiles` 모델로 변환해야 한다.
 - 완료 기준:
   - README/LICENSE/SECURITY/manifests/lockfiles/workflows를 remote response에서 탐지한다.
   - API partial failure는 file absence와 구분된다.
-  - tests는 실제 네트워크를 사용하지 않는다.
+  - 실제 네트워크가 필요한 테스트는 추가하지 않는다.
+- 영향 범위: `src/repotrust/remote.py`, tests, docs.
+- 검증: `.venv/bin/python -m pytest -q`, fake transport metadata tests
 
-### 3. Remote GitHub scan MVP story 4: Remote scoring/report integration
+## Pending
+
+### 2. Remote GitHub scan MVP story 4: Remote scoring/report integration
 
 - 작업: remote detected data를 기존 rule/scoring/report contract에 연결한다.
 - 완료 기준:
@@ -52,7 +43,7 @@
   - remote-specific finding이 evidence와 recommendation을 포함한다.
   - fixture/fake remote smoke tests가 통과한다.
 
-### 4. Post-v1 loop completion review
+### 3. Post-v1 loop completion review
 
 - 작업: Remote GitHub scan MVP 전체 검증과 자체 리뷰를 수행한다.
 - 완료 기준:
@@ -62,6 +53,6 @@
 
 ## 다음 실행 순서
 
-1. `Remote GitHub scan MVP story 2`를 구현한다.
+1. `Remote GitHub scan MVP story 3`을 구현한다.
 2. 완료 시 다음 story를 `In Progress`로 승격한다.
 3. 각 story마다 구현, 테스트, 자체 diff 리뷰, local commit을 반복한다.
