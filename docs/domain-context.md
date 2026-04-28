@@ -41,7 +41,49 @@ Current weights:
 - Security Posture: 25%
 - Project Hygiene: 20%
 
+Severity deductions:
+
+- `info`: 0 points. Use for state or limitation notices that should not lower trust by themselves.
+- `low`: 8 points. Use for missing convenience or maturity signals that are worth improving but not immediately risky.
+- `medium`: 18 points. Use for missing trust signals that materially reduce confidence or reproducibility.
+- `high`: 35 points. Use for risky install behavior, missing core documentation, or patterns that could lead users or agents into unsafe execution.
+
+Grade thresholds:
+
+- `A`: 90-100, Low risk.
+- `B`: 80-89, Moderate-low risk.
+- `C`: 70-79, Moderate risk.
+- `D`: 60-69, Elevated risk.
+- `F`: below 60, High risk.
+
 Scores are explainable heuristics, not guarantees. Every major deduction should have a corresponding finding.
+
+## Finding Policy
+
+Finding IDs are treated as a public-ish contract because users may grep reports, compare JSON outputs, or build CI policy around them.
+
+Finding ID rules:
+
+- Use lowercase dotted IDs shaped like `<area>.<specific_check>`.
+- Keep existing IDs stable unless the old meaning was clearly wrong.
+- If a rule changes severity but keeps the same meaning, keep the ID and update tests/docs.
+- If a rule meaning changes materially, add a new ID instead of silently reusing the old one.
+- Finding evidence should point to a local file, command line, missing file pattern, or API state that explains the finding.
+- Recommendations should be actionable and avoid vague advice.
+
+Severity selection rules:
+
+- Prefer `info` when the scanner is reporting a limitation, such as a GitHub URL that was parsed but not fetched.
+- Prefer `low` for optional hygiene improvements or missing clarity that does not block safe use.
+- Prefer `medium` for missing license/security/CI/lockfile/documentation signals that a prudent user should review before depending on the repo.
+- Prefer `high` for install instructions or repository states that could cause unsafe execution or seriously mislead a user.
+
+Score change rules:
+
+- Category weights should change rarely and only with documentation updates.
+- New rules should start with the smallest severity that honestly communicates the risk.
+- Do not use score deductions for facts the scanner cannot verify locally.
+- For remote/API-derived signals added later, represent API failure and unknown state as findings rather than silently lowering unrelated categories.
 
 ## Current Scope
 

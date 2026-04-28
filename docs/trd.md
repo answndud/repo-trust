@@ -63,6 +63,23 @@ repotrust scan <target>
 
 severity별 감점은 `scoring.py`에만 둔다. rule은 severity를 결정하고, 점수 계산은 scoring layer가 담당한다.
 
+현재 severity 감점:
+
+- `info`: 0
+- `low`: 8
+- `medium`: 18
+- `high`: 35
+
+현재 grade threshold:
+
+- `A`: 90 이상
+- `B`: 80 이상
+- `C`: 70 이상
+- `D`: 60 이상
+- `F`: 60 미만
+
+Finding ID는 JSON report 사용자에게 노출되는 안정적인 식별자다. 새 rule을 추가할 때 기존 ID의 의미를 바꾸지 말고, 의미가 달라지면 새 ID를 만든다.
+
 ## 출력 정책
 
 - report 본문은 stdout 또는 `--output` 파일로 나간다.

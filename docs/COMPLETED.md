@@ -105,3 +105,12 @@
 - 코드/문서: 코드 변경은 없었다. `AGENTS.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`만 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `23 passed`를 확인했다.
 - 결과: 다음 작업이 비어 있는 상태가 되면 프로젝트 완성까지 이어질 개발 계획을 `PLAN.md`에 다시 채우는 운영 방식이 명확해졌다. 다음 작업은 `Finding/score 정책 문서화`다.
+
+## 010: Finding/score 정책 문서화
+
+- 완료일: 2026-04-28
+- 배경: rule이 늘어날수록 severity, 감점, finding ID 기준이 흔들리면 RepoTrust 자체 신뢰도가 떨어진다. 현재 정책은 `src/repotrust/scoring.py`와 `src/repotrust/models.py`에 구현되어 있었지만, 문서로 충분히 설명되어 있지 않았다.
+- 변경 내용: `docs/domain-context.md`에 severity별 의미와 감점, grade threshold, finding ID 정책, severity 선택 기준, score 변경 원칙을 추가했다. `docs/trd.md`에는 현재 severity deduction, grade threshold, finding ID stability contract를 기술 설계 관점에서 보강했다. `docs/adr.md`에는 `ADR-007: Finding ID는 public-ish contract로 취급한다`를 추가했다.
+- 코드/문서: 코드 변경은 없었다. 문서 변경은 `docs/domain-context.md`, `docs/trd.md`, `docs/adr.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`에 적용했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `23 passed`를 확인했다.
+- 결과: 새 rule을 추가할 때 severity와 finding ID를 어떤 기준으로 정해야 하는지 명확해졌다. 다음 작업은 `CLI UX 정리`다.

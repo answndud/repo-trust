@@ -102,3 +102,19 @@
 - GitHub API, vulnerability DB, browser inspection이 필수화될 때 MCP 고려.
 - 대규모 rule expansion이나 보안/문서/CLI 병렬 리뷰가 자주 필요할 때 subagents 고려.
 
+## ADR-007: Finding ID는 public-ish contract로 취급한다
+
+상태: Accepted
+
+결정:
+
+- Finding ID는 사용자가 JSON report를 비교하거나 CI policy를 만들 때 사용할 수 있는 안정적인 식별자로 취급한다.
+- 기존 ID의 의미를 조용히 바꾸지 않는다.
+- rule 의미가 바뀌면 기존 ID를 재사용하지 않고 새 ID를 만든다.
+- severity나 message를 조정할 수는 있지만, 의미가 유지되는 경우에만 같은 ID를 유지한다.
+
+이유:
+
+- RepoTrust의 핵심 가치는 설명 가능한 finding이다.
+- ID가 흔들리면 자동화와 리포트 비교가 어려워진다.
+- rule이 늘어날수록 ID 안정성이 JSON contract만큼 중요해진다.
