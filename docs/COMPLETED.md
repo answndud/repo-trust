@@ -546,3 +546,12 @@
 - 코드/문서: `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/dashboard.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `44 passed`였다. `.venv/bin/python -m pytest -q`는 `89 passed`였다. `.venv/bin/python -m pip install -e '.[dev]'`도 통과했다. `git diff --check`도 통과했다. `.venv/bin/repo-trust-kr check .`, `.venv/bin/repo-trust-kr html . --output /tmp/repotrust-kr.html`, `.venv/bin/repo-trust-kr check tests/fixtures/repos/risky-install`를 smoke check로 확인했다.
 - 결과: `repo-trust-kr`은 메뉴, 도움말, 실행 상태, 대시보드, finding 설명, 다음 행동 안내까지 한국어 중심으로 동작한다. 현재 active 작업은 없다.
+
+## 059: README latest UX refresh
+
+- 완료일: 2026-04-28
+- 배경: 최신 CLI는 `repo-trust-kr` 한국어 콘솔/대시보드, 선택형 help, Command Mode 자동 저장 규칙을 갖췄지만 README가 기능 누적 방식으로 길어져 초보자가 읽는 흐름이 다소 복잡했다.
+- 변경 내용: README를 설치 빠른 시작, 사용 방식, Console Mode, Command Mode, 결과 파일 규칙, 도움말, parse-only, 리포트 해석, 실패 기준, config, 신뢰 신호 순서로 전면 재구성했다. 입력 명령과 생성 파일 예시를 분리하고, `repo-trust-kr` 한국어 UX를 기본 진입점으로 설명했다. README self-scan rule이 인식하도록 Installation/Usage heading도 유지했다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `89 passed`였다. `git diff --check`도 통과했다. README diff를 검토해 `check`가 파일을 저장하지 않는 점, Console/Command Mode 구분, 최근 리포트 목록 동작, GitHub URL 예시의 변동 가능성 안내가 유지됨을 확인했다.
+- 결과: README가 최신 개발 상태와 맞고, 초보자가 한국어 콘솔에서 시작해 HTML/JSON 저장과 터미널 점검까지 따라갈 수 있는 구조가 됐다. 현재 active 작업은 없다.
