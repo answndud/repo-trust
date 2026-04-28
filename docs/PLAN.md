@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-`repo-trust TARGET` 기본 사용 흐름 추가 완료. 현재 active 작업 없음
+GitHub Actions CI help-output assertion 실패 수정 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

@@ -1,4 +1,5 @@
 import json
+import re
 
 from typer.testing import CliRunner
 
@@ -8,6 +9,11 @@ from repotrust.scoring import calculate_score
 
 
 runner = CliRunner()
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+
+
+def plain_output(text: str) -> str:
+    return ANSI_ESCAPE_RE.sub("", text)
 
 
 def test_cli_version():
@@ -26,20 +32,25 @@ def test_direct_cli_version():
 
 def test_cli_root_without_command_shows_help():
     result = runner.invoke(app, [], prog_name="repotrust")
+    stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "Usage: repotrust" in result.stdout
-    assert "scan" in result.stdout
-    assert "--version" in result.stdout
+    assert "Usage:" in stdout
+    assert "repotrust" in stdout
+    assert "scan" in stdout
+    assert "--version" in stdout
 
 
 def test_cli_scan_help_shows_format_choices():
     result = runner.invoke(app, ["scan", "--help"])
+    stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "Local path or GitHub URL to scan" in result.stdout
-    assert "[markdown|json|html]" in result.stdout
-    assert "--remote" in result.stdout
+    assert "Local path or GitHub URL to scan" in stdout
+    assert "markdown" in stdout
+    assert "json" in stdout
+    assert "html" in stdout
+    assert "--remote" in stdout
 
 
 def test_cli_scan_markdown(tmp_path):
@@ -85,18 +96,21 @@ def test_direct_cli_github_url_without_remote_remains_parse_only():
 
 def test_direct_cli_without_target_shows_help():
     result = runner.invoke(direct_app, [], prog_name="repo-trust")
+    stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "Usage: repo-trust" in result.stdout
-    assert "TARGET" in result.stdout
+    assert "Usage:" in stdout
+    assert "repo-trust" in stdout
+    assert "TARGET" in stdout
 
 
 def test_cli_remote_rejects_local_path(tmp_path):
     result = runner.invoke(app, ["scan", str(tmp_path), "--remote"])
+    stderr = plain_output(result.stderr)
 
     assert result.exit_code == 2
-    assert "--remote" in result.stderr
-    assert "GitHub URL" in result.stderr
+    assert "--remote" in stderr
+    assert "GitHub URL" in stderr
 
 
 def test_cli_github_url_without_remote_remains_parse_only():
@@ -353,20 +367,22 @@ def test_cli_invalid_config_exits_with_usage_error(tmp_path):
     config.write_text("[weights]\nreadme_quality = 1.0\n", encoding="utf-8")
 
     result = runner.invoke(app, ["scan", str(tmp_path), "--config", str(config)])
+    stderr = plain_output(result.stderr)
 
     assert result.exit_code == 2
-    assert "--config" in result.stderr
-    assert "must define exactly" in result.stderr
+    assert "--config" in stderr
+    assert "must define exactly" in stderr
 
 
 def test_cli_missing_config_exits_with_usage_error(tmp_path):
     missing_config = tmp_path / "missing.toml"
 
     result = runner.invoke(app, ["scan", str(tmp_path), "--config", str(missing_config)])
+    stderr = plain_output(result.stderr)
 
     assert result.exit_code == 2
-    assert "--config" in result.stderr
-    assert "does not exist" in result.stderr
+    assert "--config" in stderr
+    assert "does not exist" in stderr
 
 
 def test_cli_fail_under(tmp_path):

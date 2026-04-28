@@ -393,3 +393,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pip install -e '.[dev]'`, `.venv/bin/repo-trust --version`, `.venv/bin/repo-trust https://github.com/openai/codex --format json --output /tmp/repotrust-direct.json`, `.venv/bin/python -m json.tool /tmp/repotrust-direct.json`, `.venv/bin/repotrust scan . --format json --output /tmp/repotrust-legacy.json`, `.venv/bin/python -m json.tool /tmp/repotrust-legacy.json`, `.venv/bin/repo-trust --help`, `.venv/bin/python -m pytest tests/test_cli.py -q`, `.venv/bin/python -m pytest -q`를 실행했고 전체 테스트 `68 passed`를 확인했다.
 - 결과: 새 기본 사용법은 `repo-trust .` 또는 `repo-trust "https://github.com/owner/repo"`이고, 기존 `repotrust scan TARGET`도 호환된다. 현재 active 작업은 없다.
+
+## 042: GitHub Actions CI help-output assertion 실패 수정
+
+- 완료일: 2026-04-28
+- 배경: `main` push 후 자동 실행된 GitHub Actions `ci` workflow가 실패했다. workflow는 deploy/publish가 아니라 `push`와 `pull_request`에서 pytest만 실행하는 CI였고, 실패 원인은 CI 환경의 Typer/Rich help 출력에 ANSI color/style code가 포함되면서 raw 문자열 assertion이 깨진 것이었다.
+- 변경 내용: `tests/test_cli.py`에 ANSI escape 제거 helper를 추가했다. CLI help/error 출력 테스트는 렌더링 포맷 전체가 아니라 `Usage`, command name, option name, error message 같은 의미 텍스트를 검증하도록 안정화했다.
+- 코드/문서: `tests/test_cli.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `gh run view 25032794188 --repo answndud/repo-trust --log-failed`로 실패 원인을 확인했다. `CI=true .venv/bin/python -m pytest tests/test_cli.py -q`는 `25 passed`, `.venv/bin/python -m pytest -q`는 `68 passed`였다.
+- 결과: 다음 push에서 GitHub Actions `ci` workflow가 동일한 help-output assertion 문제로 실패하지 않도록 수정됐다. 현재 active 작업은 없다.
