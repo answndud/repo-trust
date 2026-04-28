@@ -375,3 +375,12 @@
 - 코드/문서: `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다. 전체 dev-loop 변경 세트는 remote metadata handling, report rendering, CLI tests, JSON contract tests, config/exit-code coverage, README/PRD/TRD/domain/testing docs를 포함한다.
 - 검증: `.venv/bin/repotrust scan . --format json --output /tmp/repotrust-self.json`, `.venv/bin/python -m json.tool /tmp/repotrust-self.json`, `.venv/bin/repotrust scan tests/fixtures/repos/risky-install --format html --output /tmp/repotrust-risky.html`, `.venv/bin/repotrust scan https://github.com/openai/codex --format json --output /tmp/repotrust-parse-only.json`, `.venv/bin/python -m json.tool /tmp/repotrust-parse-only.json`, `.venv/bin/python -m pytest -q`를 실행했고 `64 passed`를 확인했다.
 - 결과: RepoTrust post-v1 완성품 로드맵의 모든 `PLAN.md` story가 완료됐다. commit, push, tag, release publish는 사용자가 요청할 때만 진행한다.
+
+## 040: README 한국어 사용자 가이드 정리
+
+- 완료일: 2026-04-28
+- 배경: 초보자도 README만 읽고 RepoTrust의 주요 기능을 설치부터 실행, 해석, 설정까지 사용할 수 있도록 한국어 중심 문서가 필요했다.
+- 변경 내용: `README.md`를 한국어 사용자 가이드로 전면 재작성했다. 빠른 시작, 설치, 로컬 스캔, JSON/HTML 리포트, GitHub URL parse-only 스캔, explicit remote scan, `GITHUB_TOKEN`, score/finding 해석, `--fail-under`, TOML config, fixture 연습, 자주 쓰는 명령, 개발자 검증, 현재 하지 않는 일을 순서대로 정리했다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `64 passed`를 확인했다. `git diff --stat`과 README diff를 검토해 변경 범위가 한국어 사용자 가이드와 active state 문서에 한정됨을 확인했다.
+- 결과: README만 보고도 주요 RepoTrust 기능을 따라 사용할 수 있는 한국어 안내가 준비됐다. 현재 active 작업은 없다.

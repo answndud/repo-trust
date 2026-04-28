@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-RepoTrust post-v1 완성품 로드맵 완료. 현재 active 작업 없음
+README 한국어 사용자 가이드 정리 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 
