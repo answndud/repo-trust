@@ -6,6 +6,147 @@ import json
 from .models import Finding, ScanResult
 
 
+CATEGORY_LABELS = {
+    "readme_quality": "README 품질",
+    "install_safety": "설치 안전성",
+    "security_posture": "보안 태세",
+    "project_hygiene": "프로젝트 관리 상태",
+    "target": "검사 대상",
+}
+
+CATEGORY_DESCRIPTIONS = {
+    "readme_quality": "README가 프로젝트 목적, 설치 방법, 사용 방법을 충분히 설명하는지 봅니다.",
+    "install_safety": "README의 설치 명령이 위험한 원격 스크립트 실행이나 검증 없는 설치를 유도하는지 봅니다.",
+    "security_posture": "SECURITY.md, CI, Dependabot, lockfile처럼 보안과 재현성을 돕는 신호를 봅니다.",
+    "project_hygiene": "LICENSE, dependency manifest 등 프로젝트를 dependency로 쓰기 전 확인할 관리 신호를 봅니다.",
+    "target": "로컬 경로인지 GitHub URL인지, 원격 내용을 실제로 가져왔는지 같은 검사 대상 상태를 봅니다.",
+}
+
+DETECTED_LABELS = {
+    "readme": "README",
+    "license": "라이선스",
+    "security": "보안 정책",
+    "ci_workflows": "CI workflow",
+    "dependency_manifests": "Dependency manifest",
+    "lockfiles": "Lockfile",
+    "dependabot": "Dependabot 설정",
+}
+
+DETECTED_DESCRIPTIONS = {
+    "readme": (
+        "사용자가 설치와 사용 방법을 이해할 수 있는 핵심 문서입니다.",
+        "README가 없으면 목적, 설치 방법, 사용 방법을 사용자가 직접 추정해야 합니다.",
+    ),
+    "license": (
+        "라이선스 파일이 있어 dependency 사용 조건을 확인할 수 있습니다.",
+        "라이선스가 없으면 회사나 공개 프로젝트에서 사용할 수 있는지 판단하기 어렵습니다.",
+    ),
+    "security": (
+        "취약점 신고와 보안 대응 경로를 확인할 수 있습니다.",
+        "보안 문제를 어디로 신고해야 하는지 명확하지 않습니다.",
+    ),
+    "ci_workflows": (
+        "자동 테스트나 검증이 실행될 가능성이 있습니다.",
+        "자동 검증 신호가 없어 변경 품질을 판단하기 어렵습니다.",
+    ),
+    "dependency_manifests": (
+        "프로젝트가 어떤 패키지와 도구 체계를 쓰는지 확인할 수 있습니다.",
+        "dependency 선언 파일을 찾지 못해 설치 구조를 판단하기 어렵습니다.",
+    ),
+    "lockfiles": (
+        "고정된 dependency 버전으로 재현 가능한 설치에 도움이 됩니다.",
+        "lockfile이 없으면 같은 명령을 실행해도 시간이 지나며 다른 dependency가 설치될 수 있습니다.",
+    ),
+    "dependabot": (
+        "dependency 업데이트를 자동으로 감지하는 설정이 있습니다.",
+        "dependency 업데이트 관리가 자동화되어 있는지 확인되지 않습니다.",
+    ),
+}
+
+FINDING_TITLES = {
+    "readme.missing": "README가 없습니다.",
+    "readme.no_project_purpose": "README에 프로젝트 목적 설명이 부족합니다.",
+    "install.no_commands": "README에서 설치 명령을 찾지 못했습니다.",
+    "install.risky.shell_pipe_install": "원격 스크립트를 바로 shell로 실행하는 설치 명령이 있습니다.",
+    "install.risky.process_substitution_shell": "process substitution으로 원격 스크립트를 실행합니다.",
+    "install.risky.python_inline_execution": "Python inline 실행 설치 명령이 있습니다.",
+    "install.risky.vcs_direct_install": "Git 저장소에서 직접 설치하는 명령이 있습니다.",
+    "security.no_policy": "보안 정책 파일이 없습니다.",
+    "security.no_ci": "CI workflow를 찾지 못했습니다.",
+    "security.no_dependabot": "Dependabot 설정을 찾지 못했습니다.",
+    "security.no_lockfile": "Lockfile을 찾지 못했습니다.",
+    "hygiene.no_license": "라이선스 파일이 없습니다.",
+    "target.github_not_fetched": "GitHub URL을 원격 조회 없이 파싱만 했습니다.",
+    "remote.github_metadata_collected": "GitHub 원격 메타데이터를 수집했습니다.",
+    "remote.github_rate_limited": "GitHub API rate limit에 걸렸습니다.",
+    "remote.github_unauthorized": "GitHub API 인증 또는 권한 확인에 실패했습니다.",
+    "remote.github_not_found": "GitHub 저장소를 찾을 수 없거나 볼 수 없습니다.",
+    "remote.github_api_error": "GitHub API에서 예상하지 못한 오류가 발생했습니다.",
+    "remote.github_partial_scan": "GitHub 원격 조회가 일부만 완료됐습니다.",
+    "remote.github_archived": "GitHub 저장소가 archived 상태입니다.",
+    "remote.github_issues_disabled": "GitHub Issues가 비활성화되어 있습니다.",
+    "remote.readme_content_unavailable": "원격 README 내용 확인에 실패했습니다.",
+    "target.local_path_missing": "로컬 경로를 찾을 수 없습니다.",
+    "readme.too_short": "README가 너무 짧습니다.",
+    "readme.no_install_section": "README에 설치 섹션이 없습니다.",
+    "readme.no_usage_section": "README에 사용 예시 섹션이 없습니다.",
+    "readme.no_maintenance_signal": "README에 유지보수/지원 안내가 부족합니다.",
+    "install.no_readme_to_audit": "README가 없어 설치 안전성을 확인할 수 없습니다.",
+    "hygiene.no_manifest": "Dependency manifest를 찾지 못했습니다.",
+}
+
+FINDING_EXPLANATIONS = {
+    "target.local_path_missing": "입력한 경로가 존재하지 않거나 디렉터리가 아닙니다. RepoTrust는 로컬 저장소 폴더를 기준으로 파일을 검사하므로 올바른 경로를 다시 지정해야 합니다.",
+    "target.github_not_fetched": "기본 GitHub URL 스캔은 안전하게 URL만 해석합니다. 저장소 파일을 clone하거나 API로 가져오지 않았으므로 README, LICENSE, CI 같은 실제 파일 기반 판단은 아직 하지 않은 상태입니다.",
+    "readme.missing": "README는 프로젝트 목적, 설치 방법, 사용 방법을 처음 확인하는 문서입니다. README가 없으면 사용자가 안전한 설치 경로를 판단하기 어렵습니다.",
+    "readme.too_short": "README 길이가 너무 짧아 프로젝트 목적, 설치 방법, 사용 예시, 문제 해결 방법을 충분히 설명한다고 보기 어렵습니다.",
+    "readme.no_project_purpose": "README 상단에서 이 프로젝트가 무엇을 하는지, 누가 쓰는지, 어떤 문제를 해결하는지 명확히 설명하지 않습니다.",
+    "readme.no_install_section": "초보자가 따라 할 수 있는 설치 섹션을 찾지 못했습니다. 설치 방법이 흩어져 있거나 명확하지 않을 수 있습니다.",
+    "readme.no_usage_section": "설치 후 어떤 명령을 실행해야 하는지, 최소 사용 예시가 무엇인지 확인하기 어렵습니다.",
+    "readme.no_maintenance_signal": "이슈 제보, 기여 방법, changelog, release notes 같은 유지보수 신호가 README에 보이지 않습니다.",
+    "install.no_readme_to_audit": "README가 없어서 설치 명령이 안전한지 검사할 수 없습니다. 사용자는 다른 파일이나 스크립트를 직접 찾아봐야 합니다.",
+    "install.no_commands": "README에서 복사해서 실행할 수 있는 설치 명령을 찾지 못했습니다. 자동화나 초보자 사용 흐름이 불명확합니다.",
+    "install.risky.shell_pipe_install": "curl이나 wget으로 받은 원격 스크립트를 바로 shell에 넘기는 방식입니다. 실행 전에 스크립트 내용을 검토하기 어렵고, 원격 내용이 바뀌면 설치 결과도 바뀔 수 있습니다.",
+    "install.risky.process_substitution_shell": "원격 스크립트를 process substitution으로 shell에 직접 실행합니다. 일반적인 파일 검토 단계를 건너뛰므로 설치 전 확인이 어렵습니다.",
+    "install.risky.python_inline_execution": "README가 Python 한 줄 실행으로 설치나 설정을 처리합니다. 실행되는 코드가 길거나 복잡하면 사용자가 의미를 검토하기 어렵습니다.",
+    "install.risky.vcs_direct_install": "패키지 레지스트리의 고정된 배포본이 아니라 Git 저장소에서 직접 설치합니다. branch나 commit이 고정되지 않으면 시간이 지나며 설치 결과가 달라질 수 있습니다.",
+    "security.no_policy": "SECURITY.md가 없으면 취약점 신고 방법, 지원 버전, 보안 대응 절차를 알기 어렵습니다.",
+    "security.no_dependabot": "Dependabot이나 유사한 dependency 업데이트 자동화 신호를 찾지 못했습니다. 오래된 dependency가 방치될 가능성을 별도로 확인해야 합니다.",
+    "security.no_ci": "GitHub Actions workflow를 찾지 못했습니다. 변경 시 테스트나 lint가 자동으로 실행되는지 확인되지 않습니다.",
+    "security.no_lockfile": "Dependency manifest는 있지만 lockfile이 없습니다. 같은 설치 명령을 나중에 실행했을 때 다른 하위 dependency가 설치될 수 있습니다.",
+    "hygiene.no_license": "라이선스 파일이 없으면 재사용, 배포, 회사 프로젝트 dependency 사용 가능 여부를 판단하기 어렵습니다.",
+    "hygiene.no_manifest": "표준 dependency manifest를 찾지 못했습니다. 이 저장소가 어떤 패키지 생태계와 설치 방식을 쓰는지 확인하기 어렵습니다.",
+    "remote.github_metadata_collected": "명시적으로 --remote를 사용해서 GitHub API에서 읽기 전용 메타데이터를 가져왔다는 정보성 항목입니다.",
+    "remote.github_rate_limited": "GitHub API 호출 한도를 초과해 원격 조회를 완료하지 못했습니다. 잠시 후 다시 실행하거나 GITHUB_TOKEN을 설정해야 합니다.",
+    "remote.github_unauthorized": "private 저장소이거나 token 권한이 부족해 GitHub API가 정보를 제공하지 않았습니다.",
+    "remote.github_not_found": "owner/repo URL이 잘못됐거나, 저장소가 private이라 현재 인증 정보로 볼 수 없습니다.",
+    "remote.github_api_error": "GitHub API가 예기치 않은 오류를 반환했습니다. 네트워크, GitHub 상태, 저장소 권한을 다시 확인해야 합니다.",
+    "remote.github_partial_scan": "GitHub API 일부 endpoint가 실패했거나 접근할 수 없어 리포트가 제한된 정보로 만들어졌습니다.",
+    "remote.github_archived": "archived 저장소는 일반적으로 더 이상 유지보수되지 않는 읽기 전용 상태입니다. 새 dependency로 채택하기 전에 maintained fork나 대안을 확인하세요.",
+    "remote.github_issues_disabled": "Issues가 꺼져 있으면 버그 제보, 사용 질문, 지원 경로가 GitHub에 없을 수 있습니다.",
+    "remote.readme_content_unavailable": "README 파일은 발견했지만 내용을 가져오지 못해 README 품질과 설치 명령 안전성을 완전히 검사하지 못했습니다.",
+}
+
+SEVERITY_LABELS = {
+    "info": "정보",
+    "low": "낮음",
+    "medium": "중간",
+    "high": "높음",
+}
+
+RISK_LABELS = {
+    "Low risk": "낮은 위험",
+    "Moderate-low risk": "낮거나 중간 수준의 위험",
+    "Moderate risk": "중간 위험",
+    "High risk": "높은 위험",
+}
+
+TARGET_KIND_LABELS = {
+    "local": "로컬 저장소",
+    "github": "GitHub URL",
+}
+
+
 def render_report(result: ScanResult, report_format: str) -> str:
     if report_format == "json":
         return render_json(result)
@@ -54,8 +195,14 @@ def render_markdown(result: ScanResult) -> str:
 def render_html(result: ScanResult) -> str:
     title = html.escape(f"RepoTrust 리포트 - {result.target.raw}")
     verdict = _score_verdict(result)
-    category_items = "\n".join(_category_html(category, score) for category, score in result.score.categories.items())
-    detected_items = "\n".join(_detected_file_html(key, value) for key, value in result.detected_files.to_dict().items())
+    category_items = "\n".join(
+        _category_html(category, score)
+        for category, score in result.score.categories.items()
+    )
+    detected_items = "\n".join(
+        _detected_file_html(key, value)
+        for key, value in result.detected_files.to_dict().items()
+    )
     findings = "\n".join(_finding_html(finding) for finding in result.findings)
     if not findings:
         findings = """        <article class="empty-state">
@@ -283,23 +430,14 @@ def _detected_file_html(key: str, value: object) -> str:
 
 
 def _category_label(category: str) -> str:
-    return {
-        "readme_quality": "README 품질",
-        "install_safety": "설치 안전성",
-        "security_posture": "보안 태세",
-        "project_hygiene": "프로젝트 관리 상태",
-        "target": "검사 대상",
-    }.get(category, category)
+    return CATEGORY_LABELS.get(category, category)
 
 
 def _category_description(category: str, score: int) -> str:
-    base = {
-        "readme_quality": "README가 프로젝트 목적, 설치 방법, 사용 방법을 충분히 설명하는지 봅니다.",
-        "install_safety": "README의 설치 명령이 위험한 원격 스크립트 실행이나 검증 없는 설치를 유도하는지 봅니다.",
-        "security_posture": "SECURITY.md, CI, Dependabot, lockfile처럼 보안과 재현성을 돕는 신호를 봅니다.",
-        "project_hygiene": "LICENSE, dependency manifest 등 프로젝트를 dependency로 쓰기 전 확인할 관리 신호를 봅니다.",
-        "target": "로컬 경로인지 GitHub URL인지, 원격 내용을 실제로 가져왔는지 같은 검사 대상 상태를 봅니다.",
-    }.get(category, "이 영역의 신뢰 신호를 점검합니다.")
+    base = CATEGORY_DESCRIPTIONS.get(
+        category,
+        "이 영역의 신뢰 신호를 점검합니다.",
+    )
     if score >= 90:
         suffix = "현재 점수는 양호합니다."
     elif score >= 70:
@@ -310,150 +448,36 @@ def _category_description(category: str, score: int) -> str:
 
 
 def _detected_label(key: str) -> str:
-    return {
-        "readme": "README",
-        "license": "라이선스",
-        "security": "보안 정책",
-        "ci_workflows": "CI workflow",
-        "dependency_manifests": "Dependency manifest",
-        "lockfiles": "Lockfile",
-        "dependabot": "Dependabot 설정",
-    }.get(key, key)
+    return DETECTED_LABELS.get(key, key)
 
 
 def _detected_description(key: str, value: object) -> str:
-    present = bool(value)
-    if isinstance(value, list):
-        present = bool(value)
-    descriptions = {
-        "readme": (
-            "사용자가 설치와 사용 방법을 이해할 수 있는 핵심 문서입니다."
-            if present
-            else "README가 없으면 목적, 설치 방법, 사용 방법을 사용자가 직접 추정해야 합니다."
-        ),
-        "license": (
-            "라이선스 파일이 있어 dependency 사용 조건을 확인할 수 있습니다."
-            if present
-            else "라이선스가 없으면 회사나 공개 프로젝트에서 사용할 수 있는지 판단하기 어렵습니다."
-        ),
-        "security": (
-            "취약점 신고와 보안 대응 경로를 확인할 수 있습니다."
-            if present
-            else "보안 문제를 어디로 신고해야 하는지 명확하지 않습니다."
-        ),
-        "ci_workflows": (
-            "자동 테스트나 검증이 실행될 가능성이 있습니다."
-            if present
-            else "자동 검증 신호가 없어 변경 품질을 판단하기 어렵습니다."
-        ),
-        "dependency_manifests": (
-            "프로젝트가 어떤 패키지와 도구 체계를 쓰는지 확인할 수 있습니다."
-            if present
-            else "dependency 선언 파일을 찾지 못해 설치 구조를 판단하기 어렵습니다."
-        ),
-        "lockfiles": (
-            "고정된 dependency 버전으로 재현 가능한 설치에 도움이 됩니다."
-            if present
-            else "lockfile이 없으면 같은 명령을 실행해도 시간이 지나며 다른 dependency가 설치될 수 있습니다."
-        ),
-        "dependabot": (
-            "dependency 업데이트를 자동으로 감지하는 설정이 있습니다."
-            if present
-            else "dependency 업데이트 관리가 자동화되어 있는지 확인되지 않습니다."
-        ),
-    }
-    return descriptions.get(key, "검사 중 발견한 파일 신호입니다.")
+    descriptions = DETECTED_DESCRIPTIONS.get(key)
+    if not descriptions:
+        return "검사 중 발견한 파일 신호입니다."
+    present_text, missing_text = descriptions
+    return present_text if _has_detected_value(value) else missing_text
 
 
 def _finding_title(finding: Finding) -> str:
-    return {
-        "readme.missing": "README가 없습니다.",
-        "readme.no_project_purpose": "README에 프로젝트 목적 설명이 부족합니다.",
-        "install.no_commands": "README에서 설치 명령을 찾지 못했습니다.",
-        "install.risky.shell_pipe_install": "원격 스크립트를 바로 shell로 실행하는 설치 명령이 있습니다.",
-        "install.risky.process_substitution_shell": "process substitution으로 원격 스크립트를 실행합니다.",
-        "install.risky.python_inline_execution": "Python inline 실행 설치 명령이 있습니다.",
-        "install.risky.vcs_direct_install": "Git 저장소에서 직접 설치하는 명령이 있습니다.",
-        "security.no_policy": "보안 정책 파일이 없습니다.",
-        "security.no_ci": "CI workflow를 찾지 못했습니다.",
-        "security.no_dependabot": "Dependabot 설정을 찾지 못했습니다.",
-        "security.no_lockfile": "Lockfile을 찾지 못했습니다.",
-        "hygiene.no_license": "라이선스 파일이 없습니다.",
-        "target.github_not_fetched": "GitHub URL을 원격 조회 없이 파싱만 했습니다.",
-        "remote.github_metadata_collected": "GitHub 원격 메타데이터를 수집했습니다.",
-        "remote.github_rate_limited": "GitHub API rate limit에 걸렸습니다.",
-        "remote.github_unauthorized": "GitHub API 인증 또는 권한 확인에 실패했습니다.",
-        "remote.github_not_found": "GitHub 저장소를 찾을 수 없거나 볼 수 없습니다.",
-        "remote.github_api_error": "GitHub API에서 예상하지 못한 오류가 발생했습니다.",
-        "remote.github_partial_scan": "GitHub 원격 조회가 일부만 완료됐습니다.",
-        "remote.github_archived": "GitHub 저장소가 archived 상태입니다.",
-        "remote.github_issues_disabled": "GitHub Issues가 비활성화되어 있습니다.",
-        "remote.readme_content_unavailable": "원격 README 내용 확인에 실패했습니다.",
-        "target.local_path_missing": "로컬 경로를 찾을 수 없습니다.",
-        "readme.too_short": "README가 너무 짧습니다.",
-        "readme.no_install_section": "README에 설치 섹션이 없습니다.",
-        "readme.no_usage_section": "README에 사용 예시 섹션이 없습니다.",
-        "readme.no_maintenance_signal": "README에 유지보수/지원 안내가 부족합니다.",
-        "install.no_readme_to_audit": "README가 없어 설치 안전성을 확인할 수 없습니다.",
-        "hygiene.no_manifest": "Dependency manifest를 찾지 못했습니다.",
-    }.get(finding.id, finding.message)
+    return FINDING_TITLES.get(finding.id, finding.message)
 
 
 def _finding_explanation(finding: Finding) -> str:
-    explanations = {
-        "target.local_path_missing": "입력한 경로가 존재하지 않거나 디렉터리가 아닙니다. RepoTrust는 로컬 저장소 폴더를 기준으로 파일을 검사하므로 올바른 경로를 다시 지정해야 합니다.",
-        "target.github_not_fetched": "기본 GitHub URL 스캔은 안전하게 URL만 해석합니다. 저장소 파일을 clone하거나 API로 가져오지 않았으므로 README, LICENSE, CI 같은 실제 파일 기반 판단은 아직 하지 않은 상태입니다.",
-        "readme.missing": "README는 프로젝트 목적, 설치 방법, 사용 방법을 처음 확인하는 문서입니다. README가 없으면 사용자가 안전한 설치 경로를 판단하기 어렵습니다.",
-        "readme.too_short": "README 길이가 너무 짧아 프로젝트 목적, 설치 방법, 사용 예시, 문제 해결 방법을 충분히 설명한다고 보기 어렵습니다.",
-        "readme.no_project_purpose": "README 상단에서 이 프로젝트가 무엇을 하는지, 누가 쓰는지, 어떤 문제를 해결하는지 명확히 설명하지 않습니다.",
-        "readme.no_install_section": "초보자가 따라 할 수 있는 설치 섹션을 찾지 못했습니다. 설치 방법이 흩어져 있거나 명확하지 않을 수 있습니다.",
-        "readme.no_usage_section": "설치 후 어떤 명령을 실행해야 하는지, 최소 사용 예시가 무엇인지 확인하기 어렵습니다.",
-        "readme.no_maintenance_signal": "이슈 제보, 기여 방법, changelog, release notes 같은 유지보수 신호가 README에 보이지 않습니다.",
-        "install.no_readme_to_audit": "README가 없어서 설치 명령이 안전한지 검사할 수 없습니다. 사용자는 다른 파일이나 스크립트를 직접 찾아봐야 합니다.",
-        "install.no_commands": "README에서 복사해서 실행할 수 있는 설치 명령을 찾지 못했습니다. 자동화나 초보자 사용 흐름이 불명확합니다.",
-        "install.risky.shell_pipe_install": "curl이나 wget으로 받은 원격 스크립트를 바로 shell에 넘기는 방식입니다. 실행 전에 스크립트 내용을 검토하기 어렵고, 원격 내용이 바뀌면 설치 결과도 바뀔 수 있습니다.",
-        "install.risky.process_substitution_shell": "원격 스크립트를 process substitution으로 shell에 직접 실행합니다. 일반적인 파일 검토 단계를 건너뛰므로 설치 전 확인이 어렵습니다.",
-        "install.risky.python_inline_execution": "README가 Python 한 줄 실행으로 설치나 설정을 처리합니다. 실행되는 코드가 길거나 복잡하면 사용자가 의미를 검토하기 어렵습니다.",
-        "install.risky.vcs_direct_install": "패키지 레지스트리의 고정된 배포본이 아니라 Git 저장소에서 직접 설치합니다. branch나 commit이 고정되지 않으면 시간이 지나며 설치 결과가 달라질 수 있습니다.",
-        "security.no_policy": "SECURITY.md가 없으면 취약점 신고 방법, 지원 버전, 보안 대응 절차를 알기 어렵습니다.",
-        "security.no_dependabot": "Dependabot이나 유사한 dependency 업데이트 자동화 신호를 찾지 못했습니다. 오래된 dependency가 방치될 가능성을 별도로 확인해야 합니다.",
-        "security.no_ci": "GitHub Actions workflow를 찾지 못했습니다. 변경 시 테스트나 lint가 자동으로 실행되는지 확인되지 않습니다.",
-        "security.no_lockfile": "Dependency manifest는 있지만 lockfile이 없습니다. 같은 설치 명령을 나중에 실행했을 때 다른 하위 dependency가 설치될 수 있습니다.",
-        "hygiene.no_license": "라이선스 파일이 없으면 재사용, 배포, 회사 프로젝트 dependency 사용 가능 여부를 판단하기 어렵습니다.",
-        "hygiene.no_manifest": "표준 dependency manifest를 찾지 못했습니다. 이 저장소가 어떤 패키지 생태계와 설치 방식을 쓰는지 확인하기 어렵습니다.",
-        "remote.github_metadata_collected": "명시적으로 --remote를 사용해서 GitHub API에서 읽기 전용 메타데이터를 가져왔다는 정보성 항목입니다.",
-        "remote.github_rate_limited": "GitHub API 호출 한도를 초과해 원격 조회를 완료하지 못했습니다. 잠시 후 다시 실행하거나 GITHUB_TOKEN을 설정해야 합니다.",
-        "remote.github_unauthorized": "private 저장소이거나 token 권한이 부족해 GitHub API가 정보를 제공하지 않았습니다.",
-        "remote.github_not_found": "owner/repo URL이 잘못됐거나, 저장소가 private이라 현재 인증 정보로 볼 수 없습니다.",
-        "remote.github_api_error": "GitHub API가 예기치 않은 오류를 반환했습니다. 네트워크, GitHub 상태, 저장소 권한을 다시 확인해야 합니다.",
-        "remote.github_partial_scan": "GitHub API 일부 endpoint가 실패했거나 접근할 수 없어 리포트가 제한된 정보로 만들어졌습니다.",
-        "remote.github_archived": "archived 저장소는 일반적으로 더 이상 유지보수되지 않는 읽기 전용 상태입니다. 새 dependency로 채택하기 전에 maintained fork나 대안을 확인하세요.",
-        "remote.github_issues_disabled": "Issues가 꺼져 있으면 버그 제보, 사용 질문, 지원 경로가 GitHub에 없을 수 있습니다.",
-        "remote.readme_content_unavailable": "README 파일은 발견했지만 내용을 가져오지 못해 README 품질과 설치 명령 안전성을 완전히 검사하지 못했습니다.",
-    }
-    return explanations.get(finding.id, finding.message)
+    return FINDING_EXPLANATIONS.get(finding.id, finding.message)
 
 
 def _severity_ko(severity: str) -> str:
-    return {
-        "info": "정보",
-        "low": "낮음",
-        "medium": "중간",
-        "high": "높음",
-    }.get(severity, severity)
+    return SEVERITY_LABELS.get(severity, severity)
 
 
 def _risk_label_ko(risk_label: str) -> str:
-    return {
-        "Low risk": "낮은 위험",
-        "Moderate-low risk": "낮거나 중간 수준의 위험",
-        "Moderate risk": "중간 위험",
-        "High risk": "높은 위험",
-    }.get(risk_label, risk_label)
+    return RISK_LABELS.get(risk_label, risk_label)
 
 
 def _target_kind_ko(kind: str) -> str:
-    return {
-        "local": "로컬 저장소",
-        "github": "GitHub URL",
-    }.get(kind, kind)
+    return TARGET_KIND_LABELS.get(kind, kind)
+
+
+def _has_detected_value(value: object) -> bool:
+    return bool(value)
