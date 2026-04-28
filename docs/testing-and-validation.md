@@ -1,0 +1,51 @@
+# Testing and Validation
+
+## Required Command
+
+Run this before handing off changes:
+
+```bash
+.venv/bin/python -m pytest -q
+```
+
+If the environment is not installed:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m pytest -q
+```
+
+## Test Coverage Expectations
+
+Add or update tests for:
+
+- GitHub URL parsing and invalid target handling.
+- Local file detection.
+- Rule findings and severity changes.
+- Scoring changes.
+- JSON shape and Markdown report sections.
+- CLI options, output files, stdout/stderr behavior, and exit codes.
+
+## Manual Smoke Checks
+
+Use these when changing CLI or report behavior:
+
+```bash
+.venv/bin/repotrust scan .
+.venv/bin/repotrust scan . --format json
+.venv/bin/repotrust scan . --format html --output /tmp/repotrust-report.html
+.venv/bin/repotrust scan https://github.com/openai/codex --format json
+```
+
+Expected behavior:
+
+- Local paths are scanned.
+- GitHub URLs are parsed but not cloned or fetched.
+- `--fail-under` exits with code `1` when the score is below the threshold.
+- JSON report content remains valid JSON when stdout is redirected.
+
+## Validation Philosophy
+
+RepoTrust is a trust-reporting tool. Tests should protect user confidence: clear findings, stable output, conservative scoring, and no unannounced network behavior.
+

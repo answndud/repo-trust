@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "repotrust"
+version = "0.1.0"
+description = "CLI reports for evaluating whether an open source repository is safe to install or depend on."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "rich>=13.7",
+  "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+repotrust = "repotrust.cli:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
