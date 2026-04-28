@@ -17,39 +17,59 @@
 
 ## 현재 우선순위
 
-1. 변경 사항을 검증하고 GitHub `main`에 push한다.
-2. Remote GitHub scan MVP부터 작은 작업 단위로 반복 구현한다.
+1. Remote GitHub scan MVP story 1: CLI/API boundary를 구현한다.
+2. Remote GitHub scan MVP를 작은 작업 단위로 반복 구현한다.
 
 ## In Progress
 
-현재 active 작업 없음
+### 1. Remote GitHub scan MVP story 1: CLI/API boundary
+
+- 작업: `--remote` CLI option, target validation, scanner boundary를 추가하되 실제 HTTP 구현은 아직 fake client 기반으로 분리한다.
+- 배경: Remote scan 전체 구현 전에 CLI contract와 no-network 기본값을 안정적으로 고정한다.
+- 완료 기준:
+  - local path에서 `--remote` 사용 시 usage error가 난다.
+  - GitHub URL without `--remote`는 기존 parse-only 동작을 유지한다.
+  - GitHub URL with `--remote`는 remote scanner 진입점으로 분기한다.
+  - tests가 CLI 동작과 no-network 기본값을 고정한다.
+- 영향 범위: `src/repotrust/cli.py`, `src/repotrust/scanner.py`, `tests/test_cli.py`, docs.
+- 검증: `.venv/bin/python -m pytest -q`, GitHub URL parse-only JSON smoke check
 
 ## Pending
 
-### 1. GitHub main push
+### 2. Remote GitHub scan MVP story 2: GitHub client and failure findings
 
-- 작업: 공개 준비 변경을 커밋하고 `origin/main`에 push한다.
+- 작업: GitHub REST read-only client와 실패 finding 변환을 구현한다.
 - 완료 기준:
-  - 워크트리가 clean 상태다.
-  - `git push origin main`이 성공한다.
+  - HTTP transport는 테스트에서 fake로 대체 가능하다.
+  - unauthorized/not-found/rate-limited/api-error finding이 생성된다.
+  - token 값은 출력되지 않는다.
 
-### 2. Ralph-style post-v1 loop 세팅
+### 3. Remote GitHub scan MVP story 3: Remote metadata detection
 
-- 작업: RepoTrust 방식의 반복 작업 루프를 하네스에 반영한다.
+- 작업: repository metadata, root contents, README, workflow 목록을 remote detected files로 변환한다.
 - 완료 기준:
-  - 작은 story 단위, 검증 루틴, 완료 archive, 다음 story 승격 규칙이 문서화된다.
-  - external Ralph 구현을 그대로 복사하지 않고 현재 `PLAN/PROGRESS/COMPLETED` 흐름에 맞춘다.
+  - README/LICENSE/SECURITY/manifests/lockfiles/workflows를 remote response에서 탐지한다.
+  - API partial failure는 file absence와 구분된다.
+  - tests는 실제 네트워크를 사용하지 않는다.
 
-### 3. Remote GitHub scan MVP
+### 4. Remote GitHub scan MVP story 4: Remote scoring/report integration
 
-- 작업: `repotrust scan <github-url> --remote` MVP를 구현한다.
+- 작업: remote detected data를 기존 rule/scoring/report contract에 연결한다.
 - 완료 기준:
-  - clone 없이 GitHub REST API read-only metadata를 조회한다.
-  - auth/rate-limit/not-found/API error가 finding으로 표현된다.
-  - tests는 mocked HTTP/fake transport를 사용하고 실제 네트워크를 요구하지 않는다.
+  - remote scan JSON/Markdown report가 기존 schema와 호환된다.
+  - remote-specific finding이 evidence와 recommendation을 포함한다.
+  - fixture/fake remote smoke tests가 통과한다.
+
+### 5. Post-v1 loop completion review
+
+- 작업: Remote GitHub scan MVP 전체 검증과 자체 리뷰를 수행한다.
+- 완료 기준:
+  - pytest, CLI smoke, self scan, fake remote scan이 통과한다.
+  - docs/README가 remote scan 사용법과 제한을 설명한다.
+  - active 문서가 정리되고 완료 archive가 남는다.
 
 ## 다음 실행 순서
 
-1. GitHub push를 진행한다.
-2. Ralph-style loop 규칙을 문서화한다.
-3. `Remote GitHub scan MVP`를 작은 story로 쪼개 구현한다.
+1. `Remote GitHub scan MVP story 1`을 구현한다.
+2. 완료 시 다음 story를 `In Progress`로 승격한다.
+3. 각 story마다 구현, 테스트, 자체 diff 리뷰, local commit을 반복한다.

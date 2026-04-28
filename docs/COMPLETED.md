@@ -168,3 +168,21 @@
 - 코드/문서: `LICENSE`, `pylock.toml`, `src/repotrust/detection.py`, `tests/test_scanner.py`, `README.md`, `docs/development-workflow.md`, `docs/testing-and-validation.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `37 passed`를 확인했다. 자체 `repotrust scan . --format json`은 100/100, A, Low risk, finding 0개였고 detected files에 `LICENSE`와 `pylock.toml`이 포함됨을 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 공개 준비와 lockfile detection에 한정됨을 확인했다.
 - 결과: RepoTrust 저장소는 오픈소스 공개를 위한 license와 lockfile 신호를 갖췄고 자체 RepoTrust Score가 100점이 됐다. 다음 작업은 `GitHub main push`다.
+
+## 017: GitHub main push
+
+- 완료일: 2026-04-28
+- 배경: 사용자가 오픈소스 공개 준비 후 GitHub repo에 push까지 진행하라고 요청했다. 이전까지 local commits가 원격보다 앞서 있었다.
+- 변경 내용: `main` branch를 그대로 유지하고 별도 branch를 만들지 않았다. `git push origin main`을 실행했다.
+- 코드/문서: push 자체에는 파일 변경이 없었다.
+- 검증: `git push origin main`이 성공했고 원격 `main`이 `0ea0bc4`에서 `f5852d0`까지 업데이트됐다.
+- 결과: 공개 준비가 반영된 RepoTrust CLI v1 상태가 GitHub `answndud/repo-trust`의 `main`에 올라갔다. 다음 작업은 `Ralph-style post-v1 loop 세팅`이다.
+
+## 018: Ralph-style post-v1 loop 세팅
+
+- 완료일: 2026-04-28
+- 배경: 사용자가 Ralph 아이디어처럼 완성될 때까지 작은 작업을 재귀적으로 계획, 구현, 테스트, 리뷰하는 루프를 원했다. 외부 Ralph 구현은 Amp/Claude 중심 스크립트와 skill 구조를 포함하므로 그대로 복사하지 않고 현재 Codex 하네스에 맞게 문서 규칙으로 흡수하기로 했다.
+- 변경 내용: `AGENTS.md`에 post-v1 반복 작업은 작은 story 하나를 `In Progress`로 승격하고 구현, 검증, 리뷰, 커밋, archive 후 다음 story로 넘어간다는 compact rule을 추가했다. `docs/development-workflow.md`에 lightweight Ralph-style loop 절차를 추가했다. `docs/PLAN.md`에는 Remote GitHub scan MVP를 CLI/API boundary, client/failure findings, metadata detection, scoring/report integration, completion review story로 분할했다.
+- 코드/문서: `AGENTS.md`, `docs/development-workflow.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `37 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 하네스/문서에 한정됨을 확인했다.
+- 결과: RepoTrust는 post-v1 작업을 작은 story 단위로 반복 진행할 준비가 됐다. 다음 작업은 `Remote GitHub scan MVP story 1: CLI/API boundary`다.
