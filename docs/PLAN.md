@@ -13,36 +13,20 @@
 
 ## 현재 목표
 
-Remote scan UX를 문서화하고 v0.1.0 릴리스 준비를 완료한다.
+Remote scan 품질 개선 정책 수립 완료. 다음 구현 범위는 사용자가 요청하면 active plan으로 추가한다.
 
 ## 현재 우선순위
 
-1. v0.1.0 tag 생성
-2. Remote scan 품질 개선 계획 수립
+현재 active 작업 없음
 
 ## In Progress
 
-### 1. v0.1.0 tag 생성
-
-- 작업: 검증 통과 후 `v0.1.0` git tag를 생성한다.
-- 배경: release notes와 pre-tag checklist가 준비됐으므로 실제 tag를 만들 수 있는 상태인지 확인한다.
-- 완료 기준:
-  - 테스트와 smoke checks가 통과한다.
-  - `git tag v0.1.0`이 생성된다.
-  - 사용자가 원하면 tag push까지 진행할 수 있는 상태다.
-- 영향 범위: git tag, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`.
-- 검증: `.venv/bin/python -m pytest -q`, local/remote smoke checks
+현재 active 작업 없음
 
 ## Pending
 
-### 2. Remote scan 품질 개선 계획
-
-- 작업: release/tag freshness, archived/fork/private 상태, metadata evidence 정책을 다음 backlog로 설계한다.
-- 완료 기준:
-  - 점수화할 항목과 evidence-only 항목이 분리된다.
-  - 다음 recursive loop story가 작게 쪼개진다.
+현재 active 작업 없음
 
 ## 다음 실행 순서
 
-1. `v0.1.0 tag 생성`을 진행한다.
-2. tag 생성 후 Remote scan 품질 개선 계획을 수립한다.
+현재 active 작업 없음

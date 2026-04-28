@@ -249,3 +249,21 @@
 - 코드/문서: `CHANGELOG.md`, `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`는 `50 passed`였다. Local self-scan은 100/100, A, finding 0개였고 remote self-scan은 100/100, A, finding 1개(`remote.github_metadata_collected`)였다. `pyproject.toml` version은 `0.1.0`이다.
 - 결과: v0.1.0 tag를 만들 수 있는 release notes와 checklist가 준비됐다. 다음 작업은 `v0.1.0 tag 생성`이다.
+
+## 026: v0.1.0 tag 생성
+
+- 완료일: 2026-04-28
+- 배경: v0.1.0 release notes와 pre-tag checklist가 준비됐으므로 첫 release tag를 만들 수 있는 상태인지 검증하고 tag를 생성해야 했다.
+- 변경 내용: tag 전 remote smoke 중 Dependabot metadata endpoint가 unknown일 때 `security.no_dependabot`까지 감점되는 false deduction을 발견했다. Remote partial scan에서는 실패한 endpoint의 파일 부재를 단정하지 않도록 unknown metadata 기반 local-style deductions를 필터링했다. 이후 `v0.1.0` annotated tag를 생성했다.
+- 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다. Git tag `v0.1.0`을 생성했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `51 passed`였다. Local self-scan은 100/100, A, finding 0개였다. `git tag --list 'v0.1.0' -n`에서 `RepoTrust v0.1.0` tag를 확인했다.
+- 결과: v0.1.0 tag가 로컬에 생성됐다. tag와 이후 커밋 push는 사용자가 요청할 때 진행하면 된다. 다음 작업은 `Remote scan 품질 개선 계획`이다.
+
+## 027: Remote scan 품질 개선 계획
+
+- 완료일: 2026-04-28
+- 배경: Remote scan MVP는 동작하지만 repository metadata 중 어떤 항목을 score-deducting finding으로 삼고 어떤 항목을 evidence-only context로 둘지 결정이 필요했다.
+- 변경 내용: `docs/domain-context.md`에 Remote Metadata Quality Policy를 추가했다. archived 상태처럼 명확한 maintenance risk는 점수화 가능하고, fork/private/default branch/stars/language/size/created date는 evidence-only로 시작하기로 했다. release/tag freshness는 project type과 release practice를 구분할 수 있을 때 낮은 severity부터 도입하기로 했다. `docs/adr.md`에 ADR-010으로 score와 evidence 분리 결정을 기록했다.
+- 코드/문서: `docs/domain-context.md`, `docs/trd.md`, `docs/adr.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `51 passed`를 확인했다. 변경 범위가 remote metadata policy 문서와 하네스 상태 문서에 한정됨을 확인했다.
+- 결과: Remote scan 품질 개선의 다음 방향이 정리됐다. 현재 active 작업은 없다.

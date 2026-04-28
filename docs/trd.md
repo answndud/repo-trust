@@ -235,3 +235,4 @@ Reference basis:
 - 외부 API가 들어오면 source attribution과 failure mode를 finding으로 표현한다.
 - policy config가 생기면 scoring과 rule enable/disable을 분리한다.
 - HTML dashboard가 생겨도 CLI JSON schema를 먼저 안정화한다.
+- Remote metadata quality signals should separate score deductions from evidence-only context before implementation.

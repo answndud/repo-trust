@@ -102,6 +102,16 @@ Remote finding interpretation:
 
 Remote scans may use `GITHUB_TOKEN` for authorization and higher rate limits. Token values must never appear in findings, reports, logs, or terminal summaries.
 
+## Remote Metadata Quality Policy
+
+Remote repository metadata should be handled conservatively:
+
+- Score-deducting findings: archived repositories, disabled issues/security workflows only when the API field clearly indicates a reduced maintenance or safety signal.
+- Evidence-only findings: fork status, private visibility, star/watch/fork counts, default branch name, repository size, language, and creation date. These can help a human reviewer but should not lower score by themselves.
+- Freshness findings: releases/tags should start as `low` or `medium` only after the scanner can distinguish "no release practice" from "library/tool does not need releases".
+- Unknown metadata: API failures, rate limits, and permission failures must remain remote failure/partial findings. They must not be converted into missing-file or missing-maintenance deductions.
+- Contributor and profile signals: keep deferred until source attribution and privacy implications are designed.
+
 ## Current Scope
 
 Supported:

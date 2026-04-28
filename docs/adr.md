@@ -169,3 +169,27 @@
 - 사용자가 GitHub URL scan을 기본 기대 동작으로 요구할 때.
 - API rate limit이나 private repo 지원 요구가 커질 때.
 - GitHub App 또는 웹 대시보드 개발을 시작할 때.
+
+## ADR-010: Remote metadata는 score와 evidence를 분리한다
+
+상태: Accepted
+
+결정:
+
+- Remote metadata 중 archived 상태처럼 명확한 maintenance risk는 score-deducting finding으로 둘 수 있다.
+- fork/private/default branch/stars/language/size/created date 같은 정보는 v0.1.x에서는 evidence-only context로 시작한다.
+- release/tag freshness는 바로 고감점하지 않고, no release practice와 release가 중요하지 않은 project type을 구분할 수 있을 때 낮은 severity부터 도입한다.
+- API 실패나 권한 부족으로 알 수 없는 상태는 missing signal로 변환하지 않고 remote failure 또는 partial finding으로 유지한다.
+- contributor profile 분석은 source attribution, privacy, impersonation risk가 설계될 때까지 보류한다.
+
+이유:
+
+- Remote API metadata는 해석 맥락이 없으면 쉽게 과잉 점수화된다.
+- star count나 fork 여부는 popularity/context signal이지 안전성 자체가 아니다.
+- unknown 상태를 absence로 처리하면 RepoTrust 점수 신뢰도가 떨어진다.
+
+재검토 조건:
+
+- 조직 policy config에서 evidence-only metadata를 score에 반영하고 싶다는 요구가 생길 때.
+- package ecosystem별 release practice를 구분할 수 있을 때.
+- remote scan이 GitHub App 또는 dashboard로 확장될 때.
