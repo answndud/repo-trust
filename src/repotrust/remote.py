@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from base64 import b64decode
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 from urllib.error import HTTPError
@@ -9,6 +10,12 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from .models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
+from .rules import (
+    install_safety_rules,
+    project_hygiene_rules,
+    readme_quality_rules,
+    security_posture_rules,
+)
 from .scoring import calculate_score
 
 
@@ -90,7 +97,24 @@ class GitHubClient:
         )
 
     def get_root_contents(self, owner: str, repo: str, ref: str | None = None) -> GitHubResponse:
+        return self.get_contents(owner, repo, "", ref=ref)
+
+    def get_contents(
+        self,
+        owner: str,
+        repo: str,
+        path: str,
+        ref: str | None = None,
+    ) -> GitHubResponse:
         url = f"{self.api_base_url}/repos/{owner}/{repo}/contents"
+        if path:
+            url = f"{url}/{path}"
+        if ref:
+            url = f"{url}?{urlencode({'ref': ref})}"
+        return self.transport.request("GET", url, self._headers())
+
+    def get_readme(self, owner: str, repo: str, ref: str | None = None) -> GitHubResponse:
+        url = f"{self.api_base_url}/repos/{owner}/{repo}/readme"
         if ref:
             url = f"{url}?{urlencode({'ref': ref})}"
         return self.transport.request("GET", url, self._headers())
@@ -134,10 +158,28 @@ def scan_remote_github(
         )
 
     contents_response = client.get_root_contents(owner, repo, ref=target.ref)
+    readme_response = client.get_readme(owner, repo, ref=target.ref)
     workflows_response = client.get_workflows(owner, repo)
+    dependabot_yml_response = client.get_contents(owner, repo, ".github/dependabot.yml", ref=target.ref)
+    dependabot_yaml_response = client.get_contents(owner, repo, ".github/dependabot.yaml", ref=target.ref)
     findings = [repository_finding]
-    findings.extend(_partial_findings(contents_response, workflows_response))
-    detected_files = _detected_files_from_remote(contents_response, workflows_response)
+    findings.extend(
+        _partial_findings(
+            contents_response,
+            readme_response,
+            workflows_response,
+            dependabot_yml_response,
+            dependabot_yaml_response,
+        )
+    )
+    detected_files = _detected_files_from_remote(
+        contents_response,
+        readme_response,
+        workflows_response,
+        dependabot_yml_response,
+        dependabot_yaml_response,
+    )
+    findings.extend(_remote_rules(detected_files, readme_response))
 
     return ScanResult(
         target=target,
@@ -210,13 +252,25 @@ def _is_rate_limited(response: GitHubResponse) -> bool:
 
 def _partial_findings(
     contents_response: GitHubResponse,
+    readme_response: GitHubResponse,
     workflows_response: GitHubResponse,
+    dependabot_yml_response: GitHubResponse,
+    dependabot_yaml_response: GitHubResponse,
 ) -> list[Finding]:
     findings = []
     if not 200 <= contents_response.status_code < 300:
         findings.append(_partial_scan_finding("repository contents", contents_response.status_code))
+    if readme_response.status_code not in {200, 404}:
+        findings.append(_partial_scan_finding("repository README", readme_response.status_code))
     if not 200 <= workflows_response.status_code < 300:
         findings.append(_partial_scan_finding("GitHub Actions workflows", workflows_response.status_code))
+    if _all_dependabot_checks_failed(dependabot_yml_response, dependabot_yaml_response):
+        findings.append(
+            _partial_scan_finding(
+                "Dependabot configuration",
+                dependabot_yml_response.status_code,
+            )
+        )
     return findings
 
 
@@ -233,18 +287,45 @@ def _partial_scan_finding(endpoint: str, status_code: int) -> Finding:
 
 def _detected_files_from_remote(
     contents_response: GitHubResponse,
+    readme_response: GitHubResponse,
     workflows_response: GitHubResponse,
+    dependabot_yml_response: GitHubResponse,
+    dependabot_yaml_response: GitHubResponse,
 ) -> DetectedFiles:
     root_files = _root_file_paths(contents_response)
+    readme = _readme_path(readme_response) or _first_match(root_files, README_NAMES)
     workflow_paths = _workflow_paths(workflows_response)
     return DetectedFiles(
-        readme=_first_match(root_files, README_NAMES),
+        readme=readme,
         license=_first_match(root_files, LICENSE_NAMES),
         security=_first_match(root_files, SECURITY_NAMES),
         ci_workflows=workflow_paths,
         dependency_manifests=_all_matches(root_files, DEPENDENCY_MANIFESTS),
         lockfiles=_all_matches(root_files, LOCKFILES),
+        dependabot=_dependabot_path(dependabot_yml_response, dependabot_yaml_response),
     )
+
+
+def _remote_rules(detected_files: DetectedFiles, readme_response: GitHubResponse) -> list[Finding]:
+    findings: list[Finding] = []
+    readme_text = _readme_text(readme_response)
+    if detected_files.readme and readme_text is None:
+        findings.append(
+            Finding(
+                id="remote.readme_content_unavailable",
+                category=Category.README_QUALITY,
+                severity=Severity.MEDIUM,
+                message="README exists but its content could not be fetched for remote analysis.",
+                evidence=detected_files.readme,
+                recommendation="Retry remote scan later or scan a local checkout for full README and install safety analysis.",
+            )
+        )
+    else:
+        findings.extend(readme_quality_rules(detected_files, readme_text or ""))
+        findings.extend(install_safety_rules(detected_files, readme_text or ""))
+    findings.extend(security_posture_rules(detected_files))
+    findings.extend(project_hygiene_rules(detected_files))
+    return findings
 
 
 def _root_file_paths(response: GitHubResponse) -> list[str]:
@@ -274,6 +355,50 @@ def _workflow_paths(response: GitHubResponse) -> list[str]:
         if isinstance(path, str):
             paths.append(path)
     return sorted(paths)
+
+
+def _readme_path(response: GitHubResponse) -> str | None:
+    if not 200 <= response.status_code < 300 or not isinstance(response.data, dict):
+        return None
+    path = response.data.get("path") or response.data.get("name")
+    return path if isinstance(path, str) else None
+
+
+def _readme_text(response: GitHubResponse) -> str | None:
+    if not 200 <= response.status_code < 300 or not isinstance(response.data, dict):
+        return None
+    content = response.data.get("content")
+    if not isinstance(content, str):
+        return None
+    if response.data.get("encoding") != "base64":
+        return None
+    try:
+        return b64decode(content).decode("utf-8", errors="replace")
+    except ValueError:
+        return None
+
+
+def _dependabot_path(
+    yml_response: GitHubResponse,
+    yaml_response: GitHubResponse,
+) -> str | None:
+    for response in (yml_response, yaml_response):
+        if 200 <= response.status_code < 300 and isinstance(response.data, dict):
+            path = response.data.get("path") or response.data.get("name")
+            if isinstance(path, str):
+                return path
+    return None
+
+
+def _all_dependabot_checks_failed(
+    yml_response: GitHubResponse,
+    yaml_response: GitHubResponse,
+) -> bool:
+    acceptable = {200, 404}
+    return (
+        yml_response.status_code not in acceptable
+        and yaml_response.status_code not in acceptable
+    )
 
 
 def _first_match(paths: list[str], candidates: set[str]) -> str | None:

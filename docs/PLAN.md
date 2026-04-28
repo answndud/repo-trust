@@ -17,35 +17,28 @@
 
 ## 현재 우선순위
 
-1. Remote GitHub scan MVP story 4: Remote scoring/report integration을 구현한다.
-2. Remote GitHub scan MVP를 작은 작업 단위로 반복 구현한다.
+1. Post-v1 loop completion review를 수행한다.
 
 ## In Progress
 
-### 1. Remote GitHub scan MVP story 4: Remote scoring/report integration
+### 1. Post-v1 loop completion review
 
-- 작업: remote detected data를 기존 rule/scoring/report contract에 연결한다.
-- 배경: Remote scan이 `DetectedFiles`를 만들 수 있으므로 report와 score가 local scan처럼 신뢰 신호를 설명해야 한다.
+- 작업: Remote GitHub scan MVP 전체 검증과 자체 리뷰를 수행한다.
+- 배경: Remote scan CLI, client, metadata detection, scoring/report integration story가 끝났으므로 MVP 완성 여부를 판정한다.
 - 완료 기준:
-  - remote scan JSON/Markdown report가 기존 schema와 호환된다.
-  - remote detected files가 README/security/hygiene/security posture rule에 반영된다.
-  - remote-specific finding이 evidence와 recommendation을 포함한다.
-  - fixture/fake remote smoke tests가 통과한다.
-- 영향 범위: `src/repotrust/remote.py`, tests, docs.
-- 검증: `.venv/bin/python -m pytest -q`, fake remote report tests
+  - pytest, CLI smoke, self scan, fake remote scan이 통과한다.
+  - 실제 GitHub remote scan smoke check를 가능한 범위에서 실행한다.
+  - docs/README가 remote scan 사용법과 제한을 설명한다.
+  - active 문서가 정리되고 완료 archive가 남는다.
+- 영향 범위: docs, 필요 시 README 또는 tests.
+- 검증: `.venv/bin/python -m pytest -q`, CLI smoke checks, remote smoke check
 
 ## Pending
 
-### 2. Post-v1 loop completion review
-
-- 작업: Remote GitHub scan MVP 전체 검증과 자체 리뷰를 수행한다.
-- 완료 기준:
-  - pytest, CLI smoke, self scan, fake remote scan이 통과한다.
-  - docs/README가 remote scan 사용법과 제한을 설명한다.
-  - active 문서가 정리되고 완료 archive가 남는다.
+현재 active 작업 없음
 
 ## 다음 실행 순서
 
-1. `Remote GitHub scan MVP story 4`를 구현한다.
-2. 완료 시 다음 story를 `In Progress`로 승격한다.
-3. 각 story마다 구현, 테스트, 자체 diff 리뷰, local commit을 반복한다.
+1. Remote GitHub scan MVP 전체 검증을 실행한다.
+2. 자체 diff 리뷰를 수행한다.
+3. 완료 판정 후 active 문서를 정리한다.

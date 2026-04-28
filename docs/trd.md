@@ -181,7 +181,8 @@ Current implementation boundary:
 - GitHub URL without `--remote` remains parse-only.
 - GitHub URL with `--remote` enters `remote.py`, requests repository metadata, and converts repository metadata API failures into findings.
 - Remote root contents and workflow metadata are converted into `DetectedFiles`.
-- Full remote rule/scoring integration is still split into a later post-v1 story.
+- README content and Dependabot config are fetched through read-only contents endpoints.
+- Remote detected files and README content are scored with the existing rule/scoring/report contract.
 
 Interface:
 

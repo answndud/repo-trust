@@ -12,11 +12,11 @@
 
 ## 현재 작업
 
-Remote GitHub scan MVP story 4: Remote scoring/report integration
+Post-v1 loop completion review
 
 ## 개발 상태 요약
 
-Remote metadata detection story를 완료했다. 이제 remote detected files를 기존 rule/scoring/report contract에 연결해 remote scan 결과가 local scan처럼 trust score와 findings를 설명하도록 만든다.
+Remote scoring/report integration story를 완료했다. 이제 Remote GitHub scan MVP 전체 검증, smoke check, 문서 정합성, diff 리뷰를 수행하고 완료 여부를 판정한다.
 
 ## Blocker
 
@@ -24,11 +24,11 @@ Remote metadata detection story를 완료했다. 이제 remote detected files를
 
 ## 최근 검증
 
-Remote metadata detection story 검증: `.venv/bin/python -m pytest -q`는 `48 passed`. Fake transport tests로 root contents에서 README/LICENSE/SECURITY/manifest/lockfile을 탐지하고 workflows response에서 CI workflow를 탐지함을 확인했다. contents/workflows partial failure는 `remote.github_partial_scan` finding으로 표현된다.
+Remote scoring/report integration story 검증: `.venv/bin/python -m pytest -q`는 `50 passed`. Fake remote report test에서 JSON schema version, github target, detected README, Markdown report section을 확인했다. Risky README fixture는 remote README content 기반으로 `install.risky.shell_pipe_install` finding을 만든다.
 
 ## 다음 액션
 
-1. remote detected files를 local-like rules에 연결할 범위를 정한다.
-2. remote README content 없이 수행 가능한 security/project hygiene scoring을 먼저 연결한다.
-3. remote report JSON/Markdown tests를 추가한다.
-4. remote-specific finding과 local finding이 함께 렌더링되는지 확인한다.
+1. 전체 pytest와 CLI smoke checks를 실행한다.
+2. 실제 GitHub remote scan smoke check를 실행한다.
+3. README/docs 정합성과 git diff를 리뷰한다.
+4. 완료 archive를 남기고 active 문서를 정리한다.

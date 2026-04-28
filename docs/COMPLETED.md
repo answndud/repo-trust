@@ -213,3 +213,12 @@
 - 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `48 passed`를 확인했다. Fake transport tests로 remote detected files 변환, contents partial failure, workflows partial failure를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote metadata detection과 문서에 한정됨을 확인했다.
 - 결과: Remote scan이 GitHub root contents와 workflows metadata를 `DetectedFiles`로 변환할 수 있게 됐다. 다음 작업은 `Remote GitHub scan MVP story 4: Remote scoring/report integration`이다.
+
+## 022: Remote GitHub scan MVP story 4 - Remote scoring/report integration
+
+- 완료일: 2026-04-28
+- 배경: Remote scan이 `DetectedFiles`를 만들 수 있게 됐으므로 기존 rule/scoring/report contract에 연결해야 했다. README와 install safety rule을 remote에서도 사용하려면 README 본문 fetch가 필요했다.
+- 변경 내용: Remote scan에서 README content endpoint와 Dependabot config contents endpoint를 추가로 조회한다. README content를 base64 decode해 기존 README Quality와 Install Safety rules에 연결했다. Remote detected files는 Security Posture와 Project Hygiene rules에 연결했다. README content를 가져오지 못하면 `remote.readme_content_unavailable` finding으로 표현하고 false README deductions를 피한다. Remote JSON/Markdown report가 기존 schema와 renderer를 그대로 사용하도록 테스트했다.
+- 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `50 passed`를 확인했다. Fake remote success case는 100점과 detected README/LICENSE/SECURITY/manifest/lockfile/workflow/Dependabot을 확인했다. Risky remote README는 `install.risky.shell_pipe_install` finding을 생성했다. Remote report rendering test는 JSON schema version과 Markdown report section을 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote scoring/report integration과 문서에 한정됨을 확인했다.
+- 결과: Remote GitHub scan MVP의 기능 구현 story들이 완료됐다. 다음 작업은 `Post-v1 loop completion review`다.

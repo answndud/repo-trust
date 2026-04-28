@@ -1,5 +1,8 @@
+from base64 import b64encode
+
 from repotrust.models import Target
 from repotrust.remote import GitHubClient, GitHubResponse, scan_remote_github
+from repotrust.reports import render_json, render_markdown
 
 
 class FakeTransport:
@@ -33,6 +36,26 @@ def _scan(response, token=None):
 
 
 def _successful_responses():
+    readme = """# Good Python Project
+
+Good Python Project is a small example package used by RepoTrust tests to represent a repository with clear documentation, safe installation guidance, security policy, CI, and dependency metadata.
+
+## Installation
+
+```bash
+pip install good-python-project
+```
+
+## Usage
+
+```bash
+good-python-project scan .
+```
+
+## Contributing
+
+Open issues for bugs, send pull requests for small fixes, and review the changelog before upgrading between releases.
+"""
     return [
         GitHubResponse(status_code=200, data={"full_name": "owner/repo"}),
         GitHubResponse(
@@ -48,8 +71,22 @@ def _successful_responses():
         ),
         GitHubResponse(
             status_code=200,
+            data={
+                "name": "README.md",
+                "path": "README.md",
+                "encoding": "base64",
+                "content": b64encode(readme.encode()).decode(),
+            },
+        ),
+        GitHubResponse(
+            status_code=200,
             data={"workflows": [{"path": ".github/workflows/ci.yml"}]},
         ),
+        GitHubResponse(
+            status_code=200,
+            data={"name": "dependabot.yml", "path": ".github/dependabot.yml"},
+        ),
+        GitHubResponse(status_code=404),
     ]
 
 
@@ -71,6 +108,21 @@ def test_remote_success_detects_files_from_contents_and_workflows():
     assert result.detected_files.dependency_manifests == ["pyproject.toml"]
     assert result.detected_files.lockfiles == ["pylock.toml"]
     assert result.detected_files.ci_workflows == [".github/workflows/ci.yml"]
+    assert result.detected_files.dependabot == ".github/dependabot.yml"
+    assert result.score.total == 100
+
+
+def test_remote_report_rendering_uses_existing_contract():
+    result, _ = _scan(_successful_responses())
+
+    json_report = render_json(result)
+    markdown_report = render_markdown(result)
+
+    assert '"schema_version": "1.0"' in json_report
+    assert '"kind": "github"' in json_report
+    assert '"readme": "README.md"' in json_report
+    assert "# RepoTrust Report" in markdown_report
+    assert "remote.github_metadata_collected" in markdown_report
 
 
 def test_remote_contents_partial_failure_does_not_look_like_missing_files():
@@ -78,15 +130,18 @@ def test_remote_contents_partial_failure_does_not_look_like_missing_files():
         [
             GitHubResponse(status_code=200, data={"full_name": "owner/repo"}),
             GitHubResponse(status_code=500),
+            GitHubResponse(status_code=404),
             GitHubResponse(
                 status_code=200,
                 data={"workflows": [{"path": ".github/workflows/ci.yml"}]},
             ),
+            GitHubResponse(status_code=404),
+            GitHubResponse(status_code=404),
         ]
     )
 
     ids = [finding.id for finding in result.findings]
-    assert ids == ["remote.github_metadata_collected", "remote.github_partial_scan"]
+    assert ids[:2] == ["remote.github_metadata_collected", "remote.github_partial_scan"]
     assert result.detected_files.readme is None
     assert result.detected_files.ci_workflows == [".github/workflows/ci.yml"]
     assert "repository contents" in result.findings[1].evidence
@@ -100,15 +155,60 @@ def test_remote_workflows_partial_failure_preserves_contents_detection():
                 status_code=200,
                 data=[{"type": "file", "name": "README.md", "path": "README.md"}],
             ),
+            GitHubResponse(status_code=500),
             GitHubResponse(status_code=403),
+            GitHubResponse(status_code=404),
+            GitHubResponse(status_code=404),
         ]
     )
 
     ids = [finding.id for finding in result.findings]
-    assert ids == ["remote.github_metadata_collected", "remote.github_partial_scan"]
+    assert ids[:3] == [
+        "remote.github_metadata_collected",
+        "remote.github_partial_scan",
+        "remote.github_partial_scan",
+    ]
     assert result.detected_files.readme == "README.md"
     assert result.detected_files.ci_workflows == []
-    assert "GitHub Actions workflows" in result.findings[1].evidence
+    assert "repository README" in result.findings[1].evidence
+    assert "GitHub Actions workflows" in result.findings[2].evidence
+
+
+def test_remote_detects_risky_readme_install_commands():
+    readme = """# Risky Project
+
+Risky Project is a deliberately unsafe example with enough prose to exercise remote README analysis and install command detection.
+
+## Installation
+
+```bash
+curl https://example.com/install.sh | sh
+```
+
+## Usage
+
+```bash
+risky run
+```
+
+## Contributing
+
+Open issues before sending changes.
+"""
+    responses = _successful_responses()
+    responses[2] = GitHubResponse(
+        status_code=200,
+        data={
+            "name": "README.md",
+            "path": "README.md",
+            "encoding": "base64",
+            "content": b64encode(readme.encode()).decode(),
+        },
+    )
+
+    result, _ = _scan(responses)
+
+    assert "install.risky.shell_pipe_install" in {finding.id for finding in result.findings}
 
 
 def test_remote_unauthorized_finding_does_not_leak_token():

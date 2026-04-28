@@ -26,7 +26,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 6. `scoring.calculate_score()` converts findings into category and total scores.
 7. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
 
-GitHub URLs without `--remote` stop after parsing. The result includes an informational finding that remote scanning is not enabled. GitHub URLs with `--remote` enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, and remote metadata-to-`DetectedFiles` conversion. Full remote rule/scoring integration is still split into a later post-v1 story.
+GitHub URLs without `--remote` stop after parsing. The result includes an informational finding that remote scanning is not enabled. GitHub URLs with `--remote` enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
 
 ## Extension Boundaries
 
