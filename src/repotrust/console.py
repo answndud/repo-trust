@@ -19,6 +19,7 @@ class ConsoleWorkflow:
     terminal_only: bool = False
     parse_only: bool = False
     verbose: bool = False
+    locale: ConsoleLocale = "en"
 
 
 RunWorkflow = Callable[[ConsoleWorkflow], None]
@@ -138,7 +139,7 @@ def run_console_mode(
         console.print(help_text())
         return
 
-    run_workflow(_prompt_workflow(choice, console=console, text=text))
+    run_workflow(_prompt_workflow(choice, console=console, text=text, locale=locale))
 
 
 def _console_text(locale: ConsoleLocale) -> dict[str, object]:
@@ -225,25 +226,30 @@ def _prompt_workflow(
     *,
     console: Console,
     text: dict[str, object],
+    locale: ConsoleLocale,
 ) -> ConsoleWorkflow:
     if choice == "1":
         return ConsoleWorkflow(
             target=Prompt.ask(str(text["local_path_prompt"]), default=".", console=console),
             report_format="html",
+            locale=locale,
         )
     if choice == "2":
         return ConsoleWorkflow(
             target=Prompt.ask(str(text["github_url_prompt"]), console=console),
             report_format="html",
+            locale=locale,
         )
     if choice == "3":
         return ConsoleWorkflow(
             target=Prompt.ask(str(text["github_url_prompt"]), console=console),
             report_format="json",
+            locale=locale,
         )
     return ConsoleWorkflow(
         target=Prompt.ask(str(text["any_target_prompt"]), default=".", console=console),
         report_format="markdown",
         terminal_only=True,
         verbose=True,
+        locale=locale,
     )

@@ -537,3 +537,12 @@
 - 코드/문서: `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `42 passed`였다. `.venv/bin/python -m pytest -q`는 `87 passed`였다. `.venv/bin/python -m pip install -e '.[dev]'`도 통과했다. `git diff --check`도 통과했다. `printf '2\n' | .venv/bin/repo-trust --help`, `printf '2\n' | .venv/bin/repo-trust html --help`, `printf '2\n' | .venv/bin/repo-trust-kr --help`, `printf '2\n' | .venv/bin/repo-trust json --help`, `printf '1\n' | .venv/bin/repo-trust-kr check --help`를 smoke check로 확인했다.
 - 결과: 사용자는 root와 direct command help에서 영어 또는 한국어 도움말을 선택할 수 있고, 기존 scan/report 동작과 JSON/stdout contract는 유지된다. 현재 active 작업은 없다.
+
+## 058: Korean product execution UX
+
+- 완료일: 2026-04-28
+- 배경: `repo-trust-kr`은 콘솔과 도움말은 한국어였지만 실제 검사 실행 후 command header, dashboard, 저장 안내, next action 일부가 영어라 초보 사용자가 결과를 바로 이해하기 어려웠다.
+- 변경 내용: `repo-trust-kr html/json/check` 실행 경로에 locale을 전달하고, command header, write notice, trust assessment, risk breakdown, evidence, top findings, verbose findings, next actions를 한국어로 렌더링하게 했다. 한국어 check 모드에서는 영어 Markdown report block을 숨기고 한국어 대시보드만 보여준다. 고정 finding message와 recommendation, evidence label, severity, category label도 한국어 매핑을 추가했다. `repo-trust` 영어 UX와 JSON schema 1.1 contract는 유지했다.
+- 코드/문서: `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/dashboard.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `44 passed`였다. `.venv/bin/python -m pytest -q`는 `89 passed`였다. `.venv/bin/python -m pip install -e '.[dev]'`도 통과했다. `git diff --check`도 통과했다. `.venv/bin/repo-trust-kr check .`, `.venv/bin/repo-trust-kr html . --output /tmp/repotrust-kr.html`, `.venv/bin/repo-trust-kr check tests/fixtures/repos/risky-install`를 smoke check로 확인했다.
+- 결과: `repo-trust-kr`은 메뉴, 도움말, 실행 상태, 대시보드, finding 설명, 다음 행동 안내까지 한국어 중심으로 동작한다. 현재 active 작업은 없다.

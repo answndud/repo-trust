@@ -329,6 +329,7 @@ def product_kr_main(
 @direct_app.command("html", add_help_option=False)
 @direct_kr_app.command("html", add_help_option=False)
 def html_report(
+    ctx: typer.Context,
     target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
     help_requested: Annotated[
         bool,
@@ -376,12 +377,14 @@ def html_report(
         parse_only=parse_only,
         fail_under=fail_under,
         verbose=verbose,
+        locale=_product_locale(ctx),
     )
 
 
 @direct_app.command("json", add_help_option=False)
 @direct_kr_app.command("json", add_help_option=False)
 def json_report(
+    ctx: typer.Context,
     target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
     help_requested: Annotated[
         bool,
@@ -429,12 +432,14 @@ def json_report(
         parse_only=parse_only,
         fail_under=fail_under,
         verbose=verbose,
+        locale=_product_locale(ctx),
     )
 
 
 @direct_app.command("check", add_help_option=False)
 @direct_kr_app.command("check", add_help_option=False)
 def check(
+    ctx: typer.Context,
     target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
     help_requested: Annotated[
         bool,
@@ -475,6 +480,7 @@ def check(
         fail_under=fail_under,
         verbose=verbose,
         terminal_only=True,
+        locale=_product_locale(ctx),
     )
 
 
@@ -488,6 +494,7 @@ def _run_product_scan(
     fail_under: int | None,
     verbose: bool,
     terminal_only: bool = False,
+    locale: str = "en",
 ) -> None:
     parsed_target = parse_target(target)
     if parse_only and parsed_target.kind != "github":
@@ -505,6 +512,7 @@ def _run_product_scan(
         target=target,
         mode=mode,
         report_format=report_format.value,
+        locale=locale,
     )
     _run_scan(
         target=target,
@@ -516,6 +524,7 @@ def _run_product_scan(
         verbose=verbose,
         dashboard=True,
         output_label=output_path,
+        dashboard_locale=locale,
     )
 
 
@@ -539,6 +548,7 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
         fail_under=None,
         verbose=workflow.verbose,
         terminal_only=workflow.terminal_only,
+        locale=workflow.locale,
     )
 
 
@@ -553,6 +563,7 @@ def _run_scan(
     verbose: bool,
     dashboard: bool = False,
     output_label: Path | None = None,
+    dashboard_locale: str = "en",
 ) -> None:
     normalized_format = report_format.value
     loaded_config = _load_cli_config(config)
@@ -566,9 +577,16 @@ def _run_scan(
         output = _resolve_output_path(output)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(rendered, encoding="utf-8")
-        status_console.print(f"Wrote {normalized_format} report to [bold]{output}[/bold]")
+        if dashboard_locale == "ko":
+            status_console.print(
+                f"{normalized_format} 리포트를 [bold]{output}[/bold]에 저장했습니다."
+            )
+        else:
+            status_console.print(f"Wrote {normalized_format} report to [bold]{output}[/bold]")
     else:
-        if dashboard:
+        if dashboard and dashboard_locale == "ko":
+            pass
+        elif dashboard:
             status_console.print(rendered)
         else:
             sys.stdout.write(rendered)
@@ -580,6 +598,7 @@ def _run_scan(
             mode=_scan_mode(result.target.kind, _is_remote_result(result)),
             verbose=verbose,
             output_label=output,
+            locale=dashboard_locale,
         )
     else:
         print_legacy_summary(console=status_console, result=result, verbose=verbose)
@@ -651,3 +670,7 @@ def _load_cli_config(config_path: Path | None) -> RepoTrustConfig:
 
 def _is_remote_result(result: ScanResult) -> bool:
     return any(finding.id.startswith("remote.") for finding in result.findings)
+
+
+def _product_locale(ctx: typer.Context) -> str:
+    return "ko" if ctx.command_path.split()[0].endswith("-kr") else "en"

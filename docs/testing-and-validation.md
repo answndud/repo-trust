@@ -36,7 +36,9 @@ printf '2\n' | .venv/bin/repo-trust --help
 printf '2\n' | .venv/bin/repo-trust html --help
 printf 'q\n' | .venv/bin/repo-trust
 printf 'q\n' | .venv/bin/repo-trust-kr
+.venv/bin/repo-trust-kr check .
 .venv/bin/repo-trust html . --output /tmp/repotrust-report.html
+.venv/bin/repo-trust-kr html . --output /tmp/repotrust-kr-report.html
 .venv/bin/repo-trust json https://github.com/answndud/repo-trust
 .venv/bin/repo-trust check https://github.com/openai/codex --parse-only
 .venv/bin/repotrust scan https://github.com/openai/codex --format json
@@ -65,6 +67,7 @@ Expected behavior:
 - `repo-trust` without a subcommand opens Console Mode with workflow cards and recent reports.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.
+- `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance.
 - Product CLI GitHub URL commands use GitHub API read-only metadata by default and never clone repositories.
 - `--parse-only` parses a GitHub URL without GitHub API access.
 - Legacy `repotrust scan` keeps parse-only GitHub URL behavior unless `--remote` is provided.

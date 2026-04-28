@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-Localized direct command help 완료. 현재 active 작업 없음
+Korean product execution UX 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

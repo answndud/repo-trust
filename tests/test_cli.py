@@ -217,8 +217,10 @@ def test_direct_kr_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
 
     assert result.exit_code == 0
     assert "로컬 경로" in stderr
-    assert "Trust Assessment" in result.stderr
-    assert "Wrote html report" in result.stderr
+    assert "신뢰도 검사 결과" in result.stderr
+    assert "어디가 괜찮고 어디를 봐야 하나" in result.stderr
+    assert "확인한 근거" in result.stderr
+    assert "html 리포트를" in result.stderr
     assert (tmp_path / "result").exists()
 
 
@@ -364,6 +366,91 @@ def test_direct_cli_check_github_url_prints_terminal_dashboard(monkeypatch):
     assert "Confidence" in result.stderr
     assert "Coverage" in result.stderr
     assert "remote.github_metadata_collected" in result.stderr
+
+
+def test_direct_kr_cli_check_github_url_prints_korean_dashboard(monkeypatch):
+    def fake_scan(target_text, weights=None, remote=False):
+        finding = Finding(
+            id="remote.github_metadata_collected",
+            category=Category.TARGET,
+            severity=Severity.INFO,
+            message="GitHub repository metadata was collected.",
+            evidence="Repository metadata endpoint returned a successful response.",
+            recommendation="Continue remote scan.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        direct_kr_app,
+        ["check", "https://github.com/owner/repo"],
+        prog_name="repo-trust-kr",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "# RepoTrust Report" not in result.stderr
+    assert "RepoTrust 한국어 모드" in stderr
+    assert "검사 방식 GitHub 원격 검사" in stderr
+    assert "신뢰도 검사 결과" in stderr
+    assert "결론" in stderr
+    assert "확실도" in stderr
+    assert "어디가 괜찮고 어디를 봐야 하나" in stderr
+    assert "확인한 근거" in stderr
+    assert "먼저 볼 문제" in stderr
+    assert "다음에 할 일" in stderr
+    assert "정보" in stderr
+
+
+def test_direct_kr_cli_json_writes_file_with_korean_status(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
+    def fake_scan(target_text, weights=None, remote=False):
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=[],
+            score=calculate_score([]),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        direct_kr_app,
+        ["json", "https://github.com/owner/repo"],
+        prog_name="repo-trust-kr",
+    )
+
+    output = tmp_path / "result" / f"repo-{date.today().isoformat()}.json"
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert output.exists()
+    assert "json 리포트를" in result.stderr
+    assert "신뢰도 검사 결과" in result.stderr
+    assert "결과 파일" in result.stderr
+    data = json.loads(output.read_text(encoding="utf-8"))
+    assert data["schema_version"] == "1.1"
+    assert data["target"]["kind"] == "github"
 
 
 def test_direct_cli_parse_only_github_url_skips_remote(monkeypatch, tmp_path):
