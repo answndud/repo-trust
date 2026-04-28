@@ -186,3 +186,12 @@
 - 코드/문서: `AGENTS.md`, `docs/development-workflow.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `37 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 하네스/문서에 한정됨을 확인했다.
 - 결과: RepoTrust는 post-v1 작업을 작은 story 단위로 반복 진행할 준비가 됐다. 다음 작업은 `Remote GitHub scan MVP story 1: CLI/API boundary`다.
+
+## 019: Remote GitHub scan MVP story 1 - CLI/API boundary
+
+- 완료일: 2026-04-28
+- 배경: Remote GitHub scan 구현 전에 CLI contract와 네트워크 없는 기본 동작을 먼저 고정해야 했다. v1의 GitHub URL parse-only 동작은 유지하면서, 명시적 `--remote`만 별도 remote scanner boundary로 보내야 했다.
+- 변경 내용: `repotrust scan <target> --remote` 옵션을 추가했다. local path에서 `--remote`를 사용하면 usage error로 실패한다. GitHub URL without `--remote`는 기존 `target.github_not_fetched` parse-only finding을 유지한다. GitHub URL with `--remote`는 새 `remote.py` boundary로 들어가며 현재는 네트워크 없이 `remote.github_not_implemented` finding을 반환한다.
+- 코드/문서: `src/repotrust/cli.py`, `src/repotrust/scanner.py`, `src/repotrust/remote.py`, `tests/test_cli.py`, `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `40 passed`를 확인했다. GitHub URL parse-only JSON smoke check는 `target.github_not_fetched`를 반환했다. GitHub URL + `--remote` JSON smoke check는 `remote.github_not_implemented`를 반환했다. local path + `--remote`는 exit code 2와 `--remote can only be used with GitHub URL targets` usage error를 반환했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 CLI/API boundary와 문서에 한정됨을 확인했다.
+- 결과: Remote scan의 명시적 opt-in 경계가 생겼고, 다음 story에서 GitHub client와 실패 finding 변환을 구현할 수 있게 됐다. 다음 작업은 `Remote GitHub scan MVP story 2: GitHub client and failure findings`다.

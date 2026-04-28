@@ -24,10 +24,16 @@ repotrust scan . --config /path/to/repotrust.toml
 repotrust --version
 ```
 
-GitHub URLs are parsed in v1, but repositories are not cloned or fetched yet.
+GitHub URLs are parsed by default, but repositories are not cloned or fetched.
 
 ```bash
 repotrust scan https://github.com/openai/codex --format json
+```
+
+Remote GitHub scanning is being added behind explicit opt-in. The current boundary does not perform network access yet:
+
+```bash
+repotrust scan https://github.com/openai/codex --remote --format json
 ```
 
 ## Development

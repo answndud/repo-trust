@@ -23,6 +23,7 @@ repotrust scan <target>
 - `--output <path>`
 - `--fail-under <score>`
 - `--config <path>`
+- `--remote`
 - `--verbose`
 
 ## 데이터 흐름
@@ -172,6 +173,13 @@ Implementation note: Python 3.11+ includes `tomllib`; Python 3.10 uses the condi
 ## Remote GitHub Scan Design
 
 Remote GitHub scan은 v1 이후의 명시적 opt-in 확장으로 설계한다. GitHub URL을 입력했다는 이유만으로 네트워크 scan을 암묵적으로 실행하지 않는다.
+
+Current implementation boundary:
+
+- `--remote` CLI option exists.
+- `--remote` is rejected for local path targets.
+- GitHub URL without `--remote` remains parse-only.
+- GitHub URL with `--remote` enters `remote.py` and currently returns `remote.github_not_implemented` without network access.
 
 Interface:
 

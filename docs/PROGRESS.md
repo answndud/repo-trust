@@ -12,11 +12,11 @@
 
 ## 현재 작업
 
-Remote GitHub scan MVP story 1: CLI/API boundary
+Remote GitHub scan MVP story 2: GitHub client and failure findings
 
 ## 개발 상태 요약
 
-Ralph-style loop 규칙을 하네스에 반영했다. 다음 story는 remote scan의 CLI/API boundary다. 먼저 `--remote` 옵션과 validation/no-network 기본 동작을 고정하고, 실제 GitHub HTTP client 구현은 다음 story로 분리한다.
+Remote CLI/API boundary story를 완료했다. 이제 GitHub REST client abstraction과 실패 응답을 finding으로 변환하는 동작을 구현한다. 실제 metadata detection은 다음 story로 분리하고, 이번 story는 fake transport 기반 실패 모드 테스트에 집중한다.
 
 ## Blocker
 
@@ -24,11 +24,11 @@ Ralph-style loop 규칙을 하네스에 반영했다. 다음 story는 remote sca
 
 ## 최근 검증
 
-`git push origin main` 성공: `0ea0bc4..f5852d0 main -> main`. Ralph 참고 자료에서는 PRD item을 작은 story로 쪼개고, 각 반복에서 하나의 story를 구현, 검사, 커밋, 진행 기록 갱신한 뒤 다음 story로 넘어가는 방식을 확인했다. Loop 문서 변경 후 `.venv/bin/python -m pytest -q`는 `37 passed`다.
+Remote boundary story 검증: `.venv/bin/python -m pytest -q`는 `40 passed`; GitHub URL parse-only JSON smoke check는 `target.github_not_fetched`; GitHub URL + `--remote` smoke check는 `remote.github_not_implemented`; local path + `--remote`는 exit code 2로 실패했다.
 
 ## 다음 액션
 
-1. `cli.py`에 `--remote` 옵션을 추가한다.
-2. local path + `--remote` usage error를 구현한다.
-3. GitHub URL parse-only 기본 동작을 유지하는 테스트를 보강한다.
-4. GitHub URL + `--remote`가 remote scanner boundary로 들어가는 최소 구조를 추가한다.
+1. fake transport가 가능한 GitHub client 경계를 설계한다.
+2. repository metadata 요청 실패를 finding으로 변환한다.
+3. unauthorized/not-found/rate-limited/api-error 테스트를 추가한다.
+4. token 값이 report/finding에 노출되지 않는 테스트를 추가한다.

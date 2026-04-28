@@ -9,6 +9,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 - `src/repotrust/scanner.py`: orchestration for local targets and GitHub URL targets.
 - `src/repotrust/targets.py`: target classification and GitHub URL parsing.
 - `src/repotrust/detection.py`: root-level repository file detection.
+- `src/repotrust/remote.py`: explicit GitHub remote scan boundary and future remote implementation home.
 - `src/repotrust/rules.py`: deterministic rule checks that emit findings.
 - `src/repotrust/scoring.py`: category scores, total score, grade, and risk label.
 - `src/repotrust/reports.py`: Markdown, JSON, and static HTML report rendering.
@@ -25,7 +26,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 6. `scoring.calculate_score()` converts findings into category and total scores.
 7. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
 
-GitHub URLs currently stop after parsing. The result includes an informational finding that remote scanning is not enabled.
+GitHub URLs without `--remote` stop after parsing. The result includes an informational finding that remote scanning is not enabled. GitHub URLs with `--remote` enter `remote.py`; the HTTP client implementation is still split into later post-v1 stories.
 
 ## Extension Boundaries
 
@@ -34,6 +35,7 @@ GitHub URLs currently stop after parsing. The result includes an informational f
 - Add or adjust scoring weights only in `scoring.py`.
 - Add report presentation changes in `reports.py`, without re-checking repository state.
 - Add CLI options in `cli.py`, then cover them with CLI tests.
+- Add remote GitHub behavior in `remote.py`; keep local scanning deterministic and network-free.
 
 ## Design Constraints
 

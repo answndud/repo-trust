@@ -12,7 +12,7 @@ from rich.table import Table
 from . import __version__
 from .config import ConfigError, RepoTrustConfig, load_config
 from .reports import render_report
-from .scanner import scan as scan_target
+from .scanner import ScanInputError, scan as scan_target
 
 app = typer.Typer(
     help="Evaluate repository trust signals and generate reports.",
@@ -66,6 +66,10 @@ def scan(
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
     ] = None,
+    remote: Annotated[
+        bool,
+        typer.Option("--remote", help="Use GitHub API remote scan for GitHub URL targets."),
+    ] = False,
     fail_under: Annotated[
         int | None,
         typer.Option("--fail-under", help="Exit with code 1 if total score is below this value."),
@@ -79,7 +83,10 @@ def scan(
     normalized_format = report_format.value
     loaded_config = _load_cli_config(config)
 
-    result = scan_target(target, weights=loaded_config.weights)
+    try:
+        result = scan_target(target, weights=loaded_config.weights, remote=remote)
+    except ScanInputError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--remote") from exc
     rendered = render_report(result, normalized_format)
     if output:
         output.parent.mkdir(parents=True, exist_ok=True)
