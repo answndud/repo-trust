@@ -5,11 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from rich.console import Console
-from rich.panel import Panel
 from rich.prompt import Prompt
-from rich.table import Table
 
 from .console_i18n import ConsoleLocale, ConsoleText, console_text
+from .terminal_theme import badge, data_table, header, kv, muted, section
 
 
 @dataclass(frozen=True)
@@ -38,7 +37,7 @@ def run_console_mode(
     text = console_text(locale)
     _print_console_home(console=console, version=version, result_dir=result_dir, text=text)
     choice = Prompt.ask(
-        text["select_prompt"],
+        str(text["select_prompt"]),
         choices=["1", "2", "3", "4", "5", "6", "q"],
         default="1",
         console=console,
@@ -63,41 +62,37 @@ def _print_console_home(
     result_dir: Path,
     text: ConsoleText,
 ) -> None:
-    console.print(
-        Panel(
-            f"[bold cyan]{text['console_title']}[/bold cyan]\n"
-            f"[dim]{text['tagline']}[/dim]\n\n"
-            f"[bold]{text['mission_label']}[/bold]\n"
-            f"  {text['mission']}\n\n"
-            f"[bold]{text['command_mode_label']}[/bold]\n"
-            f"  {text['command_mode']}",
-            title=str(text["brand_title"]),
-            subtitle=f"v{version}",
-            border_style="cyan",
+    console.print(header(str(text["brand_title"]).lower(), "console"))
+    console.print(muted(f"{text['console_title']}  v{version}"))
+    console.print(str(text["tagline"]))
+    console.print(kv(str(text["mission_label"]).lower(), str(text["mission"])))
+    console.print(kv(str(text["command_mode_label"]).lower(), str(text["command_mode"])))
+    console.print(section(str(text["workflows_title"]).lower()))
+    for line in _workflow_lines(text):
+        console.print(line)
+    console.print(section(str(text["recent_reports_title"]).lower()))
+    for line in _recent_summary_lines(result_dir, text):
+        console.print(line)
+
+
+def _workflow_lines(text: ConsoleText) -> list[str]:
+    lines = []
+    for key, action, use_when, output in text["workflows"]:
+        key_label = f"0{key}" if str(key).isdigit() else str(key)
+        output_label = str(output).lower()
+        lines.append(
+            f"  {badge(key_label, bold=False)}  "
+            f"[bold]{action}[/bold] [dim]->[/dim] {output_label:<12} "
+            f"[dim]{use_when}[/dim]"
         )
-    )
-    console.print(_workflow_table(text))
-    console.print(_recent_summary_panel(result_dir, text))
+    return lines
 
 
-def _workflow_table(text: ConsoleText) -> Table:
-    table = Table(title=str(text["workflows_title"]), header_style="bold cyan", show_lines=True)
-    table.add_column(str(text["key_column"]), justify="center", style="cyan", no_wrap=True)
-    table.add_column(str(text["action_column"]), style="bold")
-    table.add_column(str(text["use_when_column"]))
-    table.add_column(str(text["output_column"]))
-    for row in text["workflows"]:
-        table.add_row(*row)
-    return table
-
-
-def _recent_summary_panel(result_dir: Path, text: ConsoleText) -> Panel:
+def _recent_summary_lines(result_dir: Path, text: ConsoleText) -> list[str]:
     reports = _recent_reports(result_dir, limit=3)
     if not reports:
-        body = f"[dim]{text['no_saved_reports']}[/dim]"
-    else:
-        body = "\n".join(f"  {path}" for path in reports)
-    return Panel(body, title=str(text["recent_reports_title"]), border_style="dim")
+        return [f"  {muted(text['no_saved_reports'])}"]
+    return [f"  {muted(path)}" for path in reports]
 
 
 def _print_recent_reports(
@@ -107,8 +102,9 @@ def _print_recent_reports(
     text: ConsoleText,
 ) -> None:
     reports = _recent_reports(result_dir, limit=10)
-    table = Table(title=str(text["recent_reports_title"]), header_style="bold cyan")
-    table.add_column(str(text["number_column"]), justify="right", style="cyan")
+    console.print(section(str(text["recent_reports_title"]).lower()))
+    table = data_table()
+    table.add_column(str(text["number_column"]), justify="right", style="green")
     table.add_column(str(text["path_column"]))
     table.add_column(str(text["type_column"]))
     if reports:

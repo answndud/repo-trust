@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-CLI help i18n extraction 완료. 현재 active 작업 없음
+Terminal hacker-style UX redesign 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

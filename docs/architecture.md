@@ -10,6 +10,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 - `src/repotrust/dashboard.py`: locale-aware Command Mode terminal assessment renderer and legacy summary renderer.
 - `src/repotrust/dashboard_i18n.py`: localized dashboard labels, finding message translations, recommendation translations, and beginner-oriented Korean status text.
 - `src/repotrust/help_i18n.py`: localized product help text and help language selector for `repo-trust` direct commands.
+- `src/repotrust/terminal_theme.py`: shared compact terminal styling helpers for Console Mode, Command Mode dashboards, and legacy summaries.
 - `src/repotrust/evidence.py`: shared evidence matrix status mapping for found, missing, and unknown signals.
 - `src/repotrust/remote_markers.py`: shared remote endpoint labels used by remote findings and evidence unknown mapping.
 - `src/repotrust/config.py`: explicit TOML config loading and validation.
@@ -34,7 +35,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 7. `ScanResult` attaches an `Assessment` with verdict, confidence, coverage, reasons, and next actions.
 8. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
 
-The product CLI treats GitHub URLs as remote scans by default for `repo-trust html/json/check`. Users can pass `--parse-only` to inspect the URL without GitHub API access. `repo-trust-kr` provides the same product commands and workflows with Korean Console Mode text, Korean status messages, and Korean terminal dashboard labels. Product `--help` prompts for English or Korean help before printing root or direct command help. Report rendering, JSON shape, and scan behavior are shared. The legacy `repotrust scan` command keeps its original explicit `--remote` opt-in behavior. Remote scans enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
+The product CLI treats GitHub URLs as remote scans by default for `repo-trust html/json/check`. Users can pass `--parse-only` to inspect the URL without GitHub API access. `repo-trust-kr` provides the same product commands and workflows with Korean Console Mode text, Korean status messages, and Korean terminal dashboard labels. Product `--help` prompts for English or Korean help before printing root or direct command help. Console Mode, Command Mode dashboards, and legacy summaries share a compact terminal theme that avoids heavy Rich panels and line-heavy tables. Report rendering, JSON shape, and scan behavior are shared. The legacy `repotrust scan` command keeps its original explicit `--remote` opt-in behavior. Remote scans enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
 
 ## Extension Boundaries
 
@@ -42,6 +43,7 @@ The product CLI treats GitHub URLs as remote scans by default for `repo-trust ht
 - Add new trust checks in `rules.py`.
 - Add or adjust scoring weights only in `scoring.py`.
 - Add report presentation changes in `reports.py`, without re-checking repository state.
+- Add terminal presentation changes through `terminal_theme.py`, `console.py`, or `dashboard.py`; do not put scanning or scoring decisions in terminal renderers.
 - Add CLI options in `cli.py`, then cover them with CLI tests.
 - Add remote GitHub behavior in `remote.py`; keep local scanning deterministic and network-free.
 

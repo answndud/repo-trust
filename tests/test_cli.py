@@ -19,10 +19,15 @@ from repotrust.scoring import calculate_score
 
 runner = CliRunner()
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+HEAVY_BOX_CHARS = {"╭", "╰", "┏", "┗", "├", "┼"}
 
 
 def plain_output(text: str) -> str:
     return ANSI_ESCAPE_RE.sub("", text)
+
+
+def assert_no_heavy_box(text: str) -> None:
+    assert not (set(text) & HEAVY_BOX_CHARS)
 
 
 def test_cli_version():
@@ -117,9 +122,11 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "RepoTrust Console" in stderr
-    assert "Workflows" in stderr
+    assert "workflows" in stderr
     assert "Scan local repository" in stderr
     assert "Scan GitHub URL" in stderr
+    assert "repo-trust // console" in stderr
+    assert_no_heavy_box(stderr)
 
 
 def test_direct_kr_cli_root_starts_korean_interactive_launcher():
@@ -134,6 +141,7 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "GitHub URL 검사" in stderr
     assert "세션을 종료했습니다." in stderr
     assert "Scan local repository" not in stderr
+    assert_no_heavy_box(stderr)
 
 
 def test_direct_cli_help_shows_product_commands_without_launcher():
@@ -141,7 +149,7 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "Help language" in stdout
+    assert "help language" in stdout
     assert "Usage:" in stdout
     assert "html" in stdout
     assert "json" in stdout
@@ -235,9 +243,10 @@ def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert "Recent Reports" in result.stderr
+    assert "recent reports" in result.stderr
     assert "repo-2026-04-28.html" in result.stderr
     assert "repo-2026-04-28.json" in result.stderr
+    assert_no_heavy_box(plain_output(result.stderr))
 
 
 def test_direct_cli_html_github_url_remote_scan_writes_default_output(monkeypatch, tmp_path):
@@ -404,7 +413,7 @@ def test_direct_kr_cli_check_github_url_prints_korean_dashboard(monkeypatch):
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "# RepoTrust Report" not in result.stderr
-    assert "RepoTrust 한국어 모드" in stderr
+    assert "repotrust // 명령 모드" in stderr
     assert "검사 방식 GitHub 원격 검사" in stderr
     assert "신뢰도 검사 결과" in stderr
     assert "결론" in stderr

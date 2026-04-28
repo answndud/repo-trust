@@ -45,17 +45,26 @@ repo-trust-kr
 **화면 예시**
 
 ```text
-RepoTrust 한국어 콘솔
+repo-trust // console
+RepoTrust 한국어 콘솔  v0.1.0
 dependency, agent, audit를 위한 저장소 신뢰도 점검 도구
+목적           저장소를 설치하거나 의존성으로 추가하거나 AI agent에게 맡겨도
+되는지 확인 가능한 근거로 판단합니다.
+명령 모드        repo-trust html <대상>   repo-trust json <대상>   repo-trust
+check <대상>
 
-워크플로우
-1  로컬 저장소 검사      이미 clone한 폴더가 있을 때
-2  GitHub URL 검사       브라우저용 원격 리포트가 필요할 때
-3  GitHub URL 내보내기   자동화용 데이터가 필요할 때
-4  빠른 점검             터미널에서 바로 판단할 때
-5  최근 리포트 목록      이전 결과 파일을 찾을 때
-6  명령어 도움말         직접 명령과 옵션을 확인할 때
-q  종료
+-- 워크플로우
+  01  로컬 저장소 검사 -> html 리포트     이미 clone한 폴더가 있을 때
+  02  GitHub URL 검사 -> html 리포트     브라우저용 원격 리포트가 필요할 때
+  03  GitHub URL 내보내기 -> json 리포트     자동화용 데이터가 필요할 때
+  04  빠른 점검 -> 대시보드         터미널에서 바로 판단할 때
+  05  최근 리포트 목록 -> 파일 목록        이전 결과 파일을 찾을 때
+  06  명령어 도움말 -> 도움말          직접 명령과 옵션을 확인할 때
+  q  종료 -> 종료           검사하지 않음
+
+-- 최근 리포트
+  result/codex-YYYY-MM-DD.html
+선택> [1/2/3/4/5/6/q] (1):
 ```
 
 5번 workflow는 파일을 직접 열거나 브라우저를 실행하지 않습니다. `result/` 폴더에 있는 최근 HTML/JSON 리포트 목록만 보여줍니다.
@@ -135,17 +144,22 @@ repo-trust-kr check https://github.com/openai/codex
 아래는 출력 형태를 보여주는 예시입니다. 실제 값은 GitHub API 응답, rate limit, 인증 상태, 저장소의 최신 상태에 따라 달라집니다.
 
 ```text
-RepoTrust 한국어 모드
-검사 대상 https://github.com/openai/codex
+repotrust // 명령 모드
+검사 대상        https://github.com/openai/codex
 검사 방식 GitHub 원격 검사  리포트 형식 터미널
 
-신뢰도 검사 결과
-결론 현재 검사 기준으로 사용 가능
+-- 신뢰도 검사 결과
+결론           현재 검사 기준으로 사용 가능
 확실도 높음  검사 범위 충분히 확인
 점수 92/100  등급 A  위험도 위험 낮음
-발견 항목 높음:0  보통:0  낮음:0  정보:1
+발견 항목        높음:0  보통:0  낮음:0  정보:1
 
-다음에 할 일
+-- 확인한 근거
+확인 항목             상태  근거
+README 설명서         있음  README.md
+라이선스              있음  LICENSE
+
+-- 다음에 할 일
 1. 점수와 근거가 기대와 맞는지 확인하세요.
 2. 공유하거나 나중에 보려면 html 명령으로 HTML 리포트를 따로 만드세요.
 ```
@@ -185,10 +199,10 @@ repo-trust --help
 **화면 예시**
 
 ```text
-Help language / 도움말 언어
-1. English
-2. 한국어
-Select [1]:
+help language / 도움말 언어
+01 english
+02 한국어
+select> [1]:
 ```
 
 `1`을 입력하면 영어 도움말이 나오고, `2`를 입력하면 한국어 도움말이 나옵니다. `repo-trust-kr --help`, `repo-trust html --help`, `repo-trust json --help`, `repo-trust check --help`도 같은 방식으로 동작합니다.

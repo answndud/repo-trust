@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
 
 from .dashboard_i18n import (
@@ -24,6 +23,7 @@ from .dashboard_i18n import (
 )
 from .evidence import evidence_rows
 from .models import Finding, ScanResult
+from .terminal_theme import badge, data_table, header, inline_kv, kv, section, status_style
 
 
 def print_command_header(
@@ -35,26 +35,16 @@ def print_command_header(
     locale: str = "en",
 ) -> None:
     if locale == "ko":
+        console.print(header("repotrust", "명령 모드"))
+        console.print(kv("검사 대상", target))
         console.print(
-            Panel(
-                f"[bold cyan]RepoTrust 한국어 모드[/bold cyan]\n"
-                f"[dim]검사 대상[/dim] {target}\n"
-                f"[dim]검사 방식[/dim] {mode_label(mode, locale)}  "
-                f"[dim]리포트 형식[/dim] {format_label(report_format, locale)}",
-                title="명령 모드",
-                border_style="cyan",
-            )
+            f"{inline_kv('검사 방식', mode_label(mode, locale))}  "
+            f"{inline_kv('리포트 형식', format_label(report_format, locale))}"
         )
         return
-    console.print(
-        Panel(
-            f"[bold cyan]RepoTrust[/bold cyan]\n"
-            f"[dim]target[/dim] {target}\n"
-            f"[dim]mode[/dim] {mode}  [dim]format[/dim] {report_format}",
-            title="COMMAND MODE",
-            border_style="cyan",
-        )
-    )
+    console.print(header("RepoTrust", "COMMAND MODE"))
+    console.print(kv("target", target))
+    console.print(f"{inline_kv('mode', mode)}  {inline_kv('format', report_format)}")
 
 
 def print_assessment_dashboard(
@@ -66,35 +56,31 @@ def print_assessment_dashboard(
     output_label: Path | None,
     locale: str = "en",
 ) -> None:
+    console.print(section(text("assessment_title", locale)))
     console.print(
-        Panel(
-            _assessment_text(
-                result=result,
-                mode=mode,
-                output_label=output_label,
-                locale=locale,
-            ),
-            title=text("assessment_title", locale),
-            border_style=_risk_border_style(result.score.risk_label),
+        _assessment_text(
+            result=result,
+            mode=mode,
+            output_label=output_label,
+            locale=locale,
         )
     )
+    console.print(section(text("risk_breakdown_title", locale)))
     console.print(_risk_breakdown_table(result, locale=locale))
+    console.print(section(text("evidence_title", locale)))
     console.print(_evidence_table(result, locale=locale))
+    console.print(section(text("top_findings_title", locale)))
     console.print(_top_findings_table(result, locale=locale))
-    console.print(
-        Panel(
-            _next_actions_text(result, output_label, locale=locale),
-            title=text("next_actions_title", locale),
-            border_style="cyan",
-        )
-    )
+    console.print(section(text("next_actions_title", locale)))
+    console.print(_next_actions_text(result, output_label, locale=locale))
 
     if verbose and result.findings:
         print_findings(console=console, result=result, locale=locale)
 
 
 def print_legacy_summary(*, console: Console, result: ScanResult, verbose: bool) -> None:
-    table = Table(title="RepoTrust Summary")
+    console.print(section("RepoTrust Summary"))
+    table = data_table()
     table.add_column("Metric")
     table.add_column("Value")
     table.add_row("Target", result.target.raw)
@@ -109,7 +95,8 @@ def print_legacy_summary(*, console: Console, result: ScanResult, verbose: bool)
 
 
 def print_findings(*, console: Console, result: ScanResult, locale: str = "en") -> None:
-    finding_table = Table(title=text("findings_title", locale))
+    console.print(section(text("findings_title", locale)))
+    finding_table = data_table()
     finding_table.add_column(text("severity_column", locale))
     finding_table.add_column("ID")
     finding_table.add_column(text("message_column", locale))
@@ -133,35 +120,35 @@ def _assessment_text(
     assessment = result.assessment
     if locale == "ko":
         return (
-            f"[bold]결론[/bold] {_verdict(result, locale)}\n"
-            f"[bold]확실도[/bold] {_confidence_badge(assessment.confidence, locale)}  "
-            f"[bold]검사 범위[/bold] {_coverage_badge(assessment.coverage, locale)}\n"
-            f"[bold]점수[/bold] [bold cyan]{result.score.total}/{result.score.max_score}[/bold cyan]  "
-            f"[bold]등급[/bold] [bold]{result.score.grade}[/bold]  "
-            f"[bold]위험도[/bold] {_risk_badge(result.score.risk_label, locale)}\n"
-            f"[bold]발견 항목[/bold] {_finding_counts(result, locale)}\n\n"
+            f"{kv('결론', _verdict(result, locale))}\n"
+            f"{inline_kv('확실도', _confidence_badge(assessment.confidence, locale))}  "
+            f"{inline_kv('검사 범위', _coverage_badge(assessment.coverage, locale))}\n"
+            f"{inline_kv('점수', badge(f'{result.score.total}/{result.score.max_score}', style='green'))}  "
+            f"{inline_kv('등급', badge(result.score.grade, style='green'))}  "
+            f"{inline_kv('위험도', _risk_badge(result.score.risk_label, locale))}\n"
+            f"{kv('발견 항목', _finding_counts(result, locale))}\n\n"
             f"{beginner_summary(result)}\n\n"
-            f"[dim]검사 대상[/dim] {result.target.raw}\n"
-            f"[dim]검사 방식[/dim] {mode_label(mode, locale)}\n"
-            f"[dim]결과 파일[/dim] {output}"
+            f"{kv('검사 대상', result.target.raw)}\n"
+            f"{kv('검사 방식', mode_label(mode, locale))}\n"
+            f"{kv('결과 파일', output)}"
         )
     return (
-        f"[bold]Verdict[/bold] {_verdict(result, locale)}  [dim]{assessment.verdict}[/dim]\n"
-        f"[bold]Confidence[/bold] {_confidence_badge(assessment.confidence, locale)}  "
-        f"[bold]Coverage[/bold] {_coverage_badge(assessment.coverage, locale)}\n"
-        f"[bold]Score[/bold] [bold cyan]{result.score.total}/{result.score.max_score}[/bold cyan]  "
-        f"[bold]Grade[/bold] [bold]{result.score.grade}[/bold]  "
-        f"[bold]Risk[/bold] {_risk_badge(result.score.risk_label, locale)}\n"
-        f"[bold]Findings[/bold] {_finding_counts(result, locale)}\n\n"
+        f"{kv('Verdict', f'{_verdict(result, locale)}  [dim]{assessment.verdict}[/dim]')}\n"
+        f"{inline_kv('Confidence', _confidence_badge(assessment.confidence, locale))}  "
+        f"{inline_kv('Coverage', _coverage_badge(assessment.coverage, locale))}\n"
+        f"{inline_kv('Score', badge(f'{result.score.total}/{result.score.max_score}', style='green'))}  "
+        f"{inline_kv('Grade', badge(result.score.grade, style='green'))}  "
+        f"{inline_kv('Risk', _risk_badge(result.score.risk_label, locale))}\n"
+        f"{kv('Findings', _finding_counts(result, locale))}\n\n"
         f"{assessment.summary}\n\n"
-        f"[dim]Target[/dim] {result.target.raw}\n"
-        f"[dim]Mode[/dim] {mode}\n"
-        f"[dim]Output[/dim] {output}"
+        f"{kv('Target', result.target.raw)}\n"
+        f"{kv('Mode', mode)}\n"
+        f"{kv('Output', output)}"
     )
 
 
 def _risk_breakdown_table(result: ScanResult, *, locale: str) -> Table:
-    table = Table(title=text("risk_breakdown_title", locale), header_style="bold cyan")
+    table = data_table()
     table.add_column(text("area_column", locale))
     table.add_column(text("score_column", locale), justify="right")
     table.add_column(text("signal_column", locale))
@@ -177,7 +164,7 @@ def _risk_breakdown_table(result: ScanResult, *, locale: str) -> Table:
 
 
 def _evidence_table(result: ScanResult, *, locale: str) -> Table:
-    table = Table(title=text("evidence_title", locale), header_style="bold cyan")
+    table = data_table()
     table.add_column(text("signal_column", locale))
     table.add_column(text("status_column", locale))
     table.add_column(text("evidence_column", locale))
@@ -187,7 +174,7 @@ def _evidence_table(result: ScanResult, *, locale: str) -> Table:
 
 
 def _top_findings_table(result: ScanResult, *, locale: str) -> Table:
-    table = Table(title=text("top_findings_title", locale), header_style="bold cyan")
+    table = data_table()
     table.add_column(text("severity_column", locale))
     table.add_column("ID")
     table.add_column(text("recommendation_column", locale))
@@ -244,46 +231,35 @@ def _score_label(score: int, locale: str) -> str:
 
 
 def _risk_badge(risk_label: str, locale: str) -> str:
-    style = _risk_border_style(risk_label)
+    style = status_style(risk_label)
     label = localized_risk_label(risk_label) if locale == "ko" else risk_label.upper()
-    return f"[bold {style}]{label}[/bold {style}]"
-
-
-def _risk_border_style(risk_label: str) -> str:
-    normalized = risk_label.lower()
-    if "high" in normalized or "elevated" in normalized:
-        return "red"
-    if "moderate" in normalized:
-        return "yellow"
-    return "green"
+    return badge(label, style=style)
 
 
 def _verdict(result: ScanResult, locale: str) -> str:
     verdict = result.assessment.verdict
     if verdict == "do_not_install_before_review":
         if locale == "ko":
-            return "[bold red]검토 전 설치 금지[/bold red]"
-        return "[bold red]do not install before review[/bold red]"
+            return badge("검토 전 설치 금지", style="red")
+        return badge("do not install before review", style="red")
     if verdict == "insufficient_evidence":
         if locale == "ko":
-            return "[bold yellow]근거 부족[/bold yellow]"
-        return "[bold yellow]insufficient evidence[/bold yellow]"
+            return badge("근거 부족", style="yellow")
+        return badge("insufficient evidence", style="yellow")
     if verdict == "usable_after_review":
         if locale == "ko":
-            return "[bold yellow]검토 후 사용 가능[/bold yellow]"
-        return "[bold yellow]usable after review[/bold yellow]"
+            return badge("검토 후 사용 가능", style="yellow")
+        return badge("usable after review", style="yellow")
     if locale == "ko":
-        return "[bold green]현재 검사 기준으로 사용 가능[/bold green]"
-    return "[bold green]usable by current checks[/bold green]"
+        return badge("현재 검사 기준으로 사용 가능", style="green")
+    return badge("usable by current checks", style="green")
 
 
 def _confidence_badge(confidence: str, locale: str) -> str:
-    style = "green" if confidence == "high" else "yellow" if confidence == "medium" else "red"
     label = confidence_label(confidence) if locale == "ko" else confidence.upper()
-    return f"[bold {style}]{label}[/bold {style}]"
+    return badge(label, style=status_style(confidence))
 
 
 def _coverage_badge(coverage: str, locale: str) -> str:
-    style = "green" if coverage == "full" else "yellow" if coverage == "partial" else "red"
     label = coverage_label(coverage) if locale == "ko" else coverage.upper()
-    return f"[bold {style}]{label}[/bold {style}]"
+    return badge(label, style=status_style(coverage))
