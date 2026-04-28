@@ -78,3 +78,12 @@
 - 코드/문서: `README.md`, `SECURITY.md`, `.github/workflows/ci.yml`, `.github/dependabot.yml`을 추가/수정했다. `src/repotrust/rules.py`는 `python -m pip` 형태를 install command로 인식하도록 수정했다. `tests/test_scanner.py`에는 해당 형태가 `install.no_commands`를 만들지 않는 테스트를 추가했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `22 passed`를 확인했다. 자체 스캔은 68점(D)에서 92점(A)으로 개선됐다. 남은 finding은 `hygiene.no_license`, `security.no_lockfile` 두 개다.
 - 결과: RepoTrust 저장소 자체가 README/보안/CI/Dependabot 신호를 갖추게 됐다. 다음 작업은 LICENSE와 lockfile 도입 여부를 결정하는 것이다.
+
+## 007: LICENSE와 lockfile 정책 결정
+
+- 완료일: 2026-04-28
+- 배경: 자체 스캔 기준 남은 finding은 `hygiene.no_license`, `security.no_lockfile` 두 개였다. 다만 LICENSE는 법적/소유자 선택이 필요하고, lockfile은 프로젝트 표준 도구 선택이 필요하다.
+- 변경 내용: LICENSE는 임의로 MIT 등으로 추가하지 않기로 결정했다. lockfile도 현재 `uv`나 `pip-tools`가 설치되어 있지 않고 프로젝트 표준 도구가 정해져 있지 않으므로 임의 생성하지 않기로 결정했다. 사용자가 요청하지 않으면 매 작업마다 원격 push하지 않는 운영 규칙을 `AGENTS.md`에 추가했다.
+- 코드/문서: 코드 변경은 없었다. `AGENTS.md`에 push 운영 규칙을 추가했고, active 작업 문서를 작업 시작/완료 상태에 맞게 갱신했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `22 passed`를 확인했다. 자체 스캔은 92/100, A 상태를 유지했고 남은 finding은 `security.no_lockfile`, `hygiene.no_license`이다.
+- 결과: 정책 선택이 필요한 항목을 임의로 처리하지 않고 보류했다. 현재 active 작업은 없다.
