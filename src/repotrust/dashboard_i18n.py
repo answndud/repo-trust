@@ -323,7 +323,7 @@ def message_text(message: str, locale: str) -> str:
 
 def status_text(row: EvidenceRow, locale: str) -> str:
     if row.status == "found":
-        return "[green]있음[/green]" if locale == "ko" else "[green]found[/green]"
+        return "[blue]있음[/blue]" if locale == "ko" else "[blue]found[/blue]"
     if row.status == "unknown":
         return "[yellow]확인 못함[/yellow]" if locale == "ko" else "[yellow]unknown[/yellow]"
     return "[red]없음[/red]" if locale == "ko" else "[red]missing[/red]"

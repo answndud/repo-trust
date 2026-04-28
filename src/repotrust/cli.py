@@ -434,11 +434,7 @@ def _run_scan(
         else:
             status_console.print(f"Wrote {normalized_format} report to [bold]{output}[/bold]")
     else:
-        if dashboard and dashboard_locale == "ko":
-            pass
-        elif dashboard:
-            status_console.print(rendered)
-        else:
+        if not dashboard:
             sys.stdout.write(rendered)
 
     if dashboard:

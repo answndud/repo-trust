@@ -592,11 +592,11 @@
 - 검증: `.venv/bin/python -m pytest -q`는 `89 passed`였다. `printf '2\n' | .venv/bin/repo-trust --help`와 `printf '2\n' | .venv/bin/repo-trust html --help`로 한국어 help selector와 direct command help를 확인했다. `git diff --check`도 통과했다.
 - 결과: CLI help 문구 data와 command orchestration이 분리됐고, `repo-trust`/`repo-trust-kr` help 언어 선택 동작은 유지된다. 현재 active 작업은 없다.
 
-## 064: Terminal hacker-style UX redesign
+## 064: Kali-style terminal UX repair
 
 - 완료일: 2026-04-28
-- 배경: Console Mode와 Command Mode terminal UI가 cyan Panel, 굵은 table line, 반복 박스 중심이라 실제 개발/보안 CLI보다 데모 화면처럼 보였다.
-- 변경 내용: `src/repotrust/terminal_theme.py`를 추가해 muted green/amber/red 중심의 compact terminal theme helper를 분리했다. Console Mode 첫 화면은 큰 박스와 `show_lines=True` table 대신 `repo-trust // console`, compact workflow list, inline recent reports 섹션으로 바꿨다. Command Mode dashboard, legacy summary, verbose findings, help language selector도 같은 절제된 terminal style로 맞췄다. JSON/HTML/scoring/assessment contract는 변경하지 않았다.
-- 코드/문서: `src/repotrust/terminal_theme.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/dashboard.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
-- 검증: `.venv/bin/python -m pytest -q`는 `89 passed`였다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `.venv/bin/repo-trust check .`, `.venv/bin/repo-trust-kr check .`, `printf '2\n' | .venv/bin/repo-trust --help`, `.venv/bin/repo-trust html . --output /tmp/repotrust-terminal-theme.html` smoke를 확인했다. `git diff --check`도 통과했다.
-- 결과: 터미널 UX 전체가 heavy Rich box를 줄인 compact hacker-style CLI 화면으로 통일됐고, 기존 CLI 계약과 report contract는 유지된다. 현재 active 작업은 없다.
+- 배경: 이전 `e882fcc Redesign terminal UX theme`는 `repo-trust // console` 스타일과 green 중심 색상이 실제 Kali-like terminal UX와 맞지 않았다.
+- 변경 내용: `git revert --no-commit e882fcc`로 실패한 변경을 되돌린 뒤, `src/repotrust/terminal_theme.py`를 Kali prompt primitive 중심으로 다시 작성했다. Console Mode, Command Mode dashboard, help selector, legacy summary가 `┌──(repotrust㉿...)-[...]`와 `└─$` 구조를 공유한다. Product terminal renderer에서 `cyan`, `magenta`, `pink`, `bright_green`, `green`, 실패 화면 문구가 재도입되지 않도록 CLI test를 추가했다. `repo-trust check`는 Markdown block을 앞에 붙이지 않고 terminal dashboard만 출력한다. JSON/HTML/scoring/assessment contract는 변경하지 않았다.
+- 코드/문서: `src/repotrust/cli.py`, `src/repotrust/terminal_theme.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/dashboard.py`, `src/repotrust/dashboard_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `90 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `.venv/bin/repo-trust check .`, `.venv/bin/repo-trust-kr check .`, `printf '2\n' | .venv/bin/repo-trust --help`, `.venv/bin/repo-trust html . --output /tmp/repotrust-kali-terminal.html` smoke를 확인했다.
+- 결과: 터미널 UX는 Kali prompt/MOTD 스타일로 복구됐고, 이미 push된 실패 커밋은 force push 없이 corrective commit으로 바로잡을 준비가 됐다. 현재 active 작업은 없다.

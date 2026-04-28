@@ -23,7 +23,15 @@ from .dashboard_i18n import (
 )
 from .evidence import evidence_rows
 from .models import Finding, ScanResult
-from .terminal_theme import badge, data_table, header, inline_kv, kv, section, status_style
+from .terminal_theme import (
+    badge,
+    kali_inline_kv,
+    kali_kv,
+    kali_prompt_header,
+    kali_section,
+    kali_table,
+    state_style,
+)
 
 
 def print_command_header(
@@ -35,16 +43,20 @@ def print_command_header(
     locale: str = "en",
 ) -> None:
     if locale == "ko":
-        console.print(header("repotrust", "명령 모드"))
-        console.print(kv("검사 대상", target))
+        console.print(kali_prompt_header("scan", "target"))
+        console.print(kali_kv("검사 대상", target))
         console.print(
-            f"{inline_kv('검사 방식', mode_label(mode, locale))}  "
-            f"{inline_kv('리포트 형식', format_label(report_format, locale))}"
+            f"[bright_black]│[/] "
+            f"{kali_inline_kv('검사 방식', mode_label(mode, locale))}  "
+            f"{kali_inline_kv('리포트 형식', format_label(report_format, locale))}"
         )
         return
-    console.print(header("RepoTrust", "COMMAND MODE"))
-    console.print(kv("target", target))
-    console.print(f"{inline_kv('mode', mode)}  {inline_kv('format', report_format)}")
+    console.print(kali_prompt_header("scan", "target"))
+    console.print(kali_kv("target", target))
+    console.print(
+        f"[bright_black]│[/] "
+        f"{kali_inline_kv('mode', mode)}  {kali_inline_kv('format', report_format)}"
+    )
 
 
 def print_assessment_dashboard(
@@ -56,7 +68,7 @@ def print_assessment_dashboard(
     output_label: Path | None,
     locale: str = "en",
 ) -> None:
-    console.print(section(text("assessment_title", locale)))
+    console.print(kali_section(text("assessment_title", locale)))
     console.print(
         _assessment_text(
             result=result,
@@ -65,13 +77,13 @@ def print_assessment_dashboard(
             locale=locale,
         )
     )
-    console.print(section(text("risk_breakdown_title", locale)))
+    console.print(kali_section(text("risk_breakdown_title", locale)))
     console.print(_risk_breakdown_table(result, locale=locale))
-    console.print(section(text("evidence_title", locale)))
+    console.print(kali_section(text("evidence_title", locale)))
     console.print(_evidence_table(result, locale=locale))
-    console.print(section(text("top_findings_title", locale)))
+    console.print(kali_section(text("top_findings_title", locale)))
     console.print(_top_findings_table(result, locale=locale))
-    console.print(section(text("next_actions_title", locale)))
+    console.print(kali_section(text("next_actions_title", locale)))
     console.print(_next_actions_text(result, output_label, locale=locale))
 
     if verbose and result.findings:
@@ -79,8 +91,8 @@ def print_assessment_dashboard(
 
 
 def print_legacy_summary(*, console: Console, result: ScanResult, verbose: bool) -> None:
-    console.print(section("RepoTrust Summary"))
-    table = data_table()
+    console.print(kali_section("RepoTrust Summary"))
+    table = kali_table()
     table.add_column("Metric")
     table.add_column("Value")
     table.add_row("Target", result.target.raw)
@@ -95,8 +107,8 @@ def print_legacy_summary(*, console: Console, result: ScanResult, verbose: bool)
 
 
 def print_findings(*, console: Console, result: ScanResult, locale: str = "en") -> None:
-    console.print(section(text("findings_title", locale)))
-    finding_table = data_table()
+    console.print(kali_section(text("findings_title", locale)))
+    finding_table = kali_table()
     finding_table.add_column(text("severity_column", locale))
     finding_table.add_column("ID")
     finding_table.add_column(text("message_column", locale))
@@ -120,35 +132,39 @@ def _assessment_text(
     assessment = result.assessment
     if locale == "ko":
         return (
-            f"{kv('결론', _verdict(result, locale))}\n"
-            f"{inline_kv('확실도', _confidence_badge(assessment.confidence, locale))}  "
-            f"{inline_kv('검사 범위', _coverage_badge(assessment.coverage, locale))}\n"
-            f"{inline_kv('점수', badge(f'{result.score.total}/{result.score.max_score}', style='green'))}  "
-            f"{inline_kv('등급', badge(result.score.grade, style='green'))}  "
-            f"{inline_kv('위험도', _risk_badge(result.score.risk_label, locale))}\n"
-            f"{kv('발견 항목', _finding_counts(result, locale))}\n\n"
+            f"{kali_kv('결론', _verdict(result, locale))}\n"
+            f"[bright_black]│[/] "
+            f"{kali_inline_kv('확실도', _confidence_badge(assessment.confidence, locale))}  "
+            f"{kali_inline_kv('검사 범위', _coverage_badge(assessment.coverage, locale))}\n"
+            f"[bright_black]│[/] "
+            f"{kali_inline_kv('점수', badge(f'{result.score.total}/{result.score.max_score}', style='blue'))}  "
+            f"{kali_inline_kv('등급', badge(result.score.grade, style='white'))}  "
+            f"{kali_inline_kv('위험도', _risk_badge(result.score.risk_label, locale))}\n"
+            f"{kali_kv('발견 항목', _finding_counts(result, locale))}\n\n"
             f"{beginner_summary(result)}\n\n"
-            f"{kv('검사 대상', result.target.raw)}\n"
-            f"{kv('검사 방식', mode_label(mode, locale))}\n"
-            f"{kv('결과 파일', output)}"
+            f"{kali_kv('검사 대상', result.target.raw)}\n"
+            f"{kali_kv('검사 방식', mode_label(mode, locale))}\n"
+            f"{kali_kv('결과 파일', output)}"
         )
     return (
-        f"{kv('Verdict', f'{_verdict(result, locale)}  [dim]{assessment.verdict}[/dim]')}\n"
-        f"{inline_kv('Confidence', _confidence_badge(assessment.confidence, locale))}  "
-        f"{inline_kv('Coverage', _coverage_badge(assessment.coverage, locale))}\n"
-        f"{inline_kv('Score', badge(f'{result.score.total}/{result.score.max_score}', style='green'))}  "
-        f"{inline_kv('Grade', badge(result.score.grade, style='green'))}  "
-        f"{inline_kv('Risk', _risk_badge(result.score.risk_label, locale))}\n"
-        f"{kv('Findings', _finding_counts(result, locale))}\n\n"
+        f"{kali_kv('Verdict', f'{_verdict(result, locale)}  [bright_black]{assessment.verdict}[/]')}\n"
+        f"[bright_black]│[/] "
+        f"{kali_inline_kv('Confidence', _confidence_badge(assessment.confidence, locale))}  "
+        f"{kali_inline_kv('Coverage', _coverage_badge(assessment.coverage, locale))}\n"
+        f"[bright_black]│[/] "
+        f"{kali_inline_kv('Score', badge(f'{result.score.total}/{result.score.max_score}', style='blue'))}  "
+        f"{kali_inline_kv('Grade', badge(result.score.grade, style='white'))}  "
+        f"{kali_inline_kv('Risk', _risk_badge(result.score.risk_label, locale))}\n"
+        f"{kali_kv('Findings', _finding_counts(result, locale))}\n\n"
         f"{assessment.summary}\n\n"
-        f"{kv('Target', result.target.raw)}\n"
-        f"{kv('Mode', mode)}\n"
-        f"{kv('Output', output)}"
+        f"{kali_kv('Target', result.target.raw)}\n"
+        f"{kali_kv('Mode', mode)}\n"
+        f"{kali_kv('Output', output)}"
     )
 
 
 def _risk_breakdown_table(result: ScanResult, *, locale: str) -> Table:
-    table = data_table()
+    table = kali_table()
     table.add_column(text("area_column", locale))
     table.add_column(text("score_column", locale), justify="right")
     table.add_column(text("signal_column", locale))
@@ -164,7 +180,7 @@ def _risk_breakdown_table(result: ScanResult, *, locale: str) -> Table:
 
 
 def _evidence_table(result: ScanResult, *, locale: str) -> Table:
-    table = data_table()
+    table = kali_table()
     table.add_column(text("signal_column", locale))
     table.add_column(text("status_column", locale))
     table.add_column(text("evidence_column", locale))
@@ -174,7 +190,7 @@ def _evidence_table(result: ScanResult, *, locale: str) -> Table:
 
 
 def _top_findings_table(result: ScanResult, *, locale: str) -> Table:
-    table = data_table()
+    table = kali_table()
     table.add_column(text("severity_column", locale))
     table.add_column("ID")
     table.add_column(text("recommendation_column", locale))
@@ -218,7 +234,7 @@ def _finding_counts(result: ScanResult, locale: str) -> str:
 def _score_bar(score: int) -> str:
     filled = max(0, min(10, round(score / 10)))
     empty = 10 - filled
-    style = "green" if score >= 90 else "yellow" if score >= 70 else "red"
+    style = "blue" if score >= 90 else "yellow" if score >= 70 else "red"
     return f"[{style}]{'█' * filled}{'░' * empty}[/{style}]"
 
 
@@ -231,7 +247,7 @@ def _score_label(score: int, locale: str) -> str:
 
 
 def _risk_badge(risk_label: str, locale: str) -> str:
-    style = status_style(risk_label)
+    style = state_style(risk_label)
     label = localized_risk_label(risk_label) if locale == "ko" else risk_label.upper()
     return badge(label, style=style)
 
@@ -251,15 +267,15 @@ def _verdict(result: ScanResult, locale: str) -> str:
             return badge("검토 후 사용 가능", style="yellow")
         return badge("usable after review", style="yellow")
     if locale == "ko":
-        return badge("현재 검사 기준으로 사용 가능", style="green")
-    return badge("usable by current checks", style="green")
+        return badge("현재 검사 기준으로 사용 가능", style="blue")
+    return badge("usable by current checks", style="blue")
 
 
 def _confidence_badge(confidence: str, locale: str) -> str:
     label = confidence_label(confidence) if locale == "ko" else confidence.upper()
-    return badge(label, style=status_style(confidence))
+    return badge(label, style=state_style(confidence))
 
 
 def _coverage_badge(coverage: str, locale: str) -> str:
     label = coverage_label(coverage) if locale == "ko" else coverage.upper()
-    return badge(label, style=status_style(coverage))
+    return badge(label, style=state_style(coverage))

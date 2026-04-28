@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 
 from .console_i18n import ConsoleLocale, ConsoleText, console_text
-from .terminal_theme import badge, data_table, header, kv, muted, section
+from .terminal_theme import badge, kali_kv, kali_prompt_header, kali_section, kali_table, muted
 
 
 @dataclass(frozen=True)
@@ -37,7 +37,7 @@ def run_console_mode(
     text = console_text(locale)
     _print_console_home(console=console, version=version, result_dir=result_dir, text=text)
     choice = Prompt.ask(
-        str(text["select_prompt"]),
+        text["select_prompt"],
         choices=["1", "2", "3", "4", "5", "6", "q"],
         default="1",
         console=console,
@@ -62,28 +62,29 @@ def _print_console_home(
     result_dir: Path,
     text: ConsoleText,
 ) -> None:
-    console.print(header(str(text["brand_title"]).lower(), "console"))
-    console.print(muted(f"{text['console_title']}  v{version}"))
-    console.print(str(text["tagline"]))
-    console.print(kv(str(text["mission_label"]).lower(), str(text["mission"])))
-    console.print(kv(str(text["command_mode_label"]).lower(), str(text["command_mode"])))
-    console.print(section(str(text["workflows_title"]).lower()))
+    console.print(
+        kali_prompt_header("local", "console")
+    )
+    console.print(kali_kv("tool", f"{text['console_title']} v{version}"))
+    console.print(kali_kv("profile", str(text["tagline"])))
+    console.print(kali_kv(str(text["mission_label"]).lower(), str(text["mission"])))
+    console.print(kali_kv(str(text["command_mode_label"]).lower(), str(text["command_mode"])))
+    console.print(kali_section(str(text["workflows_title"]).lower()))
     for line in _workflow_lines(text):
         console.print(line)
-    console.print(section(str(text["recent_reports_title"]).lower()))
+    console.print(kali_section(str(text["recent_reports_title"]).lower()))
     for line in _recent_summary_lines(result_dir, text):
         console.print(line)
 
 
 def _workflow_lines(text: ConsoleText) -> list[str]:
-    lines = []
+    lines: list[str] = []
     for key, action, use_when, output in text["workflows"]:
         key_label = f"0{key}" if str(key).isdigit() else str(key)
-        output_label = str(output).lower()
         lines.append(
-            f"  {badge(key_label, bold=False)}  "
-            f"[bold]{action}[/bold] [dim]->[/dim] {output_label:<12} "
-            f"[dim]{use_when}[/dim]"
+            f"[bright_black]│[/] {badge(key_label, bold=False)}  "
+            f"[white]{action}[/] [bright_black]->[/] {output}  "
+            f"{muted(use_when)}"
         )
     return lines
 
@@ -91,8 +92,8 @@ def _workflow_lines(text: ConsoleText) -> list[str]:
 def _recent_summary_lines(result_dir: Path, text: ConsoleText) -> list[str]:
     reports = _recent_reports(result_dir, limit=3)
     if not reports:
-        return [f"  {muted(text['no_saved_reports'])}"]
-    return [f"  {muted(path)}" for path in reports]
+        return [f"[bright_black]│[/] {muted(text['no_saved_reports'])}"]
+    return [f"[bright_black]│[/] {muted(path)}" for path in reports]
 
 
 def _print_recent_reports(
@@ -102,9 +103,9 @@ def _print_recent_reports(
     text: ConsoleText,
 ) -> None:
     reports = _recent_reports(result_dir, limit=10)
-    console.print(section(str(text["recent_reports_title"]).lower()))
-    table = data_table()
-    table.add_column(str(text["number_column"]), justify="right", style="green")
+    console.print(kali_section(str(text["recent_reports_title"]).lower()))
+    table = kali_table()
+    table.add_column(str(text["number_column"]), justify="right", style="blue")
     table.add_column(str(text["path_column"]))
     table.add_column(str(text["type_column"]))
     if reports:

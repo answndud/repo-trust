@@ -19,15 +19,34 @@ from repotrust.scoring import calculate_score
 
 runner = CliRunner()
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
-HEAVY_BOX_CHARS = {"╭", "╰", "┏", "┗", "├", "┼"}
+PRODUCT_TERMINAL_FILES = [
+    Path("src/repotrust/console.py"),
+    Path("src/repotrust/console_i18n.py"),
+    Path("src/repotrust/dashboard.py"),
+    Path("src/repotrust/dashboard_i18n.py"),
+    Path("src/repotrust/help_i18n.py"),
+    Path("src/repotrust/terminal_theme.py"),
+]
+FORBIDDEN_TERMINAL_THEME_TERMS = {
+    "cyan",
+    "magenta",
+    "pink",
+    "bright_green",
+    "green",
+    "repo-trust // console",
+    "repotrust // 명령 모드",
+}
 
 
 def plain_output(text: str) -> str:
     return ANSI_ESCAPE_RE.sub("", text)
 
 
-def assert_no_heavy_box(text: str) -> None:
-    assert not (set(text) & HEAVY_BOX_CHARS)
+def test_product_terminal_theme_avoids_failed_visual_terms():
+    source = "\n".join(path.read_text(encoding="utf-8") for path in PRODUCT_TERMINAL_FILES)
+
+    for term in FORBIDDEN_TERMINAL_THEME_TERMS:
+        assert term not in source
 
 
 def test_cli_version():
@@ -122,11 +141,11 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "RepoTrust Console" in stderr
+    assert "repotrust㉿local" in stderr
+    assert "└─$ select" in stderr
     assert "workflows" in stderr
     assert "Scan local repository" in stderr
     assert "Scan GitHub URL" in stderr
-    assert "repo-trust // console" in stderr
-    assert_no_heavy_box(stderr)
 
 
 def test_direct_kr_cli_root_starts_korean_interactive_launcher():
@@ -135,13 +154,14 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
 
     assert result.exit_code == 0
     assert result.stdout == ""
+    assert "repotrust㉿local" in stderr
+    assert "└─$ 선택" in stderr
     assert "RepoTrust 한국어 콘솔" in stderr
     assert "워크플로우" in stderr
     assert "로컬 저장소 검사" in stderr
     assert "GitHub URL 검사" in stderr
     assert "세션을 종료했습니다." in stderr
     assert "Scan local repository" not in stderr
-    assert_no_heavy_box(stderr)
 
 
 def test_direct_cli_help_shows_product_commands_without_launcher():
@@ -149,7 +169,8 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "help language" in stdout
+    assert "repotrust㉿help" in stdout
+    assert "└─$ help language" in stdout
     assert "Usage:" in stdout
     assert "html" in stdout
     assert "json" in stdout
@@ -162,7 +183,8 @@ def test_direct_cli_help_can_show_korean_product_commands():
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "도움말 언어" in stdout
+    assert "repotrust㉿help" in stdout
+    assert "02 한국어" in stdout
     assert "사용법:" in stdout
     assert "HTML 신뢰 리포트를 저장합니다." in stdout
     assert "파일 저장 없이 터미널 대시보드로 검사합니다." in stdout
@@ -246,7 +268,6 @@ def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
     assert "recent reports" in result.stderr
     assert "repo-2026-04-28.html" in result.stderr
     assert "repo-2026-04-28.json" in result.stderr
-    assert_no_heavy_box(plain_output(result.stderr))
 
 
 def test_direct_cli_html_github_url_remote_scan_writes_default_output(monkeypatch, tmp_path):
@@ -370,7 +391,8 @@ def test_direct_cli_check_github_url_prints_terminal_dashboard(monkeypatch):
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert "# RepoTrust Report" in result.stderr
+    assert "# RepoTrust Report" not in result.stderr
+    assert "repotrust㉿scan" in result.stderr
     assert "Trust Assessment" in result.stderr
     assert "Confidence" in result.stderr
     assert "Coverage" in result.stderr
@@ -413,7 +435,7 @@ def test_direct_kr_cli_check_github_url_prints_korean_dashboard(monkeypatch):
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "# RepoTrust Report" not in result.stderr
-    assert "repotrust // 명령 모드" in stderr
+    assert "repotrust㉿scan" in stderr
     assert "검사 방식 GitHub 원격 검사" in stderr
     assert "신뢰도 검사 결과" in stderr
     assert "결론" in stderr

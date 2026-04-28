@@ -36,8 +36,8 @@ printf '2\n' | .venv/bin/repo-trust --help
 printf '2\n' | .venv/bin/repo-trust html --help
 printf 'q\n' | .venv/bin/repo-trust
 printf 'q\n' | .venv/bin/repo-trust-kr
-.venv/bin/repo-trust-kr check .
 .venv/bin/repo-trust check .
+.venv/bin/repo-trust-kr check .
 .venv/bin/repo-trust html . --output /tmp/repotrust-report.html
 .venv/bin/repo-trust-kr html . --output /tmp/repotrust-kr-report.html
 .venv/bin/repo-trust json https://github.com/answndud/repo-trust
@@ -65,11 +65,11 @@ EOF
 Expected behavior:
 
 - Local paths are scanned without network access.
-- `repo-trust` without a subcommand opens Console Mode with a compact workflow menu and recent reports.
-- Console Mode output should not contain heavy Rich box characters such as `╭`, `╰`, `┏`, `┗`, `├`, or `┼`.
+- `repo-trust` without a subcommand opens Console Mode with a Kali-style prompt header, workflow list, and recent reports.
+- Product terminal UI should include `repotrust㉿` and `└─$`, and should not reintroduce pink/magenta/cyan/green-heavy theme strings.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.
-- `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance with the shared compact terminal theme.
+- `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance with the shared Kali-style terminal theme.
 - Product CLI GitHub URL commands use GitHub API read-only metadata by default and never clone repositories.
 - `--parse-only` parses a GitHub URL without GitHub API access.
 - Legacy `repotrust scan` keeps parse-only GitHub URL behavior unless `--remote` is provided.

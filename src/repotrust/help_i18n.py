@@ -139,10 +139,10 @@ HELP_OPTION_HELP = "Choose English or Korean help and exit."
 
 
 def show_localized_help(command: str) -> None:
-    typer.echo("help language / 도움말 언어")
-    typer.echo("01 english")
-    typer.echo("02 한국어")
-    choice = typer.prompt("select>", default="1")
+    typer.echo("┌──(repotrust㉿help)-[language]")
+    typer.echo("│ 01 english")
+    typer.echo("│ 02 한국어")
+    choice = typer.prompt("└─$ help language", default="1")
     locale = "ko" if choice.strip() == "2" else "en"
     typer.echo()
     typer.echo(localized_help_text(command, locale))
