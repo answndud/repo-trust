@@ -93,6 +93,8 @@ Remote finding interpretation:
 
 - `target.github_not_fetched`: a GitHub URL was parsed without `--remote`; no network scan happened.
 - `remote.github_metadata_collected`: repository metadata was fetched successfully. This is informational and does not lower score.
+- `remote.github_archived`: GitHub repository metadata has `archived=true`. This lowers project hygiene because archived repositories are read-only maintenance risk signals.
+- `remote.github_issues_disabled`: GitHub repository metadata has `has_issues=false`. This lightly lowers project hygiene because the public support and bug-reporting path is less obvious.
 - `remote.github_unauthorized`: GitHub returned 401 or 403 for repository metadata. The repository may be private, the token may be missing, or the token may not have access.
 - `remote.github_not_found`: GitHub returned 404. The owner/repo may be wrong, private, or not visible to the current token.
 - `remote.github_rate_limited`: GitHub rate limits prevented completion. Retrying later or setting `GITHUB_TOKEN` may help.
@@ -106,9 +108,11 @@ Remote scans may use `GITHUB_TOKEN` for authorization and higher rate limits. To
 
 Remote repository metadata should be handled conservatively:
 
-- Score-deducting findings: archived repositories, disabled issues/security workflows only when the API field clearly indicates a reduced maintenance or safety signal.
+- Score-deducting findings: archived repositories and disabled issue tracking when the API field clearly indicates a reduced maintenance or support signal.
+- Deferred security metadata: repository `security_and_analysis` fields are not scored yet because availability and meaning vary by repository visibility, plan, and permissions. They should become findings only after RepoTrust can distinguish unavailable metadata from explicitly disabled security features.
 - Evidence-only findings: fork status, private visibility, star/watch/fork counts, default branch name, repository size, language, and creation date. These can help a human reviewer but should not lower score by themselves.
 - Freshness findings: releases/tags should start as `low` or `medium` only after the scanner can distinguish "no release practice" from "library/tool does not need releases".
+- Release/tag freshness is deferred in the current implementation. A future stale-release finding should require evidence that the project is release-managed and installable, plus release or tag date evidence. Absence of GitHub Releases alone is not a trust failure.
 - Unknown metadata: API failures, rate limits, and permission failures must remain remote failure/partial findings. They must not be converted into missing-file or missing-maintenance deductions.
 - Contributor and profile signals: keep deferred until source attribution and privacy implications are designed.
 

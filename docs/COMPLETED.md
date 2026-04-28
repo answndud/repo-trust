@@ -267,3 +267,111 @@
 - 코드/문서: `docs/domain-context.md`, `docs/trd.md`, `docs/adr.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `51 passed`를 확인했다. 변경 범위가 remote metadata policy 문서와 하네스 상태 문서에 한정됨을 확인했다.
 - 결과: Remote scan 품질 개선의 다음 방향이 정리됐다. 현재 active 작업은 없다.
+
+## 028: Remote scan report output contract 보강
+
+- 완료일: 2026-04-28
+- 배경: Remote scan MVP 이후 JSON/static HTML report가 remote metadata와 partial finding을 안정적으로 노출하는지 테스트 contract를 더 명확히 해야 했다.
+- 변경 내용: remote success report test를 문자열 포함 검사에서 JSON parsing 기반 contract 검사로 강화했다. GitHub target metadata, detected README/workflow, stable finding ID, severity가 JSON report에 유지되는지 확인한다. Remote partial scan finding과 evidence, workflow metadata가 static HTML report에 렌더링되는지도 새 테스트로 추가했다.
+- 코드/문서: `tests/test_remote.py`, `docs/PLAN.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `52 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote report output test와 하네스 상태 문서에 한정됨을 확인했다.
+- 결과: Remote scan JSON/HTML output contract 회귀 테스트가 보강됐다. 현재 active 작업은 없다.
+
+## 029: Remote archived repository finding 구현
+
+- 완료일: 2026-04-28
+- 배경: Remote Metadata Quality Policy에서 archived repository는 명확한 maintenance risk로 score-deducting finding을 허용하기로 했지만, 구현은 아직 `remote.github_metadata_collected` info finding만 내고 있었다.
+- 변경 내용: GitHub repository metadata가 `archived=true`일 때 `remote.github_archived` finding을 추가한다. 이 finding은 `project_hygiene` category와 `medium` severity를 사용해 점수에 반영된다. `archived=false` 또는 repository metadata API 실패는 archived deduction을 만들지 않는다. Remote finding 해석 문서와 TRD finding catalog도 새 ID에 맞게 갱신했다.
+- 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `docs/domain-context.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `54 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote archived metadata handling, 테스트, 문서에 한정됨을 확인했다.
+- 결과: Remote scan이 archived repository를 score-deducting maintenance risk로 보고한다. 현재 active 작업은 없다.
+
+## 030: Dev-loop roadmap 시작 및 미커밋 변경 검증
+
+- 완료일: 2026-04-28
+- 배경: 사용자가 `PLAN.md`의 모든 작업을 dev-loop로 진행하도록 요청했으므로, 전체 backlog를 status/goal/scope/non-goals/acceptance/verification/next action 형식으로 정리하고 기존 미커밋 변경을 검증해야 했다.
+- 변경 내용: `docs/PLAN.md`에 RepoTrust post-v1 완성품 로드맵 task contract와 1-10번 순차 story를 명시했다. 1번 story로 기존 remote report output contract 보강, archived finding 구현, 관련 문서 변경이 하나의 일관된 diff인지 검토했다.
+- 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다. 기존 미커밋 변경인 `src/repotrust/remote.py`, `tests/test_remote.py`, `docs/domain-context.md`, `docs/trd.md`도 함께 검토했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `54 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote report output contract, archived metadata finding, dev-loop roadmap 문서에 한정됨을 확인했다.
+- 결과: 현재 변경 세트는 커밋 가능한 상태다. push, tag, release publish는 사용자가 요청할 때만 진행한다. 다음 작업은 `Remote metadata quality implementation`이다.
+
+## 031: Remote metadata quality implementation
+
+- 완료일: 2026-04-28
+- 배경: Remote Metadata Quality Policy가 score와 evidence-only metadata를 분리하기로 했으므로, `archived` 외에 명확한 repository metadata signal을 구현하고 나머지 metadata는 과잉 점수화하지 않도록 정리해야 했다.
+- 변경 내용: GitHub repository metadata의 `has_issues=false`를 `remote.github_issues_disabled` finding으로 추가했다. 이 finding은 public support path가 덜 명확하다는 낮은 project hygiene signal로만 반영된다. fork/private/default branch/stars/language/size/created date와 `security_and_analysis` 세부 값은 JSON evidence-only 표현이 설계될 때까지 점수화하지 않도록 TRD와 domain context에 명시했다.
+- 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `docs/domain-context.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `56 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote repository metadata quality classification과 테스트/문서에 한정됨을 확인했다.
+- 결과: Remote metadata quality signal은 archived와 disabled issues만 점수에 반영하고, 나머지 context metadata는 보수적으로 deferred/evidence-only로 유지한다. 다음 작업은 `Remote release/tag freshness 설계`다.
+
+## 032: Remote release/tag freshness 설계
+
+- 완료일: 2026-04-28
+- 배경: release/tag freshness는 useful signal이지만, GitHub Releases가 없다는 사실만으로 maintenance risk를 단정하면 false positive가 크다. 프로젝트가 release-managed인지, installable package인지, no-release practice가 정상인지 구분하는 기준이 먼저 필요했다.
+- 변경 내용: TRD에 future candidate endpoint로 `GET /repos/{owner}/{repo}/releases/latest`와 `GET /repos/{owner}/{repo}/tags?per_page=1`를 정리했다. `404` latest release, tags-only repository, API failure/rate limit/permission failure를 stale-release deduction으로 처리하지 않는 failure policy를 문서화했다. 현재 구현에서는 release/tag freshness를 점수화하지 않고, future stale finding은 installable/package signal과 release/tag date evidence가 있을 때 low/medium severity부터 시작하도록 domain context에 명시했다.
+- 코드/문서: `docs/trd.md`, `docs/domain-context.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `56 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 release/tag freshness 설계 문서와 active state 문서에 한정됨을 확인했다.
+- 결과: Release/tag freshness는 현재 score에서 제외하고, 향후 구현 기준과 endpoint/failure mode를 문서화했다. 다음 작업은 `Report UX와 static HTML 개선`이다.
+
+## 033: Report UX와 static HTML 개선
+
+- 완료일: 2026-04-28
+- 배경: 기존 HTML renderer는 Markdown 출력 문자열을 단순 변환해 만들었으므로 score, detected files, finding category/severity를 구조적으로 스캔하기 어려웠다.
+- 변경 내용: `render_html()`이 `ScanResult`를 직접 렌더링하도록 바꿨다. Score summary, category scores, detected files, findings 섹션을 구조화했고 finding article에 severity class를 추가했다. HTML renderer에서 scanning/scoring logic은 추가하지 않았고, 더 이상 사용하지 않는 Markdown-ish HTML 변환 helper를 제거했다. HTML renderer test는 score, detected files, category/severity metadata가 출력되는지 확인한다.
+- 코드/문서: `src/repotrust/reports.py`, `tests/test_scanner.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `57 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 static HTML renderer와 renderer test에 한정됨을 확인했다.
+- 결과: Static HTML report가 Markdown/JSON과 같은 `ScanResult` 정보를 더 스캔 가능한 구조로 보여준다. 다음 작업은 `JSON contract hardening`이다.
+
+## 034: JSON contract hardening
+
+- 완료일: 2026-04-28
+- 배경: JSON report는 CI와 외부 도구가 읽는 interface이므로 대표 scan 결과의 shape와 stable finding ID를 더 직접적으로 고정해야 했다.
+- 변경 내용: GitHub parse-only JSON contract test를 추가해 `target.github_not_fetched`와 empty detected files shape를 고정했다. Remote partial scan JSON test는 `remote.github_metadata_collected`, `remote.github_partial_scan`, partial evidence, workflow metadata를 고정한다. Remote archived JSON test는 `remote.github_archived` category/severity와 score impact를 고정한다. TRD에는 `schema_version`이 top-level key 변경 없이 stable finding ID만 추가되는 동안 `"1.0"`으로 유지된다는 정책을 추가했다.
+- 코드/문서: `tests/test_scanner.py`, `tests/test_remote.py`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `60 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 JSON contract tests와 schema policy 문서에 한정됨을 확인했다.
+- 결과: 대표 local/parse-only/remote success/remote partial/remote archived JSON contract가 focused assertions로 보강됐다. 다음 작업은 `Policy config usability 보강`이다.
+
+## 035: Policy config usability 보강
+
+- 완료일: 2026-04-28
+- 배경: config validation과 policy 적용은 이미 있었지만, explicit remote scan에서도 custom weights와 `fail_under`가 동일하게 적용되는지 회귀 테스트가 부족했다.
+- 변경 내용: CLI remote scan fake boundary 테스트를 추가해 `--config` weights가 `scan_target(..., weights=..., remote=True)`로 전달되는지 확인했다. Remote scan 결과에도 config `policy.fail_under`가 적용되어 exit code 1을 반환하는 테스트를 추가했다. TRD와 testing guide에서 config를 local-only가 아니라 explicit file-based policy layer로 표현하고, local/remote scan 모두에 적용된다고 정리했다.
+- 코드/문서: `tests/test_cli.py`, `docs/trd.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `62 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 config policy CLI coverage와 문서 정합성에 한정됨을 확인했다.
+- 결과: Config policy가 local/remote scan 모두에서 일관되게 적용됨을 테스트와 문서로 고정했다. 다음 작업은 `CLI smoke and exit-code matrix`다.
+
+## 036: CLI smoke and exit-code matrix
+
+- 완료일: 2026-04-28
+- 배경: CLI는 CI와 agent workflows에서 쓰이므로 핵심 조합의 exit code, stdout report, stderr status 정책이 문서와 테스트로 고정돼야 했다.
+- 변경 내용: Remote failure finding이 JSON stdout과 stderr summary를 분리해 유지하는 CLI test를 추가했다. HTML `--output`은 stdout을 비우고 파일과 stderr status만 남기는지 확인했다. Missing local path는 usage error가 아니라 `target.local_path_missing` finding report로 exit 0을 반환한다는 test를 추가했다. Testing guide에는 local/missing/remote/fail-under/output/config error 조합의 exit-code matrix를 추가했다.
+- 코드/문서: `tests/test_cli.py`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `64 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 CLI behavior coverage와 testing guide matrix에 한정됨을 확인했다.
+- 결과: CLI exit-code와 stdout/stderr 정책이 주요 조합에서 회귀 테스트와 문서로 고정됐다. 다음 작업은 `Documentation alignment pass`다.
+
+## 037: Documentation alignment pass
+
+- 완료일: 2026-04-28
+- 배경: v0.1.0 baseline 이후 explicit remote scan과 post-v1 quality work가 구현됐으므로, PRD와 README가 현재 구현 상태를 혼동 없이 설명해야 했다.
+- 변경 내용: PRD의 기존 v1 범위를 `v1 baseline`으로 명확히 하고, 현재 구현 상태 섹션을 추가해 기본 GitHub URL scan은 parse-only이고 `--remote`만 GitHub REST API read-only metadata를 조회한다고 정리했다. Remote scan은 clone하지 않으며 archived/disabled issue tracking만 보수적으로 점수화하고 context metadata와 release/tag freshness는 점수화하지 않는다고 명시했다. README config 예시에 remote scan에서도 `--config`를 사용할 수 있음을 추가했다.
+- 코드/문서: `README.md`, `docs/prd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `64 passed`를 확인했다. 구현 drift 검색과 `git diff --stat`/주요 diff 검토를 수행해 현재 active 문서 외에는 의도된 v1 baseline 설명만 남아 있음을 확인했다.
+- 결과: 사용자 문서와 설계 문서가 v0.1.0 baseline 및 현재 post-v1 remote implementation을 구분해 설명한다. 다음 작업은 `Packaging and install verification`이다.
+
+## 038: Packaging and install verification
+
+- 완료일: 2026-04-28
+- 배경: release readiness 전에 clean environment에서 package metadata, editable install, CLI entry point, fixture report, test suite가 실제로 동작하는지 확인해야 했다.
+- 변경 내용: 임시 clean venv `/tmp/repotrust-clean-venv.Hrmz4G/.venv`에서 `pip install -e '.[dev]'`를 실행해 `repotrust==0.1.0` editable wheel이 설치되는지 확인했다. `repotrust --version`은 `repotrust 0.1.0`을 출력했다. `good-python` fixture JSON report를 생성하고 `json.tool`로 검증했다. Clean venv에서 pytest도 통과했다. Testing guide에 clean venv packaging verification 절차를 추가했다.
+- 코드/문서: `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다. `pyproject.toml`과 `pylock.toml`은 dependency 변경이 없어 수정하지 않았다.
+- 검증: clean venv에서 `pip install -e '.[dev]'`, `repotrust --version`, fixture JSON report generation, `python -m json.tool`, `python -m pytest -q`를 실행했고 `64 passed`를 확인했다. 기존 `.venv/bin/python -m pytest -q`도 `64 passed`였다.
+- 결과: Packaging과 CLI entry point는 release readiness review에 들어갈 수 있는 상태다. 다음 작업은 `Release readiness review`다.
+
+## 039: Release readiness review
+
+- 완료일: 2026-04-28
+- 배경: dev-loop `PLAN.md`의 모든 post-v1 hardening story가 끝났으므로 전체 변경이 release 가능한 상태인지 검증하고 active 문서를 정리해야 했다.
+- 변경 내용: `CHANGELOG.md`에 Unreleased 섹션을 추가해 remote metadata quality findings, JSON contract tests, structured HTML renderer, CLI exit-code matrix, clean packaging verification, deferred freshness policy를 정리했다. 대표 smoke checks로 local self JSON report, risky fixture HTML report, GitHub URL parse-only JSON report를 생성하고 JSON reports를 `json.tool`로 검증했다. 모든 active backlog가 완료됐으므로 `docs/PLAN.md`와 `docs/PROGRESS.md`를 `현재 active 작업 없음` 상태로 정리했다.
+- 코드/문서: `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다. 전체 dev-loop 변경 세트는 remote metadata handling, report rendering, CLI tests, JSON contract tests, config/exit-code coverage, README/PRD/TRD/domain/testing docs를 포함한다.
+- 검증: `.venv/bin/repotrust scan . --format json --output /tmp/repotrust-self.json`, `.venv/bin/python -m json.tool /tmp/repotrust-self.json`, `.venv/bin/repotrust scan tests/fixtures/repos/risky-install --format html --output /tmp/repotrust-risky.html`, `.venv/bin/repotrust scan https://github.com/openai/codex --format json --output /tmp/repotrust-parse-only.json`, `.venv/bin/python -m json.tool /tmp/repotrust-parse-only.json`, `.venv/bin/python -m pytest -q`를 실행했고 `64 passed`를 확인했다.
+- 결과: RepoTrust post-v1 완성품 로드맵의 모든 `PLAN.md` story가 완료됐다. commit, push, tag, release publish는 사용자가 요청할 때만 진행한다.

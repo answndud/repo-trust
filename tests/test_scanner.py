@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 from repotrust.detection import detect_files
-from repotrust.reports import render_json, render_markdown
+from repotrust.reports import render_html, render_json, render_markdown
 from repotrust.scanner import scan
 
 
@@ -151,6 +151,28 @@ def test_github_url_is_parsed_but_not_fetched():
     assert [finding.id for finding in result.findings] == ["target.github_not_fetched"]
 
 
+def test_github_parse_only_json_contract_has_stable_finding_id():
+    result = scan("https://github.com/owner/repo")
+    data = json.loads(render_json(result))
+
+    assert data["schema_version"] == "1.0"
+    assert data["target"]["kind"] == "github"
+    assert data["target"]["owner"] == "owner"
+    assert data["target"]["repo"] == "repo"
+    assert data["detected_files"] == {
+        "ci_workflows": [],
+        "dependabot": None,
+        "dependency_manifests": [],
+        "license": None,
+        "lockfiles": [],
+        "readme": None,
+        "security": None,
+    }
+    assert [finding["id"] for finding in data["findings"]] == [
+        "target.github_not_fetched"
+    ]
+
+
 def test_json_report_shape(tmp_path):
     result = scan(str(tmp_path))
     data = json.loads(render_json(result))
@@ -210,6 +232,22 @@ def test_markdown_report_sections(tmp_path):
     assert "## Category Scores" in markdown
     assert "## Detected Files" in markdown
     assert "## Findings" in markdown
+
+
+def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path):
+    result = scan(str(tmp_path))
+    html = render_html(result)
+
+    assert "<!doctype html>" in html
+    assert "<h1>RepoTrust Report</h1>" in html
+    assert f"<strong>{result.score.total}/{result.score.max_score}</strong>" in html
+    assert "<h2>Category Scores</h2>" in html
+    assert "<h2>Detected Files</h2>" in html
+    assert "<h2>Findings</h2>" in html
+    assert 'class="finding severity-high"' in html
+    assert "<dt>Category</dt>" in html
+    assert "<dt>Severity</dt>" in html
+    assert "readme.missing" in html
 
 
 def _copy_fixture_repo(tmp_path, name: str) -> Path:

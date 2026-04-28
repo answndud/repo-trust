@@ -163,6 +163,7 @@ def scan_remote_github(
     dependabot_yml_response = client.get_contents(owner, repo, ".github/dependabot.yml", ref=target.ref)
     dependabot_yaml_response = client.get_contents(owner, repo, ".github/dependabot.yaml", ref=target.ref)
     findings = [repository_finding]
+    findings.extend(_repository_metadata_findings(repository_response))
     findings.extend(
         _partial_findings(
             contents_response,
@@ -249,6 +250,33 @@ def _finding_from_repository_response(response: GitHubResponse) -> Finding:
         evidence=f"GitHub API returned HTTP {response.status_code}.",
         recommendation="Retry later or inspect GitHub API availability and repository permissions.",
     )
+
+
+def _repository_metadata_findings(response: GitHubResponse) -> list[Finding]:
+    findings = []
+    if response.data.get("archived") is True:
+        findings.append(
+            Finding(
+                id="remote.github_archived",
+                category=Category.PROJECT_HYGIENE,
+                severity=Severity.MEDIUM,
+                message="GitHub repository is archived.",
+                evidence="Repository metadata has archived=true.",
+                recommendation="Treat the project as read-only unless a maintained fork or replacement is available.",
+            )
+        )
+    if response.data.get("has_issues") is False:
+        findings.append(
+            Finding(
+                id="remote.github_issues_disabled",
+                category=Category.PROJECT_HYGIENE,
+                severity=Severity.LOW,
+                message="GitHub issue tracking is disabled.",
+                evidence="Repository metadata has has_issues=false.",
+                recommendation="Confirm where maintainers accept bug reports, security questions, and support requests before adopting the project.",
+            )
+        )
+    return findings
 
 
 def _is_rate_limited(response: GitHubResponse) -> bool:

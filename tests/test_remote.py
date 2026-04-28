@@ -1,8 +1,9 @@
 from base64 import b64encode
+import json
 
 from repotrust.models import Target
 from repotrust.remote import GitHubClient, GitHubResponse, scan_remote_github
-from repotrust.reports import render_json, render_markdown
+from repotrust.reports import render_html, render_json, render_markdown
 
 
 class FakeTransport:
@@ -99,6 +100,82 @@ def test_remote_success_collects_repository_metadata_boundary():
     assert transport.requests[0][1] == "https://api.github.com/repos/owner/repo"
 
 
+def test_remote_archived_repository_metadata_adds_score_deducting_finding():
+    responses = _successful_responses()
+    responses[0] = GitHubResponse(
+        status_code=200,
+        data={"full_name": "owner/repo", "archived": True},
+    )
+
+    result, _ = _scan(responses)
+
+    archived = result.findings[1]
+    assert [finding.id for finding in result.findings[:2]] == [
+        "remote.github_metadata_collected",
+        "remote.github_archived",
+    ]
+    assert archived.category.value == "project_hygiene"
+    assert archived.severity.value == "medium"
+    assert result.score.categories["project_hygiene"] == 82
+    assert result.score.total == 96
+
+
+def test_remote_unarchived_repository_metadata_does_not_deduct():
+    responses = _successful_responses()
+    responses[0] = GitHubResponse(
+        status_code=200,
+        data={"full_name": "owner/repo", "archived": False},
+    )
+
+    result, _ = _scan(responses)
+
+    assert [finding.id for finding in result.findings] == ["remote.github_metadata_collected"]
+    assert result.score.total == 100
+
+
+def test_remote_disabled_issues_metadata_adds_low_project_hygiene_finding():
+    responses = _successful_responses()
+    responses[0] = GitHubResponse(
+        status_code=200,
+        data={"full_name": "owner/repo", "has_issues": False},
+    )
+
+    result, _ = _scan(responses)
+
+    disabled_issues = result.findings[1]
+    assert [finding.id for finding in result.findings[:2]] == [
+        "remote.github_metadata_collected",
+        "remote.github_issues_disabled",
+    ]
+    assert disabled_issues.category.value == "project_hygiene"
+    assert disabled_issues.severity.value == "low"
+    assert result.score.categories["project_hygiene"] == 92
+    assert result.score.total == 98
+
+
+def test_remote_enabled_or_unknown_issues_metadata_does_not_deduct():
+    enabled_responses = _successful_responses()
+    enabled_responses[0] = GitHubResponse(
+        status_code=200,
+        data={"full_name": "owner/repo", "has_issues": True},
+    )
+    unknown_responses = _successful_responses()
+    unknown_responses[0] = GitHubResponse(
+        status_code=200,
+        data={"full_name": "owner/repo"},
+    )
+
+    enabled_result, _ = _scan(enabled_responses)
+    unknown_result, _ = _scan(unknown_responses)
+
+    assert [finding.id for finding in enabled_result.findings] == [
+        "remote.github_metadata_collected"
+    ]
+    assert [finding.id for finding in unknown_result.findings] == [
+        "remote.github_metadata_collected"
+    ]
+
+
 def test_remote_success_detects_files_from_contents_and_workflows():
     result, _ = _scan(_successful_responses())
 
@@ -115,14 +192,78 @@ def test_remote_success_detects_files_from_contents_and_workflows():
 def test_remote_report_rendering_uses_existing_contract():
     result, _ = _scan(_successful_responses())
 
-    json_report = render_json(result)
+    json_report = json.loads(render_json(result))
     markdown_report = render_markdown(result)
 
-    assert '"schema_version": "1.0"' in json_report
-    assert '"kind": "github"' in json_report
-    assert '"readme": "README.md"' in json_report
+    assert json_report["schema_version"] == "1.0"
+    assert json_report["target"] == {
+        "raw": "https://github.com/owner/repo",
+        "kind": "github",
+        "path": None,
+        "host": "github.com",
+        "owner": "owner",
+        "repo": "repo",
+        "ref": None,
+        "subpath": None,
+    }
+    assert json_report["detected_files"]["readme"] == "README.md"
+    assert json_report["detected_files"]["ci_workflows"] == [
+        ".github/workflows/ci.yml"
+    ]
+    assert json_report["findings"][0]["id"] == "remote.github_metadata_collected"
+    assert json_report["findings"][0]["severity"] == "info"
     assert "# RepoTrust Report" in markdown_report
     assert "remote.github_metadata_collected" in markdown_report
+
+
+def test_remote_partial_scan_json_contract_has_stable_findings():
+    result, _ = _scan(
+        [
+            GitHubResponse(status_code=200, data={"full_name": "owner/repo"}),
+            GitHubResponse(status_code=500),
+            GitHubResponse(status_code=404),
+            GitHubResponse(
+                status_code=200,
+                data={"workflows": [{"path": ".github/workflows/ci.yml"}]},
+            ),
+            GitHubResponse(status_code=404),
+            GitHubResponse(status_code=404),
+        ]
+    )
+
+    data = json.loads(render_json(result))
+
+    assert data["schema_version"] == "1.0"
+    assert data["target"]["kind"] == "github"
+    assert data["detected_files"]["readme"] is None
+    assert data["detected_files"]["ci_workflows"] == [".github/workflows/ci.yml"]
+    assert [finding["id"] for finding in data["findings"][:2]] == [
+        "remote.github_metadata_collected",
+        "remote.github_partial_scan",
+    ]
+    assert data["findings"][1]["severity"] == "medium"
+    assert "repository contents endpoint returned HTTP 500." == data["findings"][1]["evidence"]
+
+
+def test_remote_archived_json_contract_has_stable_finding_and_score():
+    responses = _successful_responses()
+    responses[0] = GitHubResponse(
+        status_code=200,
+        data={"full_name": "owner/repo", "archived": True},
+    )
+    result, _ = _scan(responses)
+
+    data = json.loads(render_json(result))
+
+    assert data["schema_version"] == "1.0"
+    assert [finding["id"] for finding in data["findings"][:2]] == [
+        "remote.github_metadata_collected",
+        "remote.github_archived",
+    ]
+    assert data["findings"][1]["category"] == "project_hygiene"
+    assert data["findings"][1]["severity"] == "medium"
+    assert data["score"]["categories"]["project_hygiene"] == 82
+    assert data["score"]["total"] == 96
 
 
 def test_remote_contents_partial_failure_does_not_look_like_missing_files():
@@ -147,6 +288,30 @@ def test_remote_contents_partial_failure_does_not_look_like_missing_files():
     assert "repository contents" in result.findings[1].evidence
     assert "readme.missing" not in ids
     assert "hygiene.no_license" not in ids
+
+
+def test_remote_partial_scan_finding_renders_in_static_html():
+    result, _ = _scan(
+        [
+            GitHubResponse(status_code=200, data={"full_name": "owner/repo"}),
+            GitHubResponse(status_code=500),
+            GitHubResponse(status_code=404),
+            GitHubResponse(
+                status_code=200,
+                data={"workflows": [{"path": ".github/workflows/ci.yml"}]},
+            ),
+            GitHubResponse(status_code=404),
+            GitHubResponse(status_code=404),
+        ]
+    )
+
+    html_report = render_html(result)
+
+    assert "<!doctype html>" in html_report
+    assert "remote.github_partial_scan" in html_report
+    assert "GitHub remote scan completed with partial metadata." in html_report
+    assert "repository contents endpoint returned HTTP 500." in html_report
+    assert ".github/workflows/ci.yml" in html_report
 
 
 def test_remote_workflows_partial_failure_preserves_contents_detection():
@@ -258,3 +423,4 @@ def test_remote_api_error_finding():
     result, _ = _scan(GitHubResponse(status_code=500))
 
     assert result.findings[0].id == "remote.github_api_error"
+    assert "remote.github_archived" not in {finding.id for finding in result.findings}

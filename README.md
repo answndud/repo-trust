@@ -79,6 +79,7 @@ Use it with:
 
 ```bash
 repotrust scan . --config /path/to/repotrust.toml
+repotrust scan https://github.com/owner/repo --remote --config /path/to/repotrust.toml
 ```
 
 CLI flags override config values. For example, `--fail-under` takes precedence over `policy.fail_under`.

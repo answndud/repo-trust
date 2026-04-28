@@ -52,9 +52,19 @@ def render_markdown(result: ScanResult) -> str:
 
 
 def render_html(result: ScanResult) -> str:
-    markdown = render_markdown(result)
-    body = _markdownish_to_html(markdown)
     title = html.escape(f"RepoTrust Report - {result.target.raw}")
+    category_items = "\n".join(
+        f'          <li><span class="label">{html.escape(category)}</span><span>{score}/100</span></li>'
+        for category, score in result.score.categories.items()
+    )
+    detected_items = "\n".join(
+        f'          <li><span class="label">{html.escape(key)}</span><span>{html.escape(_display_value(value))}</span></li>'
+        for key, value in result.detected_files.to_dict().items()
+    )
+    findings = "\n".join(_finding_html(finding) for finding in result.findings)
+    if not findings:
+        findings = '        <p class="empty">No findings. The repository passed all enabled v1 checks.</p>'
+
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -62,21 +72,59 @@ def render_html(result: ScanResult) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{title}</title>
   <style>
-    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; color: #1f2933; background: #f7f8fa; }}
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; color: #1f2933; background: #f7f8fa; line-height: 1.5; }}
     main {{ max-width: 960px; margin: 0 auto; padding: 40px 24px; }}
     h1, h2, h3 {{ color: #102a43; }}
-    h1 {{ margin-top: 0; }}
+    h1 {{ margin: 0 0 16px; }}
+    h2 {{ margin-top: 32px; }}
+    dl {{ display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0; }}
+    dt {{ font-weight: 700; color: #334e68; }}
+    dd {{ margin: 0; }}
     code {{ background: #e7eef5; padding: 2px 5px; border-radius: 4px; }}
-    ul {{ padding-left: 24px; }}
+    ul {{ padding-left: 0; list-style: none; }}
     li {{ margin: 6px 0; }}
     .report {{ background: #ffffff; border: 1px solid #d9e2ec; border-radius: 8px; padding: 28px; }}
-    .finding {{ border-left: 4px solid #627d98; padding: 10px 14px; margin: 14px 0; background: #f8fafc; }}
+    .score {{ display: inline-flex; align-items: baseline; gap: 10px; margin: 6px 0 18px; }}
+    .score strong {{ font-size: 2rem; color: #102a43; }}
+    .score span {{ color: #52606d; }}
+    .data-list li {{ display: flex; justify-content: space-between; gap: 16px; border-bottom: 1px solid #edf2f7; padding: 7px 0; }}
+    .label {{ color: #486581; font-weight: 700; }}
+    .finding {{ border-left: 4px solid #627d98; border-radius: 4px; padding: 12px 14px; margin: 14px 0; background: #f8fafc; }}
+    .finding h3 {{ margin: 0 0 8px; }}
+    .finding dl {{ grid-template-columns: 120px 1fr; }}
+    .severity-info {{ border-left-color: #627d98; }}
+    .severity-low {{ border-left-color: #2f855a; }}
+    .severity-medium {{ border-left-color: #b7791f; }}
+    .severity-high {{ border-left-color: #c53030; }}
+    .empty {{ color: #52606d; }}
   </style>
 </head>
 <body>
   <main>
     <section class="report">
-{body}
+      <h1>RepoTrust Report</h1>
+      <div class="score">
+        <strong>{result.score.total}/{result.score.max_score}</strong>
+        <span>{html.escape(result.score.grade)} &middot; {html.escape(result.score.risk_label)}</span>
+      </div>
+      <dl>
+        <dt>Target</dt><dd><code>{html.escape(result.target.raw)}</code></dd>
+        <dt>Target type</dt><dd><code>{html.escape(result.target.kind)}</code></dd>
+        <dt>Generated at</dt><dd><code>{html.escape(result.generated_at)}</code></dd>
+      </dl>
+
+      <h2>Category Scores</h2>
+      <ul class="data-list">
+{category_items}
+      </ul>
+
+      <h2>Detected Files</h2>
+      <ul class="data-list">
+{detected_items}
+      </ul>
+
+      <h2>Findings</h2>
+{findings}
     </section>
   </main>
 </body>
@@ -97,71 +145,21 @@ def _finding_markdown(finding: Finding) -> list[str]:
     ]
 
 
-def _markdownish_to_html(markdown: str) -> str:
-    lines = []
-    in_list = False
-    in_finding = False
-    for raw_line in markdown.splitlines():
-        line = raw_line.strip()
-        if not line:
-            if in_list:
-                lines.append("      </ul>")
-                in_list = False
-            continue
-        if line.startswith("### "):
-            if in_list:
-                lines.append("      </ul>")
-                in_list = False
-            if in_finding:
-                lines.append("      </div>")
-            in_finding = True
-            lines.append('      <div class="finding">')
-            lines.append(f"        <h3>{_inline_html(line[4:])}</h3>")
-        elif line.startswith("## "):
-            if in_list:
-                lines.append("      </ul>")
-                in_list = False
-            if in_finding:
-                lines.append("      </div>")
-                in_finding = False
-            lines.append(f"      <h2>{_inline_html(line[3:])}</h2>")
-        elif line.startswith("# "):
-            if in_list:
-                lines.append("      </ul>")
-                in_list = False
-            lines.append(f"      <h1>{_inline_html(line[2:])}</h1>")
-        elif line.startswith("- "):
-            if not in_list:
-                lines.append("      <ul>")
-                in_list = True
-            lines.append(f"        <li>{_inline_html(line[2:])}</li>")
-        else:
-            if in_list:
-                lines.append("      </ul>")
-                in_list = False
-            lines.append(f"      <p>{_inline_html(line)}</p>")
-    if in_list:
-        lines.append("      </ul>")
-    if in_finding:
-        lines.append("      </div>")
-    return "\n".join(lines)
+def _finding_html(finding: Finding) -> str:
+    severity = html.escape(finding.severity.value)
+    return f"""        <article class="finding severity-{severity}">
+          <h3>{html.escape(finding.id)}</h3>
+          <dl>
+            <dt>Category</dt><dd><code>{html.escape(finding.category.value)}</code></dd>
+            <dt>Severity</dt><dd><code>{severity}</code></dd>
+            <dt>Message</dt><dd>{html.escape(finding.message)}</dd>
+            <dt>Evidence</dt><dd>{html.escape(finding.evidence)}</dd>
+            <dt>Recommendation</dt><dd>{html.escape(finding.recommendation)}</dd>
+          </dl>
+        </article>"""
 
 
-def _inline_html(text: str) -> str:
-    escaped = html.escape(text)
-    escaped = escaped.replace("**", "")
-    return _replace_inline_code(escaped)
-
-
-def _replace_inline_code(text: str) -> str:
-    parts = text.split("`")
-    if len(parts) == 1:
-        return text
-    rendered = []
-    for index, part in enumerate(parts):
-        if index % 2 == 0:
-            rendered.append(part)
-        else:
-            rendered.append(f"<code>{part}</code>")
-    return "".join(rendered)
-
+def _display_value(value: object) -> str:
+    if isinstance(value, list):
+        return ", ".join(str(item) for item in value) if value else "None"
+    return str(value) if value else "None"

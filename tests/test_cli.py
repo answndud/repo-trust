@@ -113,6 +113,44 @@ def test_cli_github_url_with_remote_enters_remote_boundary(monkeypatch):
     assert calls == [("https://github.com/owner/repo", None, True)]
 
 
+def test_cli_remote_failure_finding_keeps_json_stdout_and_summary_stderr(monkeypatch):
+    def fake_scan(target_text, weights=None, remote=False):
+        finding = Finding(
+            id="remote.github_api_error",
+            category=Category.TARGET,
+            severity=Severity.MEDIUM,
+            message="GitHub API returned an unexpected error.",
+            evidence="GitHub API returned HTTP 500.",
+            recommendation="Retry later.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings, weights=weights),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        app,
+        ["scan", "https://github.com/owner/repo", "--remote", "--format", "json"],
+    )
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert [finding["id"] for finding in data["findings"]] == ["remote.github_api_error"]
+    assert "RepoTrust Summary" in result.stderr
+    assert "RepoTrust Summary" not in result.stdout
+
+
 def test_cli_scan_html_output(tmp_path):
     output = tmp_path / "report.html"
 
@@ -121,6 +159,21 @@ def test_cli_scan_html_output(tmp_path):
     assert result.exit_code == 0
     assert output.exists()
     assert "<!doctype html>" in output.read_text(encoding="utf-8")
+    assert result.stdout == ""
+    assert "Wrote html report" in result.stderr
+    assert "RepoTrust Summary" in result.stderr
+
+
+def test_cli_missing_local_path_reports_finding_without_usage_error(tmp_path):
+    missing = tmp_path / "missing"
+
+    result = runner.invoke(app, ["scan", str(missing), "--format", "json"])
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data["target"]["kind"] == "local"
+    assert [finding["id"] for finding in data["findings"]] == ["target.local_path_missing"]
+    assert "RepoTrust Summary" in result.stderr
 
 
 def test_cli_config_fail_under_is_used(tmp_path):
@@ -159,6 +212,103 @@ project_hygiene = 0.0
     assert result.exit_code == 0
     data = json.loads(result.stdout)
     assert data["score"]["total"] == data["score"]["categories"]["readme_quality"]
+
+
+def test_cli_remote_scan_receives_config_weights(monkeypatch, tmp_path):
+    config = tmp_path / "repotrust.toml"
+    config.write_text(
+        """
+[weights]
+readme_quality = 1.0
+install_safety = 0.0
+security_posture = 0.0
+project_hygiene = 0.0
+""",
+        encoding="utf-8",
+    )
+    calls = []
+
+    def fake_scan(target_text, weights=None, remote=False):
+        calls.append((target_text, weights, remote))
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=[],
+            score=calculate_score([], weights=weights),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "https://github.com/owner/repo",
+            "--remote",
+            "--format",
+            "json",
+            "--config",
+            str(config),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert calls == [
+        (
+            "https://github.com/owner/repo",
+            {
+                "readme_quality": 1.0,
+                "install_safety": 0.0,
+                "security_posture": 0.0,
+                "project_hygiene": 0.0,
+            },
+            True,
+        )
+    ]
+
+
+def test_cli_remote_scan_config_fail_under_is_used(monkeypatch, tmp_path):
+    config = tmp_path / "repotrust.toml"
+    config.write_text("[policy]\nfail_under = 99\n", encoding="utf-8")
+
+    def fake_scan(target_text, weights=None, remote=False):
+        finding = Finding(
+            id="remote.github_issues_disabled",
+            category=Category.PROJECT_HYGIENE,
+            severity=Severity.LOW,
+            message="GitHub issue tracking is disabled.",
+            evidence="Repository metadata has has_issues=false.",
+            recommendation="Confirm support path.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings, weights=weights),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        app,
+        ["scan", "https://github.com/owner/repo", "--remote", "--config", str(config)],
+    )
+
+    assert result.exit_code == 1
+    assert "RepoTrust Summary" in result.stderr
 
 
 def test_cli_invalid_config_exits_with_usage_error(tmp_path):

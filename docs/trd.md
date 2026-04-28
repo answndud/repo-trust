@@ -121,14 +121,21 @@ Score key:
 
 JSON report를 stdout으로 출력할 때는 summary/table이 섞이면 안 된다. 상태 출력은 stderr에만 기록한다.
 
+Schema version policy:
+
+- `schema_version` remains `"1.0"` while changes only add new stable finding IDs or renderer behavior without changing top-level JSON keys.
+- Adding top-level JSON keys, renaming existing keys, changing finding key names, or changing score key names requires an intentional schema review before release.
+- Stable finding IDs are part of the JSON contract; changing an existing ID's meaning should create a new ID instead of reusing the old one.
+
 ## Config File v1 Design
 
-Config file support is implemented as an explicit local-only policy layer. The conventional file name is `repotrust.toml`, but v1 only loads a config when `--config <path>` is provided.
+Config file support is implemented as an explicit file-based policy layer. The conventional file name is `repotrust.toml`, but v1 only loads a config when `--config <path>` is provided.
 
 CLI behavior:
 
 - Default scan remains config-free.
 - `--config <path>` loads an explicit TOML config file.
+- Loaded `fail_under` and `weights` apply consistently to local scans and explicit remote scans.
 - Auto-discovery may later look for `repotrust.toml` at the scanned repository root, but v1 does not auto-load it.
 - CLI flags override config values when both are provided.
 
@@ -202,7 +209,21 @@ Read-only API scope:
 - Repository metadata: `GET /repos/{owner}/{repo}`.
 - README/content metadata: repository contents API. README와 root file인 LICENSE, SECURITY, manifest, lockfile을 확인한다.
 - CI signal: GitHub Actions workflows API, 특히 repository workflow 목록을 확인한다.
-- Release signal은 나중에 releases endpoint로 추가할 수 있지만 첫 remote MVP 필수 범위는 아니다.
+- Release signal은 나중에 releases/tags endpoint로 추가할 수 있지만 현재 구현 범위에서는 점수화하지 않는다.
+
+Remote release/tag freshness design:
+
+- Candidate endpoints:
+  - Latest release metadata: `GET /repos/{owner}/{repo}/releases/latest`.
+  - Tags list fallback: `GET /repos/{owner}/{repo}/tags?per_page=1`.
+- Failure modes:
+  - `404` from latest release can mean no GitHub Release practice, not necessarily stale maintenance.
+  - Tags without releases can be valid for small libraries or tools.
+  - API errors, rate limits, and permission failures must remain remote failure/partial metadata, not stale-release deductions.
+- Scoring policy:
+  - Do not score release freshness until RepoTrust can identify that release freshness is relevant for the project type.
+  - A future freshness finding must start at `low` or `medium`, include release/tag date evidence, and explain why the project appears release-managed.
+  - A stale finding should require an installable/package signal such as dependency manifest plus release/tag metadata, not repository age or popularity alone.
 
 Failure modes as findings:
 
@@ -211,11 +232,17 @@ Failure modes as findings:
 - `remote.github_rate_limited`: primary or secondary rate limit prevents scan completion.
 - `remote.github_api_error`: other non-success API response.
 - `remote.github_partial_scan`: some endpoints failed but enough data was collected to score partially.
+- `remote.github_archived`: repository metadata has `archived=true`; this is a project hygiene deduction.
+- `remote.github_issues_disabled`: repository metadata has `has_issues=false`; this is a low project hygiene deduction.
 
 Scoring behavior:
 
 - Remote scan은 기존 `ScanResult`, `Finding`, scoring model을 재사용한다.
 - 알 수 없는 remote 상태는 신뢰 판단 영향도에 따라 `info` 또는 `medium` finding으로 표현한다.
+- `archived=true`처럼 명확한 maintenance risk metadata는 `PROJECT_HYGIENE` finding으로 점수에 반영한다.
+- `has_issues=false`는 public support path가 덜 명확하다는 낮은 project hygiene signal로만 반영한다.
+- fork/private/default branch/stars/language/size/created date와 `security_and_analysis` 세부 값은 JSON contract에서 evidence-only metadata 표현이 설계될 때까지 점수화하지 않는다.
+- release/tag freshness는 project type과 release practice를 구분할 수 있을 때까지 점수화하지 않는다.
 - API 실패를 repository file 부재로 조용히 해석하지 않는다.
 
 Testing approach:
