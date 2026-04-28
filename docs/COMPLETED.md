@@ -492,3 +492,12 @@
 - 코드/문서: `src/repotrust/console.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`를 실행했고 `34 passed`를 확인했다. Console launcher, local HTML workflow, recent reports workflow, `repo-trust --help` 비-launcher 동작을 테스트로 고정했다.
 - 결과: Console Mode가 Command Mode와 별도 코드 경계로 분리됐고, `repo-trust` 무인자 실행은 최근 리포트 탐색까지 포함하는 제품형 shell 화면으로 동작한다.
+
+## 053: Command Mode assessment renderer 분리
+
+- 완료일: 2026-04-28
+- 배경: 직접 명령(`repo-trust html/json/check`)의 dashboard가 Console Mode와 같은 `cli.py` helper에 섞여 있었고, 화면도 OSINT/보안 도구처럼 판단, 근거, finding, 다음 조치가 분리된 구조가 아니었다.
+- 변경 내용: `src/repotrust/dashboard.py`를 추가해 Command Mode terminal assessment renderer를 별도 모듈로 분리했다. 직접 명령 결과는 `COMMAND MODE` header, `Trust Assessment`, `Risk Breakdown`, `Evidence`, `Top Findings`, `Next Actions` 섹션으로 출력된다. Legacy `repotrust scan`은 `RepoTrust Summary` 출력으로 유지했다. README, architecture, testing docs를 Console Mode/Command Mode 분리 구조와 새 dashboard 용어에 맞췄다.
+- 코드/문서: `src/repotrust/dashboard.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `77 passed`를 확인했다. `git diff --check`도 통과했다. `printf '5\n' | .venv/bin/repo-trust`로 Console Mode recent reports smoke를 확인했고, `.venv/bin/repo-trust html . --output /tmp/repotrust-command-dashboard.html`로 Command Mode assessment dashboard smoke를 확인했다.
+- 결과: Console Mode와 Command Mode가 코드와 UX에서 분리됐고, 직접 명령 결과 화면은 판정, 리스크 분해, 근거, 주요 finding, 다음 행동 중심의 제품형 terminal assessment로 정리됐다. 현재 active 작업은 없다.

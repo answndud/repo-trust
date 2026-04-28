@@ -12,23 +12,20 @@
 
 ## 현재 작업
 
-Command Mode assessment renderer
+현재 active 작업 없음
 
 ## 개발 상태 요약
 
-- milestone: Console Mode와 Command Mode를 분리해 terminal product experience를 개선한다.
-- 완료한 story: `repo-trust` 무인자 실행을 별도 Console Mode 모듈과 richer shell 화면으로 재설계했다.
-- 현재 story: `repo-trust html/json/check` 직접 명령의 결과 화면을 별도 renderer 모듈로 분리하고 보안/OSINT 도구처럼 재설계한다.
-- `src/repotrust/console.py`는 추가 완료했다.
+현재 active 작업 없음
 
 ## Blocker
 
-현재 blocker 없음
+현재 active 작업 없음
 
 ## 최근 검증
 
-- `.venv/bin/python -m pytest tests/test_cli.py -q` 실행: `34 passed` (Console Mode story)
+현재 active 작업 없음
 
 ## 다음 액션
 
-Command Mode dashboard renderer를 별도 모듈로 분리하고 `Trust Assessment`, `Risk Breakdown`, `Evidence`, `Top Findings`, `Next Actions` 섹션을 구현한다.
+현재 active 작업 없음

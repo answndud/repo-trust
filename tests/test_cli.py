@@ -104,9 +104,9 @@ def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     result = runner.invoke(direct_app, [], input="1\n.\n", prog_name="repo-trust")
 
     assert result.exit_code == 0
-    assert "RepoTrust Dashboard" in result.stderr
-    assert "Category Scores" in result.stderr
-    assert "Evidence Snapshot" in result.stderr
+    assert "Trust Assessment" in result.stderr
+    assert "Risk Breakdown" in result.stderr
+    assert "Evidence" in result.stderr
     assert "Wrote html report" in result.stderr
 
 
@@ -169,9 +169,10 @@ def test_direct_cli_html_github_url_remote_scan_writes_default_output(monkeypatc
     assert "<!doctype html>" in output.read_text(encoding="utf-8")
     assert calls == [("https://github.com/owner/repo", None, True)]
     assert "RepoTrust" in result.stderr
-    assert "RepoTrust Dashboard" in result.stderr
-    assert "Category Scores" in result.stderr
-    assert "Evidence Snapshot" in result.stderr
+    assert "Trust Assessment" in result.stderr
+    assert "Risk Breakdown" in result.stderr
+    assert "Evidence" in result.stderr
+    assert "Top Findings" in result.stderr
     assert f"result/repo-{date.today().isoformat()}.html" in plain_output(result.stderr)
 
 
@@ -209,7 +210,7 @@ def test_direct_cli_json_github_url_remote_scan_writes_default_output(monkeypatc
     data = json.loads(output.read_text(encoding="utf-8"))
     assert data["target"]["kind"] == "github"
     assert calls == [("https://github.com/owner/repo", None, True)]
-    assert "RepoTrust Dashboard" in result.stderr
+    assert "Trust Assessment" in result.stderr
 
 
 def test_direct_cli_check_github_url_prints_terminal_dashboard(monkeypatch):
@@ -247,7 +248,7 @@ def test_direct_cli_check_github_url_prints_terminal_dashboard(monkeypatch):
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "# RepoTrust Report" in result.stderr
-    assert "RepoTrust Dashboard" in result.stderr
+    assert "Trust Assessment" in result.stderr
     assert "remote.github_metadata_collected" in result.stderr
 
 

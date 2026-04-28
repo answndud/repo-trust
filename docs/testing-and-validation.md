@@ -60,7 +60,7 @@ EOF
 Expected behavior:
 
 - Local paths are scanned without network access.
-- `repo-trust` without a subcommand opens the interactive launcher.
+- `repo-trust` without a subcommand opens Console Mode with workflow cards and recent reports.
 - `repo-trust --help` still prints command help instead of opening the launcher.
 - Product CLI GitHub URL commands use GitHub API read-only metadata by default and never clone repositories.
 - `--parse-only` parses a GitHub URL without GitHub API access.
@@ -74,11 +74,11 @@ Expected behavior:
 
 | Scenario | Expected exit code | Report output | Status output |
 | --- | ---: | --- | --- |
-| `repo-trust` without subcommand | 0 | selected workflow result | interactive launcher on stderr |
+| `repo-trust` without subcommand | 0 | selected workflow result | Console Mode shell on stderr |
 | `repo-trust --help` | 0 | help text | no launcher |
-| `repo-trust html/json` with GitHub URL | 0 unless `--fail-under` fails | dated file in `result/` unless `--output` is set | stderr dashboard |
-| `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | terminal report only | stderr dashboard |
-| `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr dashboard |
+| `repo-trust html/json` with GitHub URL | 0 unless `--fail-under` fails | dated file in `result/` unless `--output` is set | stderr `Trust Assessment` dashboard |
+| `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | terminal report only | stderr `Trust Assessment` dashboard |
+| `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr `Trust Assessment` dashboard |
 | Existing local path with default threshold | 0 | stdout unless `--output` is set | stderr summary |
 | Missing local path | 0 | finding `target.local_path_missing` | stderr summary |
 | Local path with `--remote` | 2 | no report | usage error on stderr |

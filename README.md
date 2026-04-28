@@ -39,14 +39,15 @@ repo-trust
 
 ```text
 RepoTrust Console
-Repository trust intelligence for local paths and GitHub URLs
+Repository trust intelligence for dependencies, agents, and audits
 
-Choose an operation
-1  Local repository scan  HTML report in result/
-2  GitHub URL scan        HTML report in result/
-3  GitHub URL scan        JSON report in result/
-4  Quick terminal check   Dashboard only
-5  Show help              Command reference
+Workflows
+1  Scan local repository  You already have a checkout
+2  Scan GitHub URL        You want a browser-readable remote report
+3  Export GitHub URL      You need automation-friendly data
+4  Quick check            You want a terminal assessment now
+5  Open recent reports    You want to find prior scan artifacts
+6  Command reference      You want flags and direct commands
 q  Quit
 ```
 
@@ -123,17 +124,24 @@ RepoTrust
 target https://github.com/openai/codex
 mode GitHub remote  format markdown
 
-RepoTrust Dashboard
+Trust Assessment
+Verdict usable by current checks
 Score  92/100  Grade A  Risk LOW RISK
 Findings high:0  medium:0  low:0  info:1
 
-Category Scores
+Risk Breakdown
 readme_quality    100/100
 install_safety    100/100
 
-Evidence Snapshot
+Evidence
 README            found README.md
 LICENSE           found LICENSE
+
+Top Findings
+No findings       No action required by the current rule set
+
+Next Actions
+Open the saved HTML report for the full evidence trail
 ```
 
 실제 출력에는 finding 목록과 다음 조치가 함께 표시될 수 있습니다.

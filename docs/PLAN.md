@@ -13,34 +13,15 @@
 
 ## 현재 목표
 
-Console Mode와 Command Mode를 분리해 유명 CLI/TUI 도구처럼 더 명확한 제품형 터미널 경험으로 개선한다.
+Console Mode와 Command Mode 분리 개선 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 
-1. Command Mode assessment renderer
+현재 active 작업 없음
 
 ## In Progress
 
-### Command Mode assessment renderer
-
-- status: in_progress
-- goal: `repo-trust html/json/check` 직접 명령의 결과 화면을 보안/OSINT 도구처럼 판단, 근거, finding, 다음 조치 중심으로 재설계한다.
-- scope:
-  - Command Mode dashboard 코드를 별도 renderer 모듈로 분리한다.
-  - verdict, score, risk, finding distribution, category score bars, evidence snapshot, top findings, next actions를 구분된 섹션으로 출력한다.
-  - HTML/JSON 명령은 stdout을 비우고 stderr dashboard만 출력하는 contract를 유지한다.
-  - README와 testing docs를 새 화면 구조에 맞춘다.
-- non-goals:
-  - 점수 산식이나 finding ID를 변경하지 않는다.
-  - HTML report renderer에 scan/scoring logic을 넣지 않는다.
-- acceptance criteria:
-  - direct command dashboard에 `Trust Assessment`, `Risk Breakdown`, `Evidence`, `Top Findings`, `Next Actions`가 표시된다.
-  - JSON/HTML 명령은 stdout을 오염시키지 않는다.
-  - 기존 legacy `repotrust scan`은 호환된다.
-- verification commands:
-  - `.venv/bin/python -m pytest -q`
-  - `.venv/bin/repo-trust html . --output /tmp/repotrust-command-dashboard.html`
-- next action: Command Mode dashboard renderer를 별도 모듈로 분리 구현한다.
+현재 active 작업 없음
 
 ## Pending
 
@@ -48,4 +29,4 @@ Console Mode와 Command Mode를 분리해 유명 CLI/TUI 도구처럼 더 명확
 
 ## 다음 실행 순서
 
-1. Command Mode assessment renderer
+현재 active 작업 없음
