@@ -22,6 +22,16 @@ README Quality currently checks for these local signals:
 
 These checks are heuristics. They should identify missing trust signals without claiming that a repository is safe or unsafe by themselves.
 
+## Install Safety Signals
+
+Install Safety currently checks README install instructions for risky execution patterns:
+
+- High severity: shell-piped remote scripts such as `curl ... | sh`, process substitution such as `bash <(curl ...)`, Python inline execution with `python -c`, and `sudo`.
+- Medium severity: global package installs, direct VCS installs such as `pip install git+https://...`, and commands that mark downloaded code executable.
+- Low severity: README exists but no recognizable install command is exposed.
+
+These checks are conservative local heuristics. They flag commands that deserve review before a user or AI agent runs them, but they do not prove malicious intent.
+
 ## Scoring
 
 Current weights:

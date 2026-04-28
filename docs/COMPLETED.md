@@ -42,3 +42,12 @@
 - 코드/문서: `src/repotrust/rules.py`에 목적 설명 heuristic과 finding을 추가했다. `tests/test_scanner.py`에 `GOOD_README` fixture와 `_write_trusted_repo` helper를 추가하고 목적 설명 누락 테스트를 추가했다. `docs/domain-context.md`에는 README Quality가 보는 신호 목록을 문서화했다. `AGENTS.md`에는 작업 완료 후 다음 진행 작업을 최종 응답에 짧게 알리는 규칙을 추가했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `18 passed`를 확인했다.
 - 결과: README Quality가 섹션 존재뿐 아니라 프로젝트가 무엇을 하는지 설명하는 기본 신뢰 신호까지 확인하게 됐다. 현재 active 작업은 없으며, 다음 작업은 `Install Safety 위험 패턴 확장`이다.
+
+## 003: Install Safety 위험 패턴 확장
+
+- 완료일: 2026-04-28
+- 배경: 기존 Install Safety rule은 shell pipe install, `sudo`, global install, `chmod +x`를 탐지했지만, AI agent에게 설치를 맡길 때 문제가 될 수 있는 다른 실행 패턴을 충분히 다루지 못했다.
+- 변경 내용: 위험 패턴 정의를 stable id, regex pattern, label, severity를 가진 구조로 바꿨다. 기존 `install.risky.shell_pipe_install` ID는 유지했고, `bash <(curl ...)` 형태의 process substitution shell execution, `python -c` inline execution, `pip install git+https://...` 직접 VCS install 탐지를 추가했다. 고위험 원격 실행은 high severity, 직접 VCS install과 global/chmod 계열은 medium severity로 정리했다.
+- 코드/문서: `src/repotrust/rules.py`의 `RISKY_INSTALL_PATTERNS`를 구조화하고 새 패턴을 추가했다. `tests/test_scanner.py`에는 process substitution, Python inline execution, direct VCS install 테스트를 추가해 severity와 evidence line을 고정했다. `docs/domain-context.md`에는 Install Safety signal과 severity 기준을 문서화했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `21 passed`를 확인했다.
+- 결과: README install instruction에서 agent가 실행하기 전에 검토해야 할 원격 실행/직접 설치 패턴을 더 잘 포착하게 됐다. 현재 active 작업은 없으며, 다음 작업은 `JSON report contract 정리`다.

@@ -13,10 +13,48 @@ INSTALL_COMMAND_RE = re.compile(
     r"(?im)^\s*(?:[`$>]\s*)?(pip|pipx|npm|pnpm|yarn|uv|poetry|go|cargo|curl|wget|brew|docker)\b.*$"
 )
 RISKY_INSTALL_PATTERNS = (
-    (re.compile(r"\b(curl|wget)\b[^\n|;&]*\|\s*(sh|bash)\b", re.I), "Shell pipe install"),
-    (re.compile(r"\bsudo\b", re.I), "Uses sudo"),
-    (re.compile(r"\bnpm\s+install\s+-g\b|\byarn\s+global\s+add\b", re.I), "Global package install"),
-    (re.compile(r"\bchmod\s+\+x\b", re.I), "Marks downloaded code executable"),
+    {
+        "id": "install.risky.shell_pipe_install",
+        "pattern": re.compile(r"\b(curl|wget)\b[^\n|;&]*\|\s*(sh|bash)\b", re.I),
+        "label": "Shell pipe install",
+        "severity": Severity.HIGH,
+    },
+    {
+        "id": "install.risky.process_substitution_shell",
+        "pattern": re.compile(r"\b(?:bash|sh)\s+<\(\s*(?:curl|wget)\b", re.I),
+        "label": "Process substitution shell execution",
+        "severity": Severity.HIGH,
+    },
+    {
+        "id": "install.risky.python_inline_execution",
+        "pattern": re.compile(r"\bpython3?\s+-c\s+['\"]", re.I),
+        "label": "Python inline execution",
+        "severity": Severity.HIGH,
+    },
+    {
+        "id": "install.risky.uses_sudo",
+        "pattern": re.compile(r"\bsudo\b", re.I),
+        "label": "Uses sudo",
+        "severity": Severity.HIGH,
+    },
+    {
+        "id": "install.risky.global_package_install",
+        "pattern": re.compile(r"\bnpm\s+install\s+-g\b|\byarn\s+global\s+add\b", re.I),
+        "label": "Global package install",
+        "severity": Severity.MEDIUM,
+    },
+    {
+        "id": "install.risky.vcs_direct_install",
+        "pattern": re.compile(r"\b(?:pip|uv)\s+install\s+git\+https?://", re.I),
+        "label": "Direct VCS package install",
+        "severity": Severity.MEDIUM,
+    },
+    {
+        "id": "install.risky.marks_downloaded_code_executable",
+        "pattern": re.compile(r"\bchmod\s+\+x\b", re.I),
+        "label": "Marks downloaded code executable",
+        "severity": Severity.MEDIUM,
+    },
 )
 
 
@@ -151,15 +189,15 @@ def install_safety_rules(detected: DetectedFiles, readme_text: str) -> list[Find
             )
         )
 
-    for pattern, label in RISKY_INSTALL_PATTERNS:
-        match = pattern.search(readme_text)
+    for risky_pattern in RISKY_INSTALL_PATTERNS:
+        match = risky_pattern["pattern"].search(readme_text)
         if match:
             findings.append(
                 Finding(
-                    id=f"install.risky.{label.lower().replace(' ', '_')}",
+                    id=risky_pattern["id"],
                     category=Category.INSTALL_SAFETY,
-                    severity=Severity.HIGH if "pipe" in label.lower() or label == "Uses sudo" else Severity.MEDIUM,
-                    message=f"README install instructions include a risky pattern: {label}.",
+                    severity=risky_pattern["severity"],
+                    message=f"README install instructions include a risky pattern: {risky_pattern['label']}.",
                     evidence=_line_for_match(readme_text, match.start()),
                     recommendation="Prefer package-manager installs with pinned versions, checksums, or reviewed scripts.",
                 )

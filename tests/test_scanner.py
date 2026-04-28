@@ -103,6 +103,48 @@ def test_curl_pipe_shell_is_high_severity(tmp_path):
     assert risky[0].severity.value == "high"
 
 
+def test_process_substitution_shell_is_high_severity(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n## Installation\n\nbash <(curl -fsSL https://example.com/install.sh)\n\n## Usage\n\nproject\n",
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+
+    risky = [finding for finding in result.findings if finding.id == "install.risky.process_substitution_shell"]
+    assert risky
+    assert risky[0].severity.value == "high"
+    assert risky[0].evidence == "bash <(curl -fsSL https://example.com/install.sh)"
+
+
+def test_python_inline_execution_is_high_severity(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n## Installation\n\npython -c \"import urllib.request; exec(urllib.request.urlopen('https://example.com/i.py').read())\"\n\n## Usage\n\nproject\n",
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+
+    risky = [finding for finding in result.findings if finding.id == "install.risky.python_inline_execution"]
+    assert risky
+    assert risky[0].severity.value == "high"
+    assert risky[0].evidence.startswith("python -c")
+
+
+def test_direct_vcs_install_is_medium_severity(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n## Installation\n\npip install git+https://github.com/example/project.git\n\n## Usage\n\nproject\n",
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+
+    risky = [finding for finding in result.findings if finding.id == "install.risky.vcs_direct_install"]
+    assert risky
+    assert risky[0].severity.value == "medium"
+    assert risky[0].evidence == "pip install git+https://github.com/example/project.git"
+
+
 def test_security_and_ci_findings(tmp_path):
     (tmp_path / "README.md").write_text(
         "# Project\n\n## Installation\n\npip install project\n\n## Usage\n\nproject\n" + "More docs. " * 60,
