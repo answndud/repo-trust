@@ -74,16 +74,40 @@ def test_cli_scan_json(tmp_path):
     assert "RepoTrust Summary" not in result.stdout
 
 
-def test_direct_cli_root_shows_product_commands():
-    result = runner.invoke(direct_app, [], prog_name="repo-trust")
+def test_direct_cli_root_starts_interactive_launcher():
+    result = runner.invoke(direct_app, [], input="q\n", prog_name="repo-trust")
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "RepoTrust Console" in stderr
+    assert "Choose an operation" in stderr
+    assert "Local repository scan" in stderr
+    assert "GitHub URL scan" in stderr
+
+
+def test_direct_cli_help_shows_product_commands_without_launcher():
+    result = runner.invoke(direct_app, ["--help"], prog_name="repo-trust")
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
     assert "Usage:" in stdout
-    assert "repo-trust" in stdout
     assert "html" in stdout
     assert "json" in stdout
     assert "check" in stdout
+    assert "RepoTrust Console" not in stdout
+
+
+def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(direct_app, [], input="1\n.\n", prog_name="repo-trust")
+
+    assert result.exit_code == 0
+    assert "RepoTrust Dashboard" in result.stderr
+    assert "Category Scores" in result.stderr
+    assert "Evidence Snapshot" in result.stderr
+    assert "Wrote html report" in result.stderr
 
 
 def test_direct_cli_html_github_url_remote_scan_writes_default_output(monkeypatch, tmp_path):
@@ -130,6 +154,8 @@ def test_direct_cli_html_github_url_remote_scan_writes_default_output(monkeypatc
     assert calls == [("https://github.com/owner/repo", None, True)]
     assert "RepoTrust" in result.stderr
     assert "RepoTrust Dashboard" in result.stderr
+    assert "Category Scores" in result.stderr
+    assert "Evidence Snapshot" in result.stderr
     assert f"result/repo-{date.today().isoformat()}.html" in plain_output(result.stderr)
 
 

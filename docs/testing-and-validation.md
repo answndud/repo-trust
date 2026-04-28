@@ -33,6 +33,7 @@ Use these when changing CLI or report behavior:
 
 ```bash
 .venv/bin/repo-trust --help
+.venv/bin/repo-trust
 .venv/bin/repo-trust html . --output /tmp/repotrust-report.html
 .venv/bin/repo-trust json https://github.com/answndud/repo-trust
 .venv/bin/repo-trust check https://github.com/openai/codex --parse-only
@@ -59,6 +60,8 @@ EOF
 Expected behavior:
 
 - Local paths are scanned without network access.
+- `repo-trust` without a subcommand opens the interactive launcher.
+- `repo-trust --help` still prints command help instead of opening the launcher.
 - Product CLI GitHub URL commands use GitHub API read-only metadata by default and never clone repositories.
 - `--parse-only` parses a GitHub URL without GitHub API access.
 - Legacy `repotrust scan` keeps parse-only GitHub URL behavior unless `--remote` is provided.
@@ -71,6 +74,8 @@ Expected behavior:
 
 | Scenario | Expected exit code | Report output | Status output |
 | --- | ---: | --- | --- |
+| `repo-trust` without subcommand | 0 | selected workflow result | interactive launcher on stderr |
+| `repo-trust --help` | 0 | help text | no launcher |
 | `repo-trust html/json` with GitHub URL | 0 unless `--fail-under` fails | dated file in `result/` unless `--output` is set | stderr dashboard |
 | `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | terminal report only | stderr dashboard |
 | `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr dashboard |

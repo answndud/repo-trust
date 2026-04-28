@@ -187,6 +187,7 @@ Current implementation boundary:
 - Legacy `--remote` is rejected for local path targets.
 - Legacy GitHub URL without `--remote` remains parse-only.
 - Product `repo-trust html/json/check <github-url>` defaults to remote scan.
+- Product `repo-trust` without a subcommand opens an interactive launcher that routes to the same `html/json/check` execution path.
 - Product `--parse-only` keeps URL-only behavior without GitHub API access.
 - GitHub URL remote scans enter `remote.py`, request repository metadata, and convert repository metadata API failures into findings.
 - Remote root contents and workflow metadata are converted into `DetectedFiles`.
@@ -196,6 +197,7 @@ Current implementation boundary:
 Interface:
 
 - `repo-trust html/json/check <github-url>` 기본 동작은 GitHub API remote scan이다.
+- `repo-trust` 무인자 실행은 interactive launcher를 열고 선택한 workflow를 같은 scan/report path로 전달한다.
 - `repo-trust html/json/check <github-url> --parse-only`는 URL parse-only로 유지한다.
 - `repotrust scan <github-url>` 기본 동작은 legacy compatibility를 위해 URL parse-only로 유지한다.
 - `repotrust scan <github-url> --remote`는 legacy path에서 GitHub API remote scan을 실행한다.

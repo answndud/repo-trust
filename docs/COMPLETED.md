@@ -474,3 +474,12 @@
 - 코드/문서: `src/repotrust/cli.py`, `src/repotrust/rules.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/prd.md`, `docs/trd.md`, `docs/adr.md`, `docs/domain-context.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `74 passed`를 확인했다. `git diff --check`도 통과했다. `.venv/bin/repo-trust --help`, `.venv/bin/repo-trust html . --output /tmp/repotrust-final.html`, `.venv/bin/repo-trust check https://github.com/openai/codex --parse-only` smoke check를 확인했다.
 - 결과: 공식 CLI는 `repo-trust html URL`, `repo-trust json URL`, `repo-trust check URL`, `repo-trust html .` 흐름으로 정리됐고, README도 새 명령 기준의 한국어 사용자 가이드로 갱신됐다. 현재 active 작업은 없다.
+
+## 051: Interactive CLI launcher와 richer dashboard
+
+- 완료일: 2026-04-28
+- 배경: `repo-trust`를 처음 실행했을 때 help만 출력되는 흐름은 제품 CLI처럼 보이지 않았고, terminal dashboard도 점수와 finding 수 위주라 OSINT 도구 같은 정보 밀도와 시각적 인상이 부족했다.
+- 변경 내용: `repo-trust` 무인자 실행 시 Rich 기반 interactive launcher를 열어 로컬 HTML 검사, GitHub URL HTML/JSON 검사, 빠른 terminal check, help, quit을 선택할 수 있게 했다. `repo-trust --help`와 `repo-trust html/json/check`는 기존처럼 직접 실행된다. 대시보드는 점수/risk/findings/output/next action 패널에 category score bar와 detected file evidence snapshot을 추가했다.
+- 코드/문서: `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/prd.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `76 passed`를 확인했다. `printf 'q\n' | .venv/bin/repo-trust`로 interactive launcher smoke를 확인했고, `.venv/bin/repo-trust html . --output /tmp/repotrust-richer-dashboard.html`로 richer dashboard smoke를 확인했다.
+- 결과: 사용자는 `repo-trust`만 입력해 메뉴에서 검사 흐름을 선택할 수 있고, 직접 명령을 실행해도 더 풍부한 terminal dashboard를 볼 수 있다. 현재 active 작업은 없다.

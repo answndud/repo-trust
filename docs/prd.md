@@ -56,6 +56,7 @@ v0.1.0 baseline에 포함한다:
 v0.1.0 이후 post-v1 작업으로 explicit remote scan이 추가됐다:
 
 - 공식 사용자 CLI는 `repo-trust html/json/check <target>` command group이다.
+- `repo-trust`만 실행하면 interactive launcher가 열려 로컬 검사, GitHub URL 검사, HTML/JSON 저장, 빠른 터미널 확인을 선택할 수 있다.
 - `repo-trust html/json/check <github-url>`은 GitHub REST API read-only metadata를 기본으로 조회한다.
 - `repo-trust html/json/check <github-url> --parse-only`는 네트워크 없이 URL만 파싱한다.
 - legacy `repotrust scan <github-url>`은 계속 parse-only로 유지하고, `--remote`를 명시했을 때만 remote scan을 실행한다.

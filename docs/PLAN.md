@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-CLI UX and terminal design redesign 완료. 현재 active 작업 없음
+Interactive CLI launcher and richer dashboard 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

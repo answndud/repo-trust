@@ -4,7 +4,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 
 ## Current Package Layout
 
-- `src/repotrust/cli.py`: Typer CLI entrypoint and terminal behavior.
+- `src/repotrust/cli.py`: Typer CLI entrypoint, interactive launcher, and terminal dashboard behavior.
 - `src/repotrust/config.py`: explicit TOML config loading and validation.
 - `src/repotrust/scanner.py`: orchestration for local targets and GitHub URL targets.
 - `src/repotrust/targets.py`: target classification and GitHub URL parsing.
@@ -18,7 +18,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 
 ## Data Flow
 
-1. `repo-trust html/json/check <target>` or legacy `repotrust scan <target>` enters through `cli.py`.
+1. `repo-trust` interactive launcher, `repo-trust html/json/check <target>`, or legacy `repotrust scan <target>` enters through `cli.py`.
 2. If `--config <path>` is provided, `config.py` loads and validates the local policy file.
 3. `scanner.scan()` calls `targets.parse_target()`.
 4. Local paths are inspected with `detection.detect_files()`.

@@ -9,6 +9,7 @@ from typing import Annotated
 import typer
 from rich.console import Console
 from rich.panel import Panel
+from rich.prompt import Prompt
 from rich.table import Table
 
 from . import __version__
@@ -116,7 +117,7 @@ def product_main(
         typer.echo(f"repo-trust {__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
+        _run_interactive_launcher(ctx)
         raise typer.Exit()
 
 
@@ -278,6 +279,109 @@ def _run_product_scan(
     )
 
 
+def _run_interactive_launcher(ctx: typer.Context) -> None:
+    _print_launcher_header()
+    while True:
+        _print_launcher_menu()
+        choice = Prompt.ask(
+            "Select workflow",
+            choices=["1", "2", "3", "4", "5", "q"],
+            default="1",
+            console=status_console,
+        )
+        if choice == "q":
+            status_console.print("[dim]Session closed.[/dim]")
+            return
+        if choice == "5":
+            status_console.print(ctx.get_help())
+            return
+        _run_launcher_choice(choice)
+        return
+
+
+def _print_launcher_header() -> None:
+    status_console.print(
+        Panel.fit(
+            "[bold cyan]RepoTrust Console[/bold cyan]\n"
+            "[dim]Repository trust intelligence for local paths and GitHub URLs[/dim]\n\n"
+            "[bold]Fast paths[/bold]\n"
+            "  repo-trust html <target>\n"
+            "  repo-trust json <target>\n"
+            "  repo-trust check <target>",
+            title="REPO-TRUST",
+            subtitle=f"v{__version__}",
+            border_style="cyan",
+        )
+    )
+
+
+def _print_launcher_menu() -> None:
+    table = Table(title="Choose an operation", show_header=True, header_style="bold cyan")
+    table.add_column("No.", justify="center", style="cyan", no_wrap=True)
+    table.add_column("Workflow")
+    table.add_column("Result")
+    table.add_row("1", "Local repository scan", "HTML report in result/")
+    table.add_row("2", "GitHub URL scan", "HTML report in result/")
+    table.add_row("3", "GitHub URL scan", "JSON report in result/")
+    table.add_row("4", "Quick terminal check", "Dashboard only")
+    table.add_row("5", "Show help", "Command reference")
+    table.add_row("q", "Quit", "Exit without scanning")
+    status_console.print(table)
+
+
+def _run_launcher_choice(choice: str) -> None:
+    if choice == "1":
+        target = Prompt.ask("Local path", default=".", console=status_console)
+        _run_product_scan(
+            target=target,
+            report_format=ReportFormat.HTML,
+            output=None,
+            config=None,
+            parse_only=False,
+            fail_under=None,
+            verbose=False,
+        )
+        return
+
+    if choice == "2":
+        target = Prompt.ask("GitHub URL", console=status_console)
+        _run_product_scan(
+            target=target,
+            report_format=ReportFormat.HTML,
+            output=None,
+            config=None,
+            parse_only=False,
+            fail_under=None,
+            verbose=False,
+        )
+        return
+
+    if choice == "3":
+        target = Prompt.ask("GitHub URL", console=status_console)
+        _run_product_scan(
+            target=target,
+            report_format=ReportFormat.JSON,
+            output=None,
+            config=None,
+            parse_only=False,
+            fail_under=None,
+            verbose=False,
+        )
+        return
+
+    target = Prompt.ask("Local path or GitHub URL", default=".", console=status_console)
+    _run_product_scan(
+        target=target,
+        report_format=ReportFormat.MARKDOWN,
+        output=None,
+        config=None,
+        parse_only=False,
+        fail_under=None,
+        verbose=True,
+        terminal_only=True,
+    )
+
+
 def _run_scan(
     *,
     target: str,
@@ -391,19 +495,15 @@ def _print_header(*, target: str, mode: str, report_format: ReportFormat) -> Non
 
 
 def _print_dashboard(result: ScanResult, verbose: bool, output_label: Path | None) -> None:
-    table = Table(title="RepoTrust Dashboard", show_header=False)
-    table.add_column("Metric", style="dim")
-    table.add_column("Value")
-    table.add_row("Target", result.target.raw)
-    table.add_row("Mode", _scan_mode(result.target.kind, _is_remote_result(result)))
-    table.add_row("Score", f"{result.score.total}/{result.score.max_score}")
-    table.add_row("Grade", result.score.grade)
-    table.add_row("Risk", _risk_badge(result.score.risk_label))
-    table.add_row("Findings", _finding_counts(result))
-    if output_label is not None:
-        table.add_row("Output", str(output_label))
-    table.add_row("Next", _next_action(result, output_label))
-    status_console.print(table)
+    status_console.print(
+        Panel(
+            _scorecard_text(result, output_label),
+            title="RepoTrust Dashboard",
+            border_style=_risk_border_style(result.score.risk_label),
+        )
+    )
+    status_console.print(_category_table(result))
+    status_console.print(_evidence_table(result))
 
     if verbose and result.findings:
         _print_findings(result)
@@ -441,6 +541,64 @@ def _finding_counts(result: ScanResult) -> str:
     return "  ".join(f"{name}:{count}" for name, count in counts.items())
 
 
+def _scorecard_text(result: ScanResult, output_label: Path | None) -> str:
+    output = str(output_label) if output_label is not None else "terminal only"
+    return (
+        f"[dim]Target[/dim] {result.target.raw}\n"
+        f"[dim]Mode[/dim] {_scan_mode(result.target.kind, _is_remote_result(result))}\n\n"
+        f"[bold]Score[/bold] [bold cyan]{result.score.total}/{result.score.max_score}[/bold cyan]  "
+        f"[bold]Grade[/bold] [bold]{result.score.grade}[/bold]  "
+        f"[bold]Risk[/bold] {_risk_badge(result.score.risk_label)}\n"
+        f"[bold]Findings[/bold] {_finding_counts(result)}\n"
+        f"[bold]Output[/bold] {output}\n\n"
+        f"[bold]Next[/bold] {_next_action(result, output_label)}"
+    )
+
+
+def _category_table(result: ScanResult) -> Table:
+    table = Table(title="Category Scores", header_style="bold cyan")
+    table.add_column("Category")
+    table.add_column("Score", justify="right")
+    table.add_column("Signal")
+    for category, score in result.score.categories.items():
+        table.add_row(category, f"{score}/100", _score_bar(score))
+    return table
+
+
+def _evidence_table(result: ScanResult) -> Table:
+    detected = result.detected_files
+    table = Table(title="Evidence Snapshot", header_style="bold cyan")
+    table.add_column("Signal")
+    table.add_column("Status")
+    table.add_row("README", _present_value(detected.readme))
+    table.add_row("LICENSE", _present_value(detected.license))
+    table.add_row("SECURITY", _present_value(detected.security))
+    table.add_row("CI workflows", _present_count(detected.ci_workflows))
+    table.add_row("Dependency manifests", _present_count(detected.dependency_manifests))
+    table.add_row("Lockfiles", _present_count(detected.lockfiles))
+    table.add_row("Dependabot", _present_value(detected.dependabot))
+    return table
+
+
+def _score_bar(score: int) -> str:
+    filled = max(0, min(10, round(score / 10)))
+    empty = 10 - filled
+    style = "green" if score >= 90 else "yellow" if score >= 70 else "red"
+    return f"[{style}]{'█' * filled}{'░' * empty}[/{style}]"
+
+
+def _present_value(value: str | None) -> str:
+    if value:
+        return f"[green]found[/green] [dim]{value}[/dim]"
+    return "[red]missing[/red]"
+
+
+def _present_count(values: list[str]) -> str:
+    if values:
+        return f"[green]{len(values)} found[/green] [dim]{', '.join(values[:3])}[/dim]"
+    return "[red]missing[/red]"
+
+
 def _risk_badge(risk_label: str) -> str:
     normalized = risk_label.lower()
     if "high" in normalized or "elevated" in normalized:
@@ -450,6 +608,15 @@ def _risk_badge(risk_label: str) -> str:
     else:
         style = "green"
     return f"[bold {style}]{risk_label.upper()}[/bold {style}]"
+
+
+def _risk_border_style(risk_label: str) -> str:
+    normalized = risk_label.lower()
+    if "high" in normalized or "elevated" in normalized:
+        return "red"
+    if "moderate" in normalized:
+        return "yellow"
+    return "green"
 
 
 def _next_action(result: ScanResult, output_label: Path | None) -> str:
