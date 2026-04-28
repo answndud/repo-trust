@@ -447,3 +447,12 @@
 - 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다.
 - 결과: README의 실행 흐름이 로컬 검사 → URL 검사 → 리포트 해석으로 이어지고, 입력 명령과 출력 파일 예시가 구분된다. 현재 active 작업은 없다.
+
+## 048: README GitHub URL HTML/JSON 저장 사용법 보강
+
+- 완료일: 2026-04-28
+- 배경: README가 로컬 폴더 검사 중심으로 설명되어 GitHub URL 검사 결과를 HTML/JSON 파일로 저장하는 방법이 명확하지 않았다.
+- 변경 내용: GitHub URL 검사 섹션을 `HTML로 저장`, `JSON으로 저장` 하위 섹션으로 나눴다. 각 섹션에 URL을 직접 검사하는 입력 명령과 `result/codex-YYYY-MM-DD.html`, `result/codex-YYYY-MM-DD.json` 생성 파일 예시를 분리해 추가했다. `--remote` 없이 실행하면 parse-only라는 설명도 함께 정리했다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다.
+- 결과: README에서 GitHub URL 검사 결과를 HTML/JSON으로 저장하는 사용법을 바로 확인할 수 있다. 현재 active 작업은 없다.

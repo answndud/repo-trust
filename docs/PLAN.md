@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-README 명령 예시 중복 제거와 흐름 개선 완료. 현재 active 작업 없음
+README GitHub URL HTML/JSON 저장 사용법 보강 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

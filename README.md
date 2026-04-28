@@ -47,17 +47,11 @@ result/report-YYYY-MM-DD.html
 
 ## 3. GitHub URL 검사
 
-GitHub URL도 검사할 수 있습니다. 기본 모드는 URL만 파싱하며, clone하거나 GitHub API를 호출하지 않습니다.
+GitHub URL을 직접 넣어 검사 결과를 HTML이나 JSON 파일로 저장할 수 있습니다. 원격 저장소 내용을 보려면 `--remote`를 명시해야 합니다.
 
-**입력할 명령**
+`--remote`는 GitHub REST API의 read-only metadata를 조회합니다. repository를 clone하지 않습니다.
 
-```bash
-repo-trust "https://github.com/openai/codex"
-```
-
-이 경우 `target.github_not_fetched` finding이 나올 수 있습니다. 의미는 “GitHub URL은 인식했지만 저장소 파일은 가져오지 않았다”입니다.
-
-원격 저장소 metadata까지 확인하려면 `--remote`를 명시합니다.
+### HTML로 저장
 
 **입력할 명령**
 
@@ -71,7 +65,25 @@ repo-trust "https://github.com/openai/codex" --remote --format html --output cod
 result/codex-YYYY-MM-DD.html
 ```
 
-`--remote`는 GitHub REST API의 read-only metadata를 조회합니다. repository를 clone하지 않습니다.
+HTML 리포트는 브라우저에서 읽기 좋습니다. 저장소를 dependency로 넣기 전에 사람이 직접 확인할 때 이 형식을 쓰면 됩니다.
+
+### JSON으로 저장
+
+**입력할 명령**
+
+```bash
+repo-trust "https://github.com/openai/codex" --remote --format json --output codex.json
+```
+
+**생성되는 파일 예시**
+
+```text
+result/codex-YYYY-MM-DD.json
+```
+
+JSON 리포트는 CI, 자동화, 다른 도구 연동에 적합합니다.
+
+`--remote`를 빼면 RepoTrust는 URL만 파싱하고 원격 파일을 가져오지 않습니다. 이 경우 `target.github_not_fetched` finding이 나올 수 있습니다.
 
 Private repository를 검사하거나 rate limit을 줄이고 싶으면 `GITHUB_TOKEN`을 사용합니다.
 
