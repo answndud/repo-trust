@@ -27,6 +27,11 @@ direct_app = typer.Typer(
     add_completion=False,
     invoke_without_command=True,
 )
+direct_kr_app = typer.Typer(
+    help="Inspect repository trust signals and write clear local reports.",
+    add_completion=False,
+    invoke_without_command=True,
+)
 status_console = Console(stderr=True)
 
 
@@ -116,11 +121,32 @@ def product_main(
         typer.echo(f"repo-trust {__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        _run_console_shell(ctx)
+        _run_console_shell(ctx, locale="en")
+        raise typer.Exit()
+
+
+@direct_kr_app.callback()
+def product_kr_main(
+    ctx: typer.Context,
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            help="Show the RepoTrust version and exit.",
+        ),
+    ] = False,
+) -> None:
+    """Inspect repository trust signals and write clear local reports."""
+    if version:
+        typer.echo(f"repo-trust-kr {__version__}")
+        raise typer.Exit()
+    if ctx.invoked_subcommand is None:
+        _run_console_shell(ctx, locale="ko")
         raise typer.Exit()
 
 
 @direct_app.command("html")
+@direct_kr_app.command("html")
 def html_report(
     target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
     output: Annotated[
@@ -164,6 +190,7 @@ def html_report(
 
 
 @direct_app.command("json")
+@direct_kr_app.command("json")
 def json_report(
     target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
     output: Annotated[
@@ -207,6 +234,7 @@ def json_report(
 
 
 @direct_app.command("check")
+@direct_kr_app.command("check")
 def check(
     target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
     config: Annotated[
@@ -283,12 +311,13 @@ def _run_product_scan(
     )
 
 
-def _run_console_shell(ctx: typer.Context) -> None:
+def _run_console_shell(ctx: typer.Context, *, locale: str) -> None:
     run_console_mode(
         console=status_console,
         help_text=ctx.get_help,
         version=__version__,
         run_workflow=_run_console_workflow,
+        locale=locale,
     )
 
 

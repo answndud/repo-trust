@@ -5,7 +5,14 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from repotrust.cli import ReportFormat, _default_output_path, _resolve_output_path, app, direct_app
+from repotrust.cli import (
+    ReportFormat,
+    _default_output_path,
+    _resolve_output_path,
+    app,
+    direct_app,
+    direct_kr_app,
+)
 from repotrust.models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
 from repotrust.scoring import calculate_score
 
@@ -30,6 +37,13 @@ def test_direct_cli_version():
 
     assert result.exit_code == 0
     assert result.stdout.strip() == "repo-trust 0.1.0"
+
+
+def test_direct_kr_cli_version():
+    result = runner.invoke(direct_kr_app, ["--version"], prog_name="repo-trust-kr")
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "repo-trust-kr 0.1.0"
 
 
 def test_cli_root_without_command_shows_help():
@@ -108,6 +122,20 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert "Scan GitHub URL" in stderr
 
 
+def test_direct_kr_cli_root_starts_korean_interactive_launcher():
+    result = runner.invoke(direct_kr_app, [], input="q\n", prog_name="repo-trust-kr")
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "RepoTrust 한국어 콘솔" in stderr
+    assert "워크플로우" in stderr
+    assert "로컬 저장소 검사" in stderr
+    assert "GitHub URL 검사" in stderr
+    assert "세션을 종료했습니다." in stderr
+    assert "Scan local repository" not in stderr
+
+
 def test_direct_cli_help_shows_product_commands_without_launcher():
     result = runner.invoke(direct_app, ["--help"], prog_name="repo-trust")
     stdout = plain_output(result.stdout)
@@ -120,6 +148,18 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "RepoTrust Console" not in stdout
 
 
+def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
+    result = runner.invoke(direct_kr_app, ["--help"], prog_name="repo-trust-kr")
+    stdout = plain_output(result.stdout)
+
+    assert result.exit_code == 0
+    assert "Usage:" in stdout
+    assert "html" in stdout
+    assert "json" in stdout
+    assert "check" in stdout
+    assert "RepoTrust 한국어 콘솔" not in stdout
+
+
 def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
@@ -130,6 +170,19 @@ def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     assert "Risk Breakdown" in result.stderr
     assert "Evidence" in result.stderr
     assert "Wrote html report" in result.stderr
+
+
+def test_direct_kr_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(direct_kr_app, [], input="1\n.\n", prog_name="repo-trust-kr")
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "로컬 경로" in stderr
+    assert "Trust Assessment" in result.stderr
+    assert "Wrote html report" in result.stderr
+    assert (tmp_path / "result").exists()
 
 
 def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):

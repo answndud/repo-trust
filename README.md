@@ -15,38 +15,49 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[dev]'
 repo-trust --version
+repo-trust-kr --version
 ```
 
 **예상 출력**
 
 ```text
 repo-trust 0.1.0
+repo-trust-kr 0.1.0
 ```
 
 터미널을 새로 열었다면 실행 전에 `source .venv/bin/activate`로 가상환경을 다시 활성화하세요.
 
-## 2. Usage / 두 가지 사용 방식
+## 2. Usage / 세 가지 진입점
 
-RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
+RepoTrust는 같은 검사 기능을 Console Mode와 Command Mode로 제공합니다. Console Mode는 터미널 안에서 메뉴를 고르는 방식이고, Command Mode는 명령을 한 줄로 직접 입력하는 방식입니다.
 
 | 방식 | 입력 | 언제 쓰나 | 출력 |
 | --- | --- | --- | --- |
-| Console Mode | `repo-trust` | 처음 쓰거나 메뉴에서 고르고 싶을 때 | 터미널 메뉴에서 workflow 선택 |
+| English Console Mode | `repo-trust` | 영어 메뉴로 workflow를 고르고 싶을 때 | 터미널 메뉴에서 workflow 선택 |
+| Korean Console Mode | `repo-trust-kr` | 한국어 메뉴로 같은 workflow를 고르고 싶을 때 | 터미널 메뉴에서 workflow 선택 |
 | Command Mode | `repo-trust html/json/check <target>` | 같은 검사를 반복하거나 자동화할 때 | HTML/JSON 파일 또는 터미널 assessment |
 
-처음 사용하는 사람은 Console Mode로 시작하고, 익숙해진 뒤에는 Command Mode를 쓰면 됩니다. 공개 피드백을 받을 때는 먼저 자기 저장소나 이미 아는 프로젝트를 로컬로 검사해 결과가 기대와 맞는지 확인해 보세요.
+처음 사용하는 사람은 `repo-trust-kr`로 한국어 Console Mode를 열어 workflow를 익히면 됩니다. 익숙해진 뒤에는 `repo-trust html`, `repo-trust json`, `repo-trust check`를 직접 입력하면 반복 실행과 자동화가 쉽습니다. 공개 피드백을 받을 때는 먼저 자기 저장소나 이미 아는 프로젝트를 로컬로 검사해 결과가 기대와 맞는지 확인해 보세요.
 
 ## 3. Console Mode로 시작
 
-명령어를 외우지 않고 시작하려면 `repo-trust`만 입력합니다. 터미널 안에서 로컬 검사, GitHub URL 검사, HTML 저장, JSON 저장, 빠른 확인을 선택할 수 있습니다.
+명령어를 외우지 않고 시작하려면 Console Mode를 사용합니다. 터미널 안에서 로컬 검사, GitHub URL 검사, HTML 저장, JSON 저장, 빠른 확인을 선택할 수 있습니다.
 
-**입력할 명령**
+**영어 메뉴 입력 명령**
 
 ```bash
 repo-trust
 ```
 
-**화면 예시**
+**한국어 메뉴 입력 명령**
+
+```bash
+repo-trust-kr
+```
+
+두 명령은 같은 기능을 제공합니다. 차이는 Console Mode의 메뉴와 프롬프트 언어입니다. `repo-trust`는 영어 workflow를 보여주고, `repo-trust-kr`은 한국어 workflow를 보여줍니다.
+
+**영어 화면 예시**
 
 ```text
 RepoTrust Console
@@ -60,6 +71,22 @@ Workflows
 5  List recent reports    You want to find prior scan artifacts
 6  Command reference      You want flags and direct commands
 q  Quit
+```
+
+**한국어 화면 예시**
+
+```text
+RepoTrust 한국어 콘솔
+dependency, agent, audit를 위한 저장소 신뢰도 점검 도구
+
+워크플로우
+1  로컬 저장소 검사      이미 clone한 폴더가 있을 때
+2  GitHub URL 검사       브라우저용 원격 리포트가 필요할 때
+3  GitHub URL 내보내기   자동화용 데이터가 필요할 때
+4  빠른 점검             터미널에서 바로 판단할 때
+5  최근 리포트 목록      이전 결과 파일을 찾을 때
+6  명령어 도움말         직접 명령과 옵션을 확인할 때
+q  종료
 ```
 
 Console Mode는 파일을 직접 열지 않습니다. 5번 workflow는 `result/` 폴더에 있는 최근 HTML/JSON 리포트 목록을 보여줍니다.

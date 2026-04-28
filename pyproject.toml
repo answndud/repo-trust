@@ -21,6 +21,7 @@ dev = [
 
 [project.scripts]
 repo-trust = "repotrust.cli:direct_app"
+repo-trust-kr = "repotrust.cli:direct_kr_app"
 repotrust = "repotrust.cli:app"
 
 [tool.pytest.ini_options]
