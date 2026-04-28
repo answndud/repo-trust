@@ -60,3 +60,12 @@
 - 코드/문서: `src/repotrust/models.py`에 `JSON_SCHEMA_VERSION`을 추가하고 `ScanResult.to_dict()`에 포함했다. `src/repotrust/cli.py`는 report stdout을 plain write로 출력하도록 수정했다. `tests/test_scanner.py`와 `tests/test_cli.py`는 JSON contract와 stdout valid JSON을 검증하도록 보강했다. `docs/trd.md`에는 JSON Report Contract 섹션을 추가했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `21 passed`를 확인했다. 추가로 `.venv/bin/repotrust scan . --format json > /tmp/repotrust.json` 후 `.venv/bin/python -m json.tool /tmp/repotrust.json`로 실제 redirect된 JSON이 valid임을 확인했다.
 - 결과: JSON report contract가 `schema_version` 기준으로 명시됐고, CLI stdout은 CI와 shell pipe에서 바로 파싱 가능한 JSON을 유지하게 됐다. 현재 active 작업은 없으며, 다음 작업은 `샘플 fixture와 예시 리포트 추가`다.
+
+## 005: 샘플 fixture와 예시 리포트 추가
+
+- 완료일: 2026-04-28
+- 배경: 기존 테스트는 README 문자열을 테스트 파일에 직접 작성했기 때문에 실제 저장소 구조를 한눈에 보기 어렵고, 개발을 오래 쉬었다가 돌아왔을 때 rule 의도를 복기하기 어려웠다. 좋은 저장소와 위험 설치 저장소의 작은 fixture가 필요했다.
+- 변경 내용: `tests/fixtures/repos/good-python`과 `tests/fixtures/repos/risky-install` fixture repo를 추가했다. `good-python`은 README, LICENSE, SECURITY, CI, Dependabot, dependency manifest, lockfile을 갖춘 100점 예시다. `risky-install`은 shell pipe, process substitution, Python inline execution, direct VCS install을 포함해 Install Safety finding을 확인하는 예시다. scanner 테스트는 fixture repo를 임시 디렉터리로 복사해 scan하도록 바꿨다.
+- 코드/문서: `tests/test_scanner.py`에 fixture copy helper를 추가하고 good/risky 사례 테스트를 fixture 기반으로 전환했다. `docs/testing-and-validation.md`에는 fixture 설명과 Markdown/JSON/HTML sample report 생성 명령을 추가했다. `README.md`에도 fixture report 실행 예시를 추가했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `21 passed`를 확인했다. 추가로 `good-python` fixture JSON report를 생성해 `json.tool`로 검증했고, `risky-install` fixture HTML report가 생성되는지 확인했다.
+- 결과: 테스트가 실제 작은 repo 구조를 사용하게 되어 rule 의도를 더 쉽게 이해할 수 있다. 현재 active 작업은 없다.

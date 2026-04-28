@@ -45,7 +45,27 @@ Expected behavior:
 - `--fail-under` exits with code `1` when the score is below the threshold.
 - JSON report content remains valid JSON when stdout is redirected.
 
+## Fixture Repositories
+
+Small fixture repositories live under `tests/fixtures/repos/`.
+
+- `good-python`: a repository with clear README, license, security policy, CI, Dependabot config, dependency manifest, and lockfile.
+- `risky-install`: a repository with README install commands that intentionally trigger install safety findings.
+
+Generate sample reports from fixtures:
+
+```bash
+.venv/bin/repotrust scan tests/fixtures/repos/good-python --format markdown
+.venv/bin/repotrust scan tests/fixtures/repos/good-python --format json > /tmp/repotrust-good.json
+.venv/bin/repotrust scan tests/fixtures/repos/risky-install --format html --output /tmp/repotrust-risky.html
+```
+
+Validate redirected JSON:
+
+```bash
+.venv/bin/python -m json.tool /tmp/repotrust-good.json
+```
+
 ## Validation Philosophy
 
 RepoTrust is a trust-reporting tool. Tests should protect user confidence: clear findings, stable output, conservative scoring, and no unannounced network behavior.
-

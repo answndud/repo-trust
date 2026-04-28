@@ -10,3 +10,11 @@ repotrust scan . --format html --output report.html
 
 GitHub URLs are parsed in v1, but repositories are not cloned or fetched yet.
 
+## Fixture Reports
+
+Development fixtures are available under `tests/fixtures/repos/`.
+
+```bash
+.venv/bin/repotrust scan tests/fixtures/repos/good-python --format markdown
+.venv/bin/repotrust scan tests/fixtures/repos/risky-install --format html --output /tmp/repotrust-risky.html
+```

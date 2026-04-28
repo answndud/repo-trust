@@ -1,31 +1,13 @@
 import json
+import shutil
+from pathlib import Path
 
 from repotrust.detection import detect_files
 from repotrust.reports import render_json, render_markdown
 from repotrust.scanner import scan
 
 
-GOOD_README = """# Good Project
-
-This project has enough detail to explain what it does and why users might trust it.
-It includes installation instructions, usage examples, maintenance expectations, and support notes.
-
-## Installation
-
-```bash
-pip install good-project
-```
-
-## Usage
-
-```bash
-good-project scan .
-```
-
-## Contributing
-
-Please open issues and pull requests. Releases are documented in the changelog.
-"""
+FIXTURE_REPOS = Path(__file__).parent / "fixtures" / "repos"
 
 
 def test_detect_local_files(tmp_path):
@@ -55,9 +37,9 @@ def test_missing_readme_produces_finding(tmp_path):
 
 
 def test_good_readme_has_no_readme_findings(tmp_path):
-    _write_trusted_repo(tmp_path, GOOD_README)
+    repo = _copy_fixture_repo(tmp_path, "good-python")
 
-    result = scan(str(tmp_path))
+    result = scan(str(repo))
 
     assert not [finding for finding in result.findings if finding.category.value == "readme_quality"]
     assert result.score.total >= 90
@@ -82,21 +64,19 @@ thin-project scan .
 
 Open issues and review the changelog for release notes.
 """
-    _write_trusted_repo(tmp_path, readme)
+    repo = _copy_fixture_repo(tmp_path, "good-python")
+    (repo / "README.md").write_text(readme, encoding="utf-8")
 
-    result = scan(str(tmp_path))
+    result = scan(str(repo))
 
     ids = {finding.id for finding in result.findings}
     assert "readme.no_project_purpose" in ids
 
 
 def test_curl_pipe_shell_is_high_severity(tmp_path):
-    (tmp_path / "README.md").write_text(
-        "# Project\n\n## Installation\n\ncurl https://example.com/install.sh | sh\n\n## Usage\n\nproject\n",
-        encoding="utf-8",
-    )
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
 
-    result = scan(str(tmp_path))
+    result = scan(str(repo))
 
     risky = [finding for finding in result.findings if finding.id == "install.risky.shell_pipe_install"]
     assert risky
@@ -104,12 +84,9 @@ def test_curl_pipe_shell_is_high_severity(tmp_path):
 
 
 def test_process_substitution_shell_is_high_severity(tmp_path):
-    (tmp_path / "README.md").write_text(
-        "# Project\n\n## Installation\n\nbash <(curl -fsSL https://example.com/install.sh)\n\n## Usage\n\nproject\n",
-        encoding="utf-8",
-    )
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
 
-    result = scan(str(tmp_path))
+    result = scan(str(repo))
 
     risky = [finding for finding in result.findings if finding.id == "install.risky.process_substitution_shell"]
     assert risky
@@ -118,12 +95,9 @@ def test_process_substitution_shell_is_high_severity(tmp_path):
 
 
 def test_python_inline_execution_is_high_severity(tmp_path):
-    (tmp_path / "README.md").write_text(
-        "# Project\n\n## Installation\n\npython -c \"import urllib.request; exec(urllib.request.urlopen('https://example.com/i.py').read())\"\n\n## Usage\n\nproject\n",
-        encoding="utf-8",
-    )
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
 
-    result = scan(str(tmp_path))
+    result = scan(str(repo))
 
     risky = [finding for finding in result.findings if finding.id == "install.risky.python_inline_execution"]
     assert risky
@@ -132,12 +106,9 @@ def test_python_inline_execution_is_high_severity(tmp_path):
 
 
 def test_direct_vcs_install_is_medium_severity(tmp_path):
-    (tmp_path / "README.md").write_text(
-        "# Project\n\n## Installation\n\npip install git+https://github.com/example/project.git\n\n## Usage\n\nproject\n",
-        encoding="utf-8",
-    )
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
 
-    result = scan(str(tmp_path))
+    result = scan(str(repo))
 
     risky = [finding for finding in result.findings if finding.id == "install.risky.vcs_direct_install"]
     assert risky
@@ -228,14 +199,8 @@ def test_markdown_report_sections(tmp_path):
     assert "## Findings" in markdown
 
 
-def _write_trusted_repo(tmp_path, readme: str):
-    (tmp_path / "README.md").write_text(readme, encoding="utf-8")
-    (tmp_path / "LICENSE").write_text("MIT", encoding="utf-8")
-    (tmp_path / "SECURITY.md").write_text("Report vulnerabilities by email.", encoding="utf-8")
-    (tmp_path / "pyproject.toml").write_text("[project]\nname='good-project'\n", encoding="utf-8")
-    (tmp_path / "uv.lock").write_text("", encoding="utf-8")
-    workflows = tmp_path / ".github" / "workflows"
-    workflows.mkdir(parents=True)
-    (workflows / "ci.yml").write_text("name: ci\n", encoding="utf-8")
-    dependabot = tmp_path / ".github" / "dependabot.yml"
-    dependabot.write_text("version: 2\nupdates: []\n", encoding="utf-8")
+def _copy_fixture_repo(tmp_path, name: str) -> Path:
+    source = FIXTURE_REPOS / name
+    destination = tmp_path / name
+    shutil.copytree(source, destination)
+    return destination
