@@ -1,3 +1,5 @@
+import json
+
 from typer.testing import CliRunner
 
 from repotrust.cli import app
@@ -18,7 +20,9 @@ def test_cli_scan_json(tmp_path):
     result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json"])
 
     assert result.exit_code == 0
-    assert '"target"' in result.output
+    data = json.loads(result.stdout)
+    assert data["schema_version"] == "1.0"
+    assert data["target"]["kind"] == "local"
 
 
 def test_cli_scan_html_output(tmp_path):
@@ -35,4 +39,3 @@ def test_cli_fail_under(tmp_path):
     result = runner.invoke(app, ["scan", str(tmp_path), "--fail-under", "100"])
 
     assert result.exit_code == 1
-

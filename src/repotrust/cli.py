@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 from typing import Annotated
 
 import typer
@@ -11,7 +12,6 @@ from .reports import render_report
 from .scanner import scan as scan_target
 
 app = typer.Typer(help="Evaluate repository trust signals and generate reports.")
-report_console = Console()
 status_console = Console(stderr=True)
 
 
@@ -56,7 +56,7 @@ def scan(
         output.write_text(rendered, encoding="utf-8")
         status_console.print(f"Wrote {normalized_format} report to [bold]{output}[/bold]")
     else:
-        report_console.print(rendered, markup=False)
+        sys.stdout.write(rendered)
 
     _print_summary(result, verbose)
 

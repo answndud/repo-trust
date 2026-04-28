@@ -6,6 +6,9 @@ from enum import Enum
 from typing import Any
 
 
+JSON_SCHEMA_VERSION = "1.0"
+
+
 class Category(str, Enum):
     README_QUALITY = "readme_quality"
     INSTALL_SAFETY = "install_safety"
@@ -90,10 +93,10 @@ class ScanResult:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "schema_version": JSON_SCHEMA_VERSION,
             "target": self.target.to_dict(),
             "detected_files": self.detected_files.to_dict(),
             "findings": [finding.to_dict() for finding in self.findings],
             "score": self.score.to_dict(),
             "generated_at": self.generated_at,
         }
-

@@ -51,3 +51,12 @@
 - 코드/문서: `src/repotrust/rules.py`의 `RISKY_INSTALL_PATTERNS`를 구조화하고 새 패턴을 추가했다. `tests/test_scanner.py`에는 process substitution, Python inline execution, direct VCS install 테스트를 추가해 severity와 evidence line을 고정했다. `docs/domain-context.md`에는 Install Safety signal과 severity 기준을 문서화했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `21 passed`를 확인했다.
 - 결과: README install instruction에서 agent가 실행하기 전에 검토해야 할 원격 실행/직접 설치 패턴을 더 잘 포착하게 됐다. 현재 active 작업은 없으며, 다음 작업은 `JSON report contract 정리`다.
+
+## 004: JSON report contract 정리
+
+- 완료일: 2026-04-28
+- 배경: JSON report는 이후 CI나 외부 도구가 사용할 가능성이 높지만, 기존 테스트는 최상위 key 일부만 확인했고 schema version이 없었다. 또한 CLI JSON stdout이 Rich Console wrapping에 의해 깨질 수 있는 위험이 있었다.
+- 변경 내용: JSON 최상위 contract에 `schema_version: "1.0"`을 추가했다. JSON shape 테스트를 강화해 최상위 key, target key, detected_files key, score key, finding key를 고정했다. CLI JSON 테스트는 stdout을 실제 JSON으로 파싱하도록 바꿨다. 이 과정에서 Rich Console이 긴 JSON string을 줄바꿈해 stdout JSON을 깨뜨리는 문제를 발견했고, report 본문 출력은 `sys.stdout.write()`를 사용하도록 수정했다.
+- 코드/문서: `src/repotrust/models.py`에 `JSON_SCHEMA_VERSION`을 추가하고 `ScanResult.to_dict()`에 포함했다. `src/repotrust/cli.py`는 report stdout을 plain write로 출력하도록 수정했다. `tests/test_scanner.py`와 `tests/test_cli.py`는 JSON contract와 stdout valid JSON을 검증하도록 보강했다. `docs/trd.md`에는 JSON Report Contract 섹션을 추가했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `21 passed`를 확인했다. 추가로 `.venv/bin/repotrust scan . --format json > /tmp/repotrust.json` 후 `.venv/bin/python -m json.tool /tmp/repotrust.json`로 실제 redirect된 JSON이 valid임을 확인했다.
+- 결과: JSON report contract가 `schema_version` 기준으로 명시됐고, CLI stdout은 CI와 shell pipe에서 바로 파싱 가능한 JSON을 유지하게 됐다. 현재 active 작업은 없으며, 다음 작업은 `샘플 fixture와 예시 리포트 추가`다.

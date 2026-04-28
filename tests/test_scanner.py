@@ -171,10 +171,51 @@ def test_json_report_shape(tmp_path):
     result = scan(str(tmp_path))
     data = json.loads(render_json(result))
 
+    assert set(data) == {
+        "detected_files",
+        "findings",
+        "generated_at",
+        "schema_version",
+        "score",
+        "target",
+    }
+    assert data["schema_version"] == "1.0"
+    assert set(data["target"]) == {
+        "host",
+        "kind",
+        "owner",
+        "path",
+        "raw",
+        "ref",
+        "repo",
+        "subpath",
+    }
     assert data["target"]["kind"] == "local"
-    assert "detected_files" in data
-    assert "findings" in data
-    assert "score" in data
+    assert set(data["detected_files"]) == {
+        "ci_workflows",
+        "dependabot",
+        "dependency_manifests",
+        "license",
+        "lockfiles",
+        "readme",
+        "security",
+    }
+    assert set(data["score"]) == {
+        "categories",
+        "grade",
+        "max_score",
+        "risk_label",
+        "total",
+    }
+    assert data["findings"]
+    assert set(data["findings"][0]) == {
+        "category",
+        "evidence",
+        "id",
+        "message",
+        "recommendation",
+        "severity",
+    }
 
 
 def test_markdown_report_sections(tmp_path):
