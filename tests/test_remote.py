@@ -145,6 +145,8 @@ def test_remote_contents_partial_failure_does_not_look_like_missing_files():
     assert result.detected_files.readme is None
     assert result.detected_files.ci_workflows == [".github/workflows/ci.yml"]
     assert "repository contents" in result.findings[1].evidence
+    assert "readme.missing" not in ids
+    assert "hygiene.no_license" not in ids
 
 
 def test_remote_workflows_partial_failure_preserves_contents_detection():
@@ -172,6 +174,19 @@ def test_remote_workflows_partial_failure_preserves_contents_detection():
     assert result.detected_files.ci_workflows == []
     assert "repository README" in result.findings[1].evidence
     assert "GitHub Actions workflows" in result.findings[2].evidence
+    assert "security.no_ci" not in ids
+
+
+def test_remote_dependabot_partial_failure_does_not_deduct_as_missing_dependabot():
+    responses = _successful_responses()
+    responses[4] = GitHubResponse(status_code=403)
+    responses[5] = GitHubResponse(status_code=403)
+
+    result, _ = _scan(responses)
+
+    ids = [finding.id for finding in result.findings]
+    assert "remote.github_partial_scan" in ids
+    assert "security.no_dependabot" not in ids
 
 
 def test_remote_detects_risky_readme_install_commands():

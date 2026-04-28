@@ -179,7 +179,18 @@ def scan_remote_github(
         dependabot_yml_response,
         dependabot_yaml_response,
     )
-    findings.extend(_remote_rules(detected_files, readme_response))
+    findings.extend(
+        _remote_rules(
+            detected_files,
+            readme_response,
+            contents_unknown=not 200 <= contents_response.status_code < 300,
+            workflows_unknown=not 200 <= workflows_response.status_code < 300,
+            dependabot_unknown=_all_dependabot_checks_failed(
+                dependabot_yml_response,
+                dependabot_yaml_response,
+            ),
+        )
+    )
 
     return ScanResult(
         target=target,
@@ -306,10 +317,17 @@ def _detected_files_from_remote(
     )
 
 
-def _remote_rules(detected_files: DetectedFiles, readme_response: GitHubResponse) -> list[Finding]:
+def _remote_rules(
+    detected_files: DetectedFiles,
+    readme_response: GitHubResponse,
+    contents_unknown: bool,
+    workflows_unknown: bool,
+    dependabot_unknown: bool,
+) -> list[Finding]:
     findings: list[Finding] = []
     readme_text = _readme_text(readme_response)
-    if detected_files.readme and readme_text is None:
+    readme_unknown = detected_files.readme and readme_text is None
+    if readme_unknown:
         findings.append(
             Finding(
                 id="remote.readme_content_unavailable",
@@ -325,7 +343,37 @@ def _remote_rules(detected_files: DetectedFiles, readme_response: GitHubResponse
         findings.extend(install_safety_rules(detected_files, readme_text or ""))
     findings.extend(security_posture_rules(detected_files))
     findings.extend(project_hygiene_rules(detected_files))
-    return findings
+    return _filter_unknown_remote_findings(
+        findings,
+        contents_unknown=contents_unknown,
+        workflows_unknown=workflows_unknown,
+        dependabot_unknown=dependabot_unknown,
+    )
+
+
+def _filter_unknown_remote_findings(
+    findings: list[Finding],
+    contents_unknown: bool,
+    workflows_unknown: bool,
+    dependabot_unknown: bool,
+) -> list[Finding]:
+    filtered = []
+    for finding in findings:
+        if contents_unknown and finding.id in {
+            "readme.missing",
+            "install.no_readme_to_audit",
+            "security.no_policy",
+            "security.no_lockfile",
+            "hygiene.no_license",
+            "hygiene.no_manifest",
+        }:
+            continue
+        if workflows_unknown and finding.id == "security.no_ci":
+            continue
+        if dependabot_unknown and finding.id == "security.no_dependabot":
+            continue
+        filtered.append(finding)
+    return filtered
 
 
 def _root_file_paths(response: GitHubResponse) -> list[str]:
