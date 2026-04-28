@@ -119,6 +119,47 @@ Score key:
 
 JSON report를 stdout으로 출력할 때는 summary/table이 섞이면 안 된다. 상태 출력은 stderr에만 기록한다.
 
+## Config File v1 Design
+
+Config file support is planned as a local-only policy layer. The file name is `repotrust.toml` at the repository root by default.
+
+CLI behavior:
+
+- Default scan remains config-free.
+- `--config <path>` should load an explicit config file when config implementation starts.
+- Auto-discovery may later look for `repotrust.toml` at the scanned repository root, but explicit `--config` should take precedence.
+- CLI flags should override config values when both are provided.
+
+Minimum v1 config shape:
+
+```toml
+[policy]
+fail_under = 80
+
+[weights]
+readme_quality = 0.25
+install_safety = 0.30
+security_posture = 0.25
+project_hygiene = 0.20
+```
+
+Validation rules:
+
+- `policy.fail_under` must be an integer from 0 to 100.
+- All configured weights must be numeric and non-negative.
+- If any weight is configured, all four category weights should be present.
+- Weight totals should sum to `1.0`; small floating point tolerance is acceptable.
+- Unknown top-level sections should produce a config error instead of being ignored silently.
+
+Out of scope for config v1:
+
+- Rule enable/disable.
+- Finding-specific severity overrides.
+- Remote GitHub credentials.
+- Organization-wide inherited config.
+
+Implementation note: Python 3.11+ includes `tomllib`, so TOML can be read without adding a runtime dependency. Python 3.10 compatibility will need a small fallback decision before implementation.
+
 ## v1 기술 제약
 
 - GitHub URL은 파싱만 한다.

@@ -118,3 +118,28 @@
 - RepoTrust의 핵심 가치는 설명 가능한 finding이다.
 - ID가 흔들리면 자동화와 리포트 비교가 어려워진다.
 - rule이 늘어날수록 ID 안정성이 JSON contract만큼 중요해진다.
+
+## ADR-008: 설정 파일 v1은 `repotrust.toml`로 설계한다
+
+상태: Accepted
+
+결정:
+
+- 설정 파일 v1은 repository root의 `repotrust.toml`을 기본 파일명으로 설계한다.
+- 구현 시 명시적 `--config <path>` 옵션을 먼저 지원하고, 자동 탐지는 그 다음 단계로 둔다.
+- v1 설정 항목은 `policy.fail_under`와 네 개 category weight로 제한한다.
+- CLI flag가 config 값보다 우선한다.
+- rule enable/disable, severity override, remote credential 설정은 v1 config에서 제외한다.
+
+이유:
+
+- TOML은 Python 프로젝트 사용자가 이해하기 쉽고, Python 3.11+에서는 `tomllib`로 읽을 수 있다.
+- threshold와 category weight는 CI/조직 정책에 가장 직접적으로 필요한 최소 설정이다.
+- rule별 override까지 처음부터 열면 scoring contract와 finding 안정성이 복잡해진다.
+- 명시적 `--config`를 먼저 지원하면 자동 탐지의 예측 불가능성을 피할 수 있다.
+
+재검토 조건:
+
+- Python 3.10 지원을 유지하면서 TOML 파서 fallback이 필요할 때.
+- 조직별 policy inheritance가 필요해질 때.
+- rule disable/override 요구가 반복적으로 생길 때.

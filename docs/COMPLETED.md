@@ -123,3 +123,12 @@
 - 코드/문서: `src/repotrust/cli.py`, `tests/test_cli.py`, `AGENTS.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `27 passed`를 확인했다. 추가로 `repotrust --help`, `repotrust scan --help`, invalid format, JSON redirect smoke check를 실행했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 CLI UX와 문서에 한정됨을 확인했다.
 - 결과: CLI help와 오류 UX가 더 명확해졌고, JSON report stdout이 stderr summary와 분리되는 동작이 테스트로 보호된다. 다음 작업은 `설정 파일 v1 설계`다.
+
+## 012: 설정 파일 v1 설계
+
+- 완료일: 2026-04-28
+- 배경: 회사/개인 프로젝트마다 허용 가능한 risk 기준이 다를 수 있어, 구현 전 설정 파일 이름과 최소 설정 범위를 결정해야 했다. 초기부터 rule override까지 열면 scoring contract와 finding 안정성이 복잡해질 수 있었다.
+- 변경 내용: 설정 파일 v1은 repository root의 `repotrust.toml`로 설계했다. 구현은 명시적 `--config <path>`를 먼저 지원하고, 자동 탐지는 이후 단계로 미룬다. v1 설정 항목은 `policy.fail_under`와 네 개 category weight로 제한한다. CLI flag는 config 값보다 우선한다. rule enable/disable, severity override, remote credential 설정은 v1 config에서 제외한다.
+- 코드/문서: 코드 변경은 없었다. `docs/trd.md`에 Config File v1 Design 섹션을 추가했고, `docs/adr.md`에 `ADR-008: 설정 파일 v1은 repotrust.toml로 설계한다`를 추가했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `27 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 설정 설계 문서에 한정됨을 확인했다.
+- 결과: 설정 파일 구현 범위가 결정됐다. 다음 작업은 `설정 파일 v1 구현`이다.
