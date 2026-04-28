@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from enum import Enum
 from pathlib import Path
 import sys
@@ -175,6 +176,7 @@ def _run_scan(
         raise typer.BadParameter(str(exc), param_hint="--remote") from exc
     rendered = render_report(result, normalized_format)
     if output:
+        output = _resolve_output_path(output)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(rendered, encoding="utf-8")
         status_console.print(f"Wrote {normalized_format} report to [bold]{output}[/bold]")
@@ -186,6 +188,14 @@ def _run_scan(
     effective_fail_under = fail_under if fail_under is not None else loaded_config.fail_under
     if effective_fail_under is not None and result.score.total < effective_fail_under:
         raise typer.Exit(code=1)
+
+
+def _resolve_output_path(output: Path, today: date | None = None) -> Path:
+    if output.is_absolute() or output.parent != Path("."):
+        return output
+    output_date = today or date.today()
+    dated_name = f"{output.stem}-{output_date.isoformat()}{output.suffix}"
+    return Path("result") / dated_name
 
 
 def _load_cli_config(config_path: Path | None) -> RepoTrustConfig:

@@ -1,9 +1,11 @@
 import json
 import re
+from datetime import date
+from pathlib import Path
 
 from typer.testing import CliRunner
 
-from repotrust.cli import app, direct_app
+from repotrust.cli import _resolve_output_path, app, direct_app
 from repotrust.models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
 from repotrust.scoring import calculate_score
 
@@ -213,6 +215,33 @@ def test_cli_scan_html_output(tmp_path):
     assert result.stdout == ""
     assert "Wrote html report" in result.stderr
     assert "RepoTrust Summary" in result.stderr
+
+
+def test_cli_filename_only_output_writes_dated_result_file(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(app, ["scan", ".", "--format", "html", "--output", "report.html"])
+
+    output = tmp_path / "result" / f"report-{date.today().isoformat()}.html"
+    assert result.exit_code == 0
+    assert output.exists()
+    assert '<html lang="ko">' in output.read_text(encoding="utf-8")
+    assert f"Wrote html report to {output.relative_to(tmp_path)}" in plain_output(result.stderr)
+
+
+def test_resolve_output_path_dates_filename_only_paths():
+    assert _resolve_output_path(Path("report.html"), today=date(2026, 4, 28)) == Path(
+        "result/report-2026-04-28.html"
+    )
+
+
+def test_resolve_output_path_keeps_explicit_locations():
+    assert _resolve_output_path(Path("reports/report.html"), today=date(2026, 4, 28)) == Path(
+        "reports/report.html"
+    )
+    assert _resolve_output_path(Path("/tmp/report.html"), today=date(2026, 4, 28)) == Path(
+        "/tmp/report.html"
+    )
 
 
 def test_cli_missing_local_path_reports_finding_without_usage_error(tmp_path):

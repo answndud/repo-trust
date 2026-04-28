@@ -402,3 +402,30 @@
 - 코드/문서: `tests/test_cli.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `gh run view 25032794188 --repo answndud/repo-trust --log-failed`로 실패 원인을 확인했다. `CI=true .venv/bin/python -m pytest tests/test_cli.py -q`는 `25 passed`, `.venv/bin/python -m pytest -q`는 `68 passed`였다.
 - 결과: 다음 push에서 GitHub Actions `ci` workflow가 동일한 help-output assertion 문제로 실패하지 않도록 수정됐다. 현재 active 작업은 없다.
+
+## 043: 한국어 상세 HTML 리포트 개선
+
+- 완료일: 2026-04-28
+- 배경: `repo-trust . --format html --output report.html` 결과가 영어 중심의 컴팩트한 원자료 나열이라 초보자가 점수, 파일, finding의 의미와 다음 조치를 이해하기 어려웠다.
+- 변경 내용: `render_html()`을 한국어 `lang="ko"` 정적 리포트로 확장했다. 전체 판단, 리포트 읽는 법, 검사 영역별 점수 설명, 발견된 파일과 의미, finding별 쉬운 설명/원문 메시지/근거/추천 조치, 다음에 할 일을 추가했다. JSON schema, scanner, scoring logic은 변경하지 않았다.
+- 코드/문서: `src/repotrust/reports.py`, `tests/test_scanner.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_scanner.py tests/test_remote.py tests/test_cli.py -q`는 `58 passed`, `.venv/bin/repo-trust . --format html --output /tmp/repotrust-ko.html`은 HTML 파일을 생성했고 한국어 주요 섹션과 finding 설명을 확인했다. `.venv/bin/python -m pytest -q`는 `68 passed`였다.
+- 결과: HTML 리포트가 초보자도 읽고 다음 조치를 이해할 수 있는 한국어 설명형 리포트로 개선됐다. 현재 active 작업은 없다.
+
+## 044: 날짜가 붙은 `result/` 출력 경로 추가
+
+- 완료일: 2026-04-28
+- 배경: 리포트 파일을 프로젝트 내부에서 날짜별로 쉽게 찾을 수 있도록 `result/` 폴더에 저장하고 파일명에 실행 날짜를 붙이는 흐름이 필요했다.
+- 변경 내용: `--output report.html`처럼 파일명만 넘기면 CLI가 `result/report-YYYY-MM-DD.html`로 저장하도록 output path 정규화 helper를 추가했다. 절대 경로나 `reports/report.html`처럼 디렉터리를 포함한 경로는 사용자가 지정한 위치를 그대로 사용한다. 생성 리포트가 git에 올라가지 않도록 `result/`를 `.gitignore`에 추가했다. README 예시도 새 저장 위치 기준으로 갱신했다.
+- 코드/문서: `.gitignore`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `28 passed`, `.venv/bin/repo-trust . --format html --output report.html`은 `result/report-2026-04-28.html`을 생성했다. `.venv/bin/python -m pytest -q`는 `71 passed`였고 `git diff --check`도 통과했다.
+- 결과: `repo-trust . --format html --output report.html`의 기본 파일명-only 출력은 날짜가 붙은 `result/` 하위 리포트로 저장된다. 현재 active 작업은 없다.
+
+## 045: README 사용 가이드 중복 제거와 구조 개선
+
+- 완료일: 2026-04-28
+- 배경: README의 빠른 시작과 설치 섹션이 같은 명령을 반복하고, 리포트 형식과 자주 쓰는 명령도 중복되어 읽기 흐름이 장황했다.
+- 변경 내용: README를 소개, 빠른 시작, 기본 사용법, 리포트 읽는 법, CI, 설정, 예제, 개발자 메모 순서로 재작성했다. 설치 명령은 빠른 시작에서 한 번만 보여주고, 이후에는 실제 사용 명령 중심으로 정리했다. 날짜가 붙은 `result/` 출력도 중복 설명을 줄여 핵심 규칙만 남겼다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다.
+- 결과: README가 중복 명령을 줄이고 초보자 사용 흐름에 맞춘 간결한 한국어 가이드로 정리됐다. 현재 active 작업은 없다.

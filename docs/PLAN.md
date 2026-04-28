@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-GitHub Actions CI help-output assertion 실패 수정 완료. 현재 active 작업 없음
+README 사용 가이드 중복 제거와 구조 개선 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

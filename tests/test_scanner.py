@@ -239,14 +239,21 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     html = render_html(result)
 
     assert "<!doctype html>" in html
-    assert "<h1>RepoTrust Report</h1>" in html
+    assert '<html lang="ko">' in html
+    assert "<h1>저장소 신뢰도 점검 결과</h1>" in html
     assert f"<strong>{result.score.total}/{result.score.max_score}</strong>" in html
-    assert "<h2>Category Scores</h2>" in html
-    assert "<h2>Detected Files</h2>" in html
-    assert "<h2>Findings</h2>" in html
+    assert "<h2>전체 판단</h2>" in html
+    assert "<h2>이 리포트 읽는 법</h2>" in html
+    assert "<h2>검사 영역별 점수</h2>" in html
+    assert "<h2>발견된 파일과 의미</h2>" in html
+    assert "<h2>발견 항목과 추천 조치</h2>" in html
+    assert "<h2>다음에 할 일</h2>" in html
     assert 'class="finding severity-high"' in html
-    assert "<dt>Category</dt>" in html
-    assert "<dt>Severity</dt>" in html
+    assert "<dt>검사 영역</dt>" in html
+    assert "<dt>심각도</dt>" in html
+    assert "<dt>무슨 뜻인가요?</dt>" in html
+    assert "<dt>원문 메시지</dt>" in html
+    assert "README가 없습니다." in html
     assert "readme.missing" in html
 
 
