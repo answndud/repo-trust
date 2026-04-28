@@ -96,3 +96,12 @@
 - 코드/문서: `src/repotrust/cli.py`에 version option을 추가했다. `tests/test_cli.py`에 version 테스트를 추가했다. `README.md`의 usage 예시에 `repotrust --version`을 추가했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `23 passed`를 확인했다.
 - 결과: 사용자가 설치된 RepoTrust CLI 버전을 바로 확인할 수 있게 됐다. 현재 active 작업은 없다.
+
+## 009: PLAN 자동 보충 규칙과 개발 roadmap 정리
+
+- 완료일: 2026-04-28
+- 배경: 사용자가 `PLAN.md`의 active 작업이 모두 끝나면 프로젝트 완성 전까지 다음 개발 계획을 계속 순서대로 추가해 달라고 요청했다. 기존 운영 규칙은 active 작업이 끝나면 `현재 active 작업 없음`으로 두는 데 초점이 있었고, 프로젝트가 아직 미완성일 때 다음 backlog를 자동으로 채우는 규칙은 없었다.
+- 변경 내용: `AGENTS.md`에 active 작업이 모두 끝났고 프로젝트가 아직 완성 전이면 `docs/PLAN.md`에 다음 개발 계획을 우선순위 순서로 추가한다는 규칙을 추가했다. `docs/PLAN.md`에는 PRD/TRD 기준의 다음 roadmap을 작성했다: Finding/score 정책 문서화, CLI UX 정리, 설정 파일 v1 설계, Remote GitHub scan 설계, Remote GitHub scan MVP 구현.
+- 코드/문서: 코드 변경은 없었다. `AGENTS.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`만 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `23 passed`를 확인했다.
+- 결과: 다음 작업이 비어 있는 상태가 되면 프로젝트 완성까지 이어질 개발 계획을 `PLAN.md`에 다시 채우는 운영 방식이 명확해졌다. 다음 작업은 `Finding/score 정책 문서화`다.
