@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum
 from pathlib import Path
 import sys
 from typing import Annotated
@@ -19,8 +20,15 @@ app = typer.Typer(
 status_console = Console(stderr=True)
 
 
+class ReportFormat(str, Enum):
+    MARKDOWN = "markdown"
+    JSON = "json"
+    HTML = "html"
+
+
 @app.callback()
 def main(
+    ctx: typer.Context,
     version: Annotated[
         bool,
         typer.Option(
@@ -33,19 +41,22 @@ def main(
     if version:
         typer.echo(f"repotrust {__version__}")
         raise typer.Exit()
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
 
 
 @app.command()
 def scan(
     target: Annotated[str, typer.Argument(help="Local path or GitHub URL to scan.")],
     report_format: Annotated[
-        str,
+        ReportFormat,
         typer.Option(
             "--format",
             "-f",
             help="Report format: markdown, json, or html.",
         ),
-    ] = "markdown",
+    ] = ReportFormat.MARKDOWN,
     output: Annotated[
         Path | None,
         typer.Option("--output", "-o", help="Write the report to this file."),
@@ -60,9 +71,7 @@ def scan(
     ] = False,
 ) -> None:
     """Scan a repository target."""
-    normalized_format = report_format.lower()
-    if normalized_format not in {"markdown", "json", "html"}:
-        raise typer.BadParameter("--format must be one of: markdown, json, html")
+    normalized_format = report_format.value
 
     result = scan_target(target)
     rendered = render_report(result, normalized_format)

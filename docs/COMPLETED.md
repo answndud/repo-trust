@@ -114,3 +114,12 @@
 - 코드/문서: 코드 변경은 없었다. 문서 변경은 `docs/domain-context.md`, `docs/trd.md`, `docs/adr.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`에 적용했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `23 passed`를 확인했다.
 - 결과: 새 rule을 추가할 때 severity와 finding ID를 어떤 기준으로 정해야 하는지 명확해졌다. 다음 작업은 `CLI UX 정리`다.
+
+## 011: CLI UX 정리
+
+- 완료일: 2026-04-28
+- 배경: 사용자가 처음 실행했을 때 help, format 선택지, target 누락, JSON stdout/stderr 분리를 명확히 이해할 수 있어야 했다. 기존 `--format`은 자유 텍스트로 보였고, root command를 인자 없이 실행하면 아무 출력 없이 종료됐다.
+- 변경 내용: `ReportFormat` enum을 도입해 `--format` help에 `[markdown|json|html]` 선택지가 표시되도록 했다. root command를 인자 없이 실행하면 help를 출력하도록 했다. invalid format, missing target, root help, scan help, JSON stdout/stderr 분리를 테스트로 고정했다.
+- 코드/문서: `src/repotrust/cli.py`, `tests/test_cli.py`, `AGENTS.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `27 passed`를 확인했다. 추가로 `repotrust --help`, `repotrust scan --help`, invalid format, JSON redirect smoke check를 실행했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 CLI UX와 문서에 한정됨을 확인했다.
+- 결과: CLI help와 오류 UX가 더 명확해졌고, JSON report stdout이 stderr summary와 분리되는 동작이 테스트로 보호된다. 다음 작업은 `설정 파일 v1 설계`다.
