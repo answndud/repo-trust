@@ -10,7 +10,7 @@ INSTALL_SECTION_RE = re.compile(r"^#{1,6}\s+.*\b(install|installation|setup)\b",
 USAGE_SECTION_RE = re.compile(r"^#{1,6}\s+.*\b(usage|quickstart|quick start|example)\b", re.I | re.M)
 MAINTENANCE_RE = re.compile(r"\b(contributing|maintain|support|changelog|release)\b", re.I)
 INSTALL_COMMAND_RE = re.compile(
-    r"(?im)^\s*(?:[`$>]\s*)?(pip|pipx|npm|pnpm|yarn|uv|poetry|go|cargo|curl|wget|brew|docker)\b.*$"
+    r"(?im)^\s*(?:[`$>]\s*)?(?:\.venv/bin/)?(python3?\s+-m\s+pip|pip|pipx|npm|pnpm|yarn|uv|poetry|go|cargo|curl|wget|brew|docker)\b.*$"
 )
 RISKY_INSTALL_PATTERNS = (
     {

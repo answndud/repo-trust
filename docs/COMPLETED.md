@@ -69,3 +69,12 @@
 - 코드/문서: `tests/test_scanner.py`에 fixture copy helper를 추가하고 good/risky 사례 테스트를 fixture 기반으로 전환했다. `docs/testing-and-validation.md`에는 fixture 설명과 Markdown/JSON/HTML sample report 생성 명령을 추가했다. `README.md`에도 fixture report 실행 예시를 추가했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `21 passed`를 확인했다. 추가로 `good-python` fixture JSON report를 생성해 `json.tool`로 검증했고, `risky-install` fixture HTML report가 생성되는지 확인했다.
 - 결과: 테스트가 실제 작은 repo 구조를 사용하게 되어 rule 의도를 더 쉽게 이해할 수 있다. 현재 active 작업은 없다.
+
+## 006: RepoTrust 자체 신뢰 신호 보강
+
+- 완료일: 2026-04-28
+- 배경: `repotrust scan .` 기준 자체 저장소 점수가 68점(D)였고, README install/usage/maintenance 섹션, SECURITY.md, CI, Dependabot 등 기본 신뢰 신호가 부족했다. LICENSE와 lockfile은 정책/도구 선택이 필요하므로 이번 작업에서는 임의로 추가하지 않기로 했다.
+- 변경 내용: README에 Installation, Usage, Development, Fixture Reports, Contributing 섹션을 추가했다. `SECURITY.md`를 추가해 v1의 보안 범위와 취약점 보고 정보를 적었다. `.github/workflows/ci.yml`을 추가해 push/PR에서 pytest를 실행하도록 했다. `.github/dependabot.yml`을 추가해 pip ecosystem weekly update 설정을 넣었다. 실제 README 설치 명령인 `.venv/bin/python -m pip install -e '.[dev]'`가 install command로 인식되도록 rule regex도 보강했다.
+- 코드/문서: `README.md`, `SECURITY.md`, `.github/workflows/ci.yml`, `.github/dependabot.yml`을 추가/수정했다. `src/repotrust/rules.py`는 `python -m pip` 형태를 install command로 인식하도록 수정했다. `tests/test_scanner.py`에는 해당 형태가 `install.no_commands`를 만들지 않는 테스트를 추가했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `22 passed`를 확인했다. 자체 스캔은 68점(D)에서 92점(A)으로 개선됐다. 남은 finding은 `hygiene.no_license`, `security.no_lockfile` 두 개다.
+- 결과: RepoTrust 저장소 자체가 README/보안/CI/Dependabot 신호를 갖추게 됐다. 다음 작업은 LICENSE와 lockfile 도입 여부를 결정하는 것이다.

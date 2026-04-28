@@ -116,6 +116,18 @@ def test_direct_vcs_install_is_medium_severity(tmp_path):
     assert risky[0].evidence == "pip install git+https://github.com/example/project.git"
 
 
+def test_python_module_pip_install_counts_as_install_command(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\nThis project explains enough about what it does for users to understand the expected setup path and command line workflow.\n\n## Installation\n\npython3 -m pip install -e '.[dev]'\n\n## Usage\n\nproject scan .\n\n## Contributing\n\nOpen issues and review release notes.\n",
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+
+    ids = {finding.id for finding in result.findings}
+    assert "install.no_commands" not in ids
+
+
 def test_security_and_ci_findings(tmp_path):
     (tmp_path / "README.md").write_text(
         "# Project\n\n## Installation\n\npip install project\n\n## Usage\n\nproject\n" + "More docs. " * 60,
