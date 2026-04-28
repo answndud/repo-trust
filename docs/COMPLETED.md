@@ -528,3 +528,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/cli.py`, `src/repotrust/console.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `39 passed`였다. `.venv/bin/python -m pip install -e '.[dev]'`로 새 script를 설치했다. `.venv/bin/python -m pytest -q`는 `84 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `.venv/bin/repo-trust-kr --version`, `.venv/bin/repo-trust-kr --help`를 smoke check로 확인했다.
 - 결과: `repo-trust`는 영어 Console Mode, `repo-trust-kr`은 한국어 Console Mode로 동작하며, 리포트/JSON/stdout contract와 Command Mode 동작은 유지된다. 현재 active 작업은 없다.
+
+## 057: Localized direct command help
+
+- 완료일: 2026-04-28
+- 배경: Console Mode는 한국어 진입점이 생겼지만 `repo-trust --help`와 direct command help는 영어만 제공해 한국어 사용자가 옵션 의미를 바로 이해하기 어려웠다.
+- 변경 내용: product CLI의 기본 help option을 커스텀 help selector로 바꿔 `--help` 실행 시 `1. English`, `2. 한국어` 중 선택하게 했다. Root help와 `html`, `json`, `check` command help에 영어/한국어 문구를 제공한다. `repo-trust`와 `repo-trust-kr` 모두 같은 help selector를 공유하고, legacy `repotrust scan --help`는 기존 Typer help로 유지했다.
+- 코드/문서: `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `42 passed`였다. `.venv/bin/python -m pytest -q`는 `87 passed`였다. `.venv/bin/python -m pip install -e '.[dev]'`도 통과했다. `git diff --check`도 통과했다. `printf '2\n' | .venv/bin/repo-trust --help`, `printf '2\n' | .venv/bin/repo-trust html --help`, `printf '2\n' | .venv/bin/repo-trust-kr --help`, `printf '2\n' | .venv/bin/repo-trust json --help`, `printf '1\n' | .venv/bin/repo-trust-kr check --help`를 smoke check로 확인했다.
+- 결과: 사용자는 root와 direct command help에서 영어 또는 한국어 도움말을 선택할 수 있고, 기존 scan/report 동작과 JSON/stdout contract는 유지된다. 현재 active 작업은 없다.
