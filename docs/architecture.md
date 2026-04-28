@@ -7,15 +7,17 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 - `src/repotrust/cli.py`: Typer CLI entrypoint and command orchestration.
 - `src/repotrust/console.py`: interactive Console Mode shell, workflow routing prompts, and recent report listing.
 - `src/repotrust/dashboard.py`: Command Mode terminal assessment renderer and legacy summary renderer.
+- `src/repotrust/evidence.py`: shared evidence matrix status mapping for found, missing, and unknown signals.
+- `src/repotrust/remote_markers.py`: shared remote endpoint labels used by remote findings and evidence unknown mapping.
 - `src/repotrust/config.py`: explicit TOML config loading and validation.
 - `src/repotrust/scanner.py`: orchestration for local targets and GitHub URL targets.
 - `src/repotrust/targets.py`: target classification and GitHub URL parsing.
 - `src/repotrust/detection.py`: root-level repository file detection.
 - `src/repotrust/remote.py`: explicit GitHub remote scan implementation, GitHub API failure mapping, and remote metadata detection.
 - `src/repotrust/rules.py`: deterministic rule checks that emit findings.
-- `src/repotrust/scoring.py`: category scores, total score, grade, and risk label.
+- `src/repotrust/scoring.py`: category scores, scan completeness score caps, total score, grade, and risk label.
 - `src/repotrust/reports.py`: Markdown, JSON, and static HTML report rendering.
-- `src/repotrust/models.py`: dataclass models shared across the scanner.
+- `src/repotrust/models.py`: dataclass models shared across the scanner, including machine-readable assessment.
 - `tests/`: pytest coverage for parsing, scanning, reports, and CLI behavior.
 
 ## Data Flow
@@ -25,8 +27,9 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 3. `scanner.scan()` calls `targets.parse_target()`.
 4. Local paths are inspected with `detection.detect_files()`.
 5. Rule functions in `rules.py` emit `Finding` objects.
-6. `scoring.calculate_score()` converts findings into category and total scores.
-7. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
+6. `scoring.calculate_score()` converts findings into category scores, applies scan completeness caps, and returns total score.
+7. `ScanResult` attaches an `Assessment` with verdict, confidence, coverage, reasons, and next actions.
+8. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
 
 The product CLI treats GitHub URLs as remote scans by default for `repo-trust html/json/check`. Users can pass `--parse-only` to inspect the URL without GitHub API access. The legacy `repotrust scan` command keeps its original explicit `--remote` opt-in behavior. Remote scans enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
 

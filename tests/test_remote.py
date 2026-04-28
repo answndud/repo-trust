@@ -195,7 +195,20 @@ def test_remote_report_rendering_uses_existing_contract():
     json_report = json.loads(render_json(result))
     markdown_report = render_markdown(result)
 
-    assert json_report["schema_version"] == "1.0"
+    assert json_report["schema_version"] == "1.1"
+    assert json_report["assessment"] == {
+        "verdict": "usable_by_current_checks",
+        "confidence": "high",
+        "coverage": "full",
+        "summary": "The enabled RepoTrust checks did not find blocking trust issues.",
+        "reasons": [
+            "Repository evidence was collected for all enabled checks.",
+        ],
+        "next_actions": [
+            "Confirm license and organization policy before adopting the repository.",
+            "Use the findings and evidence matrix rather than the score alone.",
+        ],
+    }
     assert json_report["target"] == {
         "raw": "https://github.com/owner/repo",
         "kind": "github",
@@ -233,7 +246,7 @@ def test_remote_partial_scan_json_contract_has_stable_findings():
 
     data = json.loads(render_json(result))
 
-    assert data["schema_version"] == "1.0"
+    assert data["schema_version"] == "1.1"
     assert data["target"]["kind"] == "github"
     assert data["detected_files"]["readme"] is None
     assert data["detected_files"]["ci_workflows"] == [".github/workflows/ci.yml"]
@@ -243,6 +256,10 @@ def test_remote_partial_scan_json_contract_has_stable_findings():
     ]
     assert data["findings"][1]["severity"] == "medium"
     assert "repository contents endpoint returned HTTP 500." == data["findings"][1]["evidence"]
+    assert data["score"]["total"] == 85
+    assert data["assessment"]["verdict"] == "usable_after_review"
+    assert data["assessment"]["confidence"] == "medium"
+    assert data["assessment"]["coverage"] == "partial"
 
 
 def test_remote_archived_json_contract_has_stable_finding_and_score():
@@ -255,7 +272,7 @@ def test_remote_archived_json_contract_has_stable_finding_and_score():
 
     data = json.loads(render_json(result))
 
-    assert data["schema_version"] == "1.0"
+    assert data["schema_version"] == "1.1"
     assert [finding["id"] for finding in data["findings"][:2]] == [
         "remote.github_metadata_collected",
         "remote.github_archived",
@@ -312,6 +329,8 @@ def test_remote_partial_scan_finding_renders_in_static_html():
     assert "GitHub remote scan completed with partial metadata." in html_report
     assert "repository contents endpoint returned HTTP 500." in html_report
     assert ".github/workflows/ci.yml" in html_report
+    assert "확인 못함" in html_report
+    assert "Evidence Matrix" in html_report
 
 
 def test_remote_workflows_partial_failure_preserves_contents_detection():
@@ -417,6 +436,11 @@ def test_remote_rate_limited_finding_from_header():
     )
 
     assert result.findings[0].id == "remote.github_rate_limited"
+    assert result.score.total == 60
+    assert result.assessment.verdict == "insufficient_evidence"
+    assert result.assessment.confidence == "low"
+    assert result.assessment.coverage == "failed"
+    assert "확인 못함" in render_html(result)
 
 
 def test_remote_api_error_finding():

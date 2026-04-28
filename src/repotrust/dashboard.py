@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from .evidence import EvidenceRow, evidence_rows
 from .models import Finding, ScanResult
 
 
@@ -89,12 +90,16 @@ def _assessment_text(
     output_label: Path | None,
 ) -> str:
     output = str(output_label) if output_label is not None else "terminal only"
+    assessment = result.assessment
     return (
-        f"[bold]Verdict[/bold] {_verdict(result)}\n"
+        f"[bold]Verdict[/bold] {_verdict(result)}  [dim]{assessment.verdict}[/dim]\n"
+        f"[bold]Confidence[/bold] {_confidence_badge(assessment.confidence)}  "
+        f"[bold]Coverage[/bold] {_coverage_badge(assessment.coverage)}\n"
         f"[bold]Score[/bold] [bold cyan]{result.score.total}/{result.score.max_score}[/bold cyan]  "
         f"[bold]Grade[/bold] [bold]{result.score.grade}[/bold]  "
         f"[bold]Risk[/bold] {_risk_badge(result.score.risk_label)}\n"
         f"[bold]Findings[/bold] {_finding_counts(result)}\n\n"
+        f"{assessment.summary}\n\n"
         f"[dim]Target[/dim] {result.target.raw}\n"
         f"[dim]Mode[/dim] {mode}\n"
         f"[dim]Output[/dim] {output}"
@@ -113,17 +118,12 @@ def _risk_breakdown_table(result: ScanResult) -> Table:
 
 
 def _evidence_table(result: ScanResult) -> Table:
-    detected = result.detected_files
     table = Table(title="Evidence", header_style="bold cyan")
     table.add_column("Signal")
     table.add_column("Status")
-    table.add_row("README", _present_value(detected.readme))
-    table.add_row("LICENSE", _present_value(detected.license))
-    table.add_row("SECURITY", _present_value(detected.security))
-    table.add_row("CI workflows", _present_count(detected.ci_workflows))
-    table.add_row("Dependency manifests", _present_count(detected.dependency_manifests))
-    table.add_row("Lockfiles", _present_count(detected.lockfiles))
-    table.add_row("Dependabot", _present_value(detected.dependabot))
+    table.add_column("Evidence")
+    for row in evidence_rows(result):
+        table.add_row(row.label, _status_text(row), row.value)
     return table
 
 
@@ -142,20 +142,12 @@ def _top_findings_table(result: ScanResult) -> Table:
 
 
 def _next_actions_text(result: ScanResult, output_label: Path | None) -> str:
-    actions = []
-    if any(finding.severity.value == "high" for finding in result.findings):
-        actions.append("1. Stop before installing and review every high severity finding.")
-    elif any(finding.severity.value == "medium" for finding in result.findings):
-        actions.append("1. Review medium findings before adopting this repository.")
-    else:
-        actions.append("1. No blocking findings from the current rule set.")
-
+    actions = list(result.assessment.next_actions)
     if output_label is not None:
-        actions.append(f"2. Open {output_label} for the full evidence trail.")
+        actions.append(f"Open {output_label} for the full evidence trail.")
     else:
-        actions.append("2. Save an HTML report when you need a shareable review artifact.")
-    actions.append("3. Re-run after the repository or policy changes.")
-    return "\n".join(actions)
+        actions.append("Save an HTML report when you need a shareable review artifact.")
+    return "\n".join(f"{index}. {action}" for index, action in enumerate(actions, start=1))
 
 
 def _finding_sort_key(finding: Finding) -> tuple[int, str]:
@@ -185,18 +177,6 @@ def _score_label(score: int) -> str:
     return "attention"
 
 
-def _present_value(value: str | None) -> str:
-    if value:
-        return f"[green]found[/green] [dim]{value}[/dim]"
-    return "[red]missing[/red]"
-
-
-def _present_count(values: list[str]) -> str:
-    if values:
-        return f"[green]{len(values)} found[/green] [dim]{', '.join(values[:3])}[/dim]"
-    return "[red]missing[/red]"
-
-
 def _risk_badge(risk_label: str) -> str:
     style = _risk_border_style(risk_label)
     return f"[bold {style}]{risk_label.upper()}[/bold {style}]"
@@ -212,8 +192,29 @@ def _risk_border_style(risk_label: str) -> str:
 
 
 def _verdict(result: ScanResult) -> str:
-    if any(finding.severity.value == "high" for finding in result.findings):
+    verdict = result.assessment.verdict
+    if verdict == "do_not_install_before_review":
         return "[bold red]do not install before review[/bold red]"
-    if any(finding.severity.value == "medium" for finding in result.findings):
+    if verdict == "insufficient_evidence":
+        return "[bold yellow]insufficient evidence[/bold yellow]"
+    if verdict == "usable_after_review":
         return "[bold yellow]usable after review[/bold yellow]"
     return "[bold green]usable by current checks[/bold green]"
+
+
+def _confidence_badge(confidence: str) -> str:
+    style = "green" if confidence == "high" else "yellow" if confidence == "medium" else "red"
+    return f"[bold {style}]{confidence.upper()}[/bold {style}]"
+
+
+def _coverage_badge(coverage: str) -> str:
+    style = "green" if coverage == "full" else "yellow" if coverage == "partial" else "red"
+    return f"[bold {style}]{coverage.upper()}[/bold {style}]"
+
+
+def _status_text(row: EvidenceRow) -> str:
+    if row.status == "found":
+        return "[green]found[/green]"
+    if row.status == "unknown":
+        return "[yellow]unknown[/yellow]"
+    return "[red]missing[/red]"

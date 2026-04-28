@@ -13,7 +13,7 @@
 
 ## 현재 목표
 
-Console Mode와 Command Mode 분리 개선 완료. 현재 active 작업 없음
+Korean community launch readiness 완료. 현재 active 작업 없음
 
 ## 현재 우선순위
 

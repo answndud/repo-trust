@@ -79,7 +79,7 @@ def _workflow_table() -> Table:
     table.add_row("2", "Scan GitHub URL", "You want a browser-readable remote report", "HTML report")
     table.add_row("3", "Export GitHub URL", "You need automation-friendly data", "JSON report")
     table.add_row("4", "Quick check", "You want a terminal assessment now", "Dashboard")
-    table.add_row("5", "Open recent reports", "You want to find prior scan artifacts", "File list")
+    table.add_row("5", "List recent reports", "You want to find prior scan artifacts", "File list")
     table.add_row("6", "Command reference", "You want flags and direct commands", "Help")
     table.add_row("q", "Quit", "No scan", "Exit")
     return table

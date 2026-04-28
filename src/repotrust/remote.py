@@ -10,6 +10,12 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from .models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
+from .remote_markers import (
+    REMOTE_CONTENTS_ENDPOINT,
+    REMOTE_DEPENDABOT_ENDPOINT,
+    REMOTE_README_ENDPOINT,
+    REMOTE_WORKFLOWS_ENDPOINT,
+)
 from .rules import (
     install_safety_rules,
     project_hygiene_rules,
@@ -298,15 +304,15 @@ def _partial_findings(
 ) -> list[Finding]:
     findings = []
     if not 200 <= contents_response.status_code < 300:
-        findings.append(_partial_scan_finding("repository contents", contents_response.status_code))
+        findings.append(_partial_scan_finding(REMOTE_CONTENTS_ENDPOINT, contents_response.status_code))
     if readme_response.status_code not in {200, 404}:
-        findings.append(_partial_scan_finding("repository README", readme_response.status_code))
+        findings.append(_partial_scan_finding(REMOTE_README_ENDPOINT, readme_response.status_code))
     if not 200 <= workflows_response.status_code < 300:
-        findings.append(_partial_scan_finding("GitHub Actions workflows", workflows_response.status_code))
+        findings.append(_partial_scan_finding(REMOTE_WORKFLOWS_ENDPOINT, workflows_response.status_code))
     if _all_dependabot_checks_failed(dependabot_yml_response, dependabot_yaml_response):
         findings.append(
             _partial_scan_finding(
-                "Dependabot configuration",
+                REMOTE_DEPENDABOT_ENDPOINT,
                 dependabot_yml_response.status_code,
             )
         )

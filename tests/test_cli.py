@@ -68,10 +68,32 @@ def test_cli_scan_json(tmp_path):
 
     assert result.exit_code == 0
     data = json.loads(result.stdout)
-    assert data["schema_version"] == "1.0"
+    assert data["schema_version"] == "1.1"
+    assert data["assessment"]["coverage"] == "full"
     assert data["target"]["kind"] == "local"
     assert "RepoTrust Summary" in result.stderr
     assert "RepoTrust Summary" not in result.stdout
+
+
+def test_repo_self_scan_is_public_readiness_clean():
+    result = runner.invoke(
+        direct_app,
+        ["json", ".", "--output", "/tmp/repotrust-self-test.json"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    data = json.loads(Path("/tmp/repotrust-self-test.json").read_text(encoding="utf-8"))
+    assert data["schema_version"] == "1.1"
+    assert data["score"]["grade"] == "A"
+    assert data["assessment"]["confidence"] == "high"
+    assert data["assessment"]["coverage"] == "full"
+    assert not [
+        finding
+        for finding in data["findings"]
+        if finding["severity"] in {"medium", "high"}
+    ]
+    assert data["detected_files"]["ci_workflows"]
 
 
 def test_direct_cli_root_starts_interactive_launcher():
@@ -249,6 +271,8 @@ def test_direct_cli_check_github_url_prints_terminal_dashboard(monkeypatch):
     assert result.stdout == ""
     assert "# RepoTrust Report" in result.stderr
     assert "Trust Assessment" in result.stderr
+    assert "Confidence" in result.stderr
+    assert "Coverage" in result.stderr
     assert "remote.github_metadata_collected" in result.stderr
 
 
@@ -447,6 +471,10 @@ def test_cli_missing_local_path_reports_finding_without_usage_error(tmp_path):
     data = json.loads(result.stdout)
     assert data["target"]["kind"] == "local"
     assert [finding["id"] for finding in data["findings"]] == ["target.local_path_missing"]
+    assert data["score"]["total"] == 0
+    assert data["assessment"]["verdict"] == "do_not_install_before_review"
+    assert data["assessment"]["coverage"] == "failed"
+    assert data["assessment"]["confidence"] == "low"
     assert "RepoTrust Summary" in result.stderr
 
 

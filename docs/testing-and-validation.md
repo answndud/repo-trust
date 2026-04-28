@@ -69,6 +69,9 @@ Expected behavior:
 - `--fail-under` exits with code `1` when the score is below the threshold.
 - `--config` applies explicit file-based policy to local scans and explicit remote scans when the file exists and is valid.
 - JSON report content remains valid JSON when stdout is redirected.
+- JSON report `schema_version` is `1.1` and includes top-level `assessment`.
+- Remote API failure, parse-only, and partial scan scenarios must show low/medium confidence instead of adoption-ready results.
+- Public readiness requires local self-scan grade `A`, high confidence, full coverage, and no medium/high findings.
 
 ## CLI Exit-Code Matrix
 
@@ -108,6 +111,25 @@ Validate redirected JSON:
 ```bash
 .venv/bin/python -m json.tool /tmp/repotrust-good.json
 ```
+
+Assessment contract checks:
+
+```bash
+.venv/bin/repo-trust json https://github.com/openai/codex --parse-only --output /tmp/repotrust-parse-only.json
+.venv/bin/python -m json.tool /tmp/repotrust-parse-only.json
+```
+
+Expected parse-only JSON includes `assessment.verdict=insufficient_evidence`, `assessment.confidence=low`, `assessment.coverage=metadata_only`, and a capped score.
+
+Public readiness self-scan:
+
+```bash
+.venv/bin/repo-trust json . --output /tmp/repotrust-self.json
+.venv/bin/python -m json.tool /tmp/repotrust-self.json
+.venv/bin/repo-trust html . --output /tmp/repotrust-self.html
+```
+
+Expected self-scan result: grade `A`, high confidence, full coverage, detected CI workflow, and no medium/high findings.
 
 ## Validation Philosophy
 

@@ -58,6 +58,37 @@ Grade thresholds:
 
 Scores are explainable heuristics, not guarantees. Every major deduction should have a corresponding finding.
 
+Scan completeness can cap the total score without changing category scores:
+
+- Remote scan failed before file evidence was collected: cap total score at 60 and mark coverage `failed`, confidence `low`.
+- Missing local target path: cap total score at 0 because no repository was scanned.
+- GitHub URL parse-only scan: cap total score at 70 and mark coverage `metadata_only`, confidence `low`.
+- Partial remote scan or unavailable README content: cap total score at 85 and mark coverage `partial`, confidence `medium`.
+
+This prevents incomplete scans from looking adoption-ready while preserving category scores as the explanation of actual observed findings.
+
+## Assessment Policy
+
+Every `ScanResult` includes a machine-readable assessment:
+
+- `verdict`: final decision language for humans and automation.
+- `confidence`: how much evidence was collected for this target.
+- `coverage`: whether the scan was full, partial, metadata-only, or failed.
+- `summary`, `reasons`, `next_actions`: concise explanation and follow-up steps.
+
+Verdict priority:
+
+- `do_not_install_before_review` when any high severity finding exists.
+- `insufficient_evidence` when coverage is `failed` or `metadata_only`.
+- `usable_after_review` when medium severity findings remain.
+- `usable_by_current_checks` when current checks completed without blocking findings.
+
+Evidence status in reports:
+
+- `found`: the scanner verified the signal.
+- `missing`: the scanner had enough evidence to check the signal and did not find it.
+- `unknown`: the scanner could not verify the signal because of parse-only mode or a remote endpoint failure.
+
 ## Finding Policy
 
 Finding IDs are treated as a public-ish contract because users may grep reports, compare JSON outputs, or build CI policy around them.
@@ -84,6 +115,7 @@ Score change rules:
 - New rules should start with the smallest severity that honestly communicates the risk.
 - Do not use score deductions for facts the scanner cannot verify locally.
 - For remote/API-derived signals added later, represent API failure and unknown state as findings rather than silently lowering unrelated categories.
+- Use score caps for scan completeness gaps instead of pretending unknown files are missing.
 
 ## Remote GitHub Scan Findings
 

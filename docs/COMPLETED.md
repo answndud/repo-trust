@@ -501,3 +501,21 @@
 - 코드/문서: `src/repotrust/dashboard.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `77 passed`를 확인했다. `git diff --check`도 통과했다. `printf '5\n' | .venv/bin/repo-trust`로 Console Mode recent reports smoke를 확인했고, `.venv/bin/repo-trust html . --output /tmp/repotrust-command-dashboard.html`로 Command Mode assessment dashboard smoke를 확인했다.
 - 결과: Console Mode와 Command Mode가 코드와 UX에서 분리됐고, 직접 명령 결과 화면은 판정, 리스크 분해, 근거, 주요 finding, 다음 행동 중심의 제품형 terminal assessment로 정리됐다. 현재 active 작업은 없다.
+
+## 054: Assessment model and report trust upgrade
+
+- 완료일: 2026-04-28
+- 배경: `result/` HTML 리포트가 판단 이유와 검사 프로세스를 충분히 설명하지 못했고, GitHub API rate limit처럼 실제 파일을 보지 못한 실행도 높은 점수처럼 보일 수 있었다. 사용자는 missing과 unknown, 전체 검사와 부분/실패 검사가 명확히 구분되기를 원했다.
+- 변경 내용: JSON schema를 `1.1`로 올리고 `ScanResult`에 `assessment`를 추가했다. Assessment는 `verdict`, `confidence`, `coverage`, `summary`, `reasons`, `next_actions`를 제공한다. `target.github_not_fetched`, remote failure, partial scan, README content unavailable, missing local path에 total score cap을 적용했다. `src/repotrust/evidence.py`를 추가해 HTML과 terminal dashboard가 같은 found/missing/unknown evidence matrix를 사용하도록 했다. HTML report는 `Assessment`, `Assessment Process`, `Evidence Matrix`, `Risk Breakdown`, `Why This Score`, `Prioritized Findings`, `Next Actions` 중심으로 재구성했고 terminal dashboard에도 confidence/coverage/unknown 상태를 표시했다.
+- 코드/문서: `src/repotrust/models.py`, `src/repotrust/scoring.py`, `src/repotrust/evidence.py`, `src/repotrust/reports.py`, `src/repotrust/dashboard.py`, `tests/test_cli.py`, `tests/test_remote.py`, `tests/test_scanner.py`, `README.md`, `CHANGELOG.md`, `docs/trd.md`, `docs/domain-context.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `77 passed`를 확인했다. `git diff --check`도 통과했다. `.venv/bin/repo-trust html . --output /tmp/repotrust-local.html` smoke는 local full coverage/high confidence dashboard와 HTML을 생성했다. `.venv/bin/repo-trust html https://github.com/openai/codex --output /tmp/repotrust-codex.html` smoke는 실제 GitHub rate limit 상황에서 score 60, `insufficient_evidence`, low confidence, failed coverage, all unknown evidence로 표시됨을 확인했다.
+- 결과: 불완전한 scan이 더 이상 adoption-ready처럼 보이지 않고, 사용자는 점수뿐 아니라 검사 완성도, 판단 신뢰도, unknown evidence, 다음 조치를 함께 볼 수 있다. 현재 active 작업은 없다.
+
+## 055: Korean community launch readiness와 README review fixes
+
+- 완료일: 2026-04-28
+- 배경: 한국어 커뮤니티 공개 전에 README만 읽고 Console Mode와 Command Mode를 구분해 사용할 수 있어야 했고, self-scan도 공개 전 신뢰 신호 기준을 만족해야 했다. README review에서 `check` 예시, Console/Command 개념 구분, recent reports 표현, GitHub URL 출력 안정성 설명이 부족하다는 문제가 발견됐다.
+- 변경 내용: README에 Console Mode와 Command Mode를 비교하는 표를 추가했다. Console Mode의 5번 workflow와 실제 출력 문구를 `List recent reports`로 수정했다. `repo-trust check` 예시는 파일을 저장하지 않는다고 명시하고, GitHub URL 결과는 API 응답, rate limit, 인증 상태, 저장소 변경에 따라 달라질 수 있다고 설명했다. GitHub Actions pytest CI workflow를 복구해 self-scan에서 CI evidence가 found로 표시되도록 했다. `SECURITY.md`, `CHANGELOG.md`, testing/domain/TRD docs도 schema 1.1 assessment와 public readiness 기준에 맞췄다.
+- 코드/문서: `README.md`, `SECURITY.md`, `.github/workflows/ci.yml`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`, `docs/architecture.md`, `docs/domain-context.md`, `docs/testing-and-validation.md`, `docs/trd.md`, `src/repotrust/console.py`, assessment 관련 source/tests를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `77 passed`였다. `git diff --check`도 통과했다. `.venv/bin/repo-trust json . --output /tmp/repotrust-self.json`, `.venv/bin/python -m json.tool /tmp/repotrust-self.json`, `.venv/bin/repo-trust html . --output /tmp/repotrust-self.html`를 실행했고 self-scan은 100/100, A, `usable_by_current_checks`, high confidence, full coverage, finding 0개였다. `printf 'q\n' | .venv/bin/repo-trust`로 Console Mode 문구도 확인했다.
+- 결과: README review findings를 반영했고, 자체 self-scan은 한국어 커뮤니티 공개 전 readiness gate를 만족한다. 현재 active 작업은 없다.

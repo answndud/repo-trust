@@ -8,6 +8,11 @@ Post-v1 hardening for explicit remote scan and report contracts.
 
 ### Added
 
+- JSON report contract `schema_version: "1.1"` with top-level `assessment`.
+- Assessment verdict, confidence, coverage, reasons, and next actions in JSON, Markdown, HTML, and terminal dashboards.
+- Scan completeness score caps for parse-only, remote failure, partial scan, README content unavailable, and missing local path results.
+- Shared evidence matrix status mapping for `found`, `missing`, and `unknown` signals.
+- GitHub Actions `ci` workflow that installs the package and runs pytest.
 - Remote repository metadata quality findings:
   - `remote.github_archived` for `archived=true` as a medium Project Hygiene deduction.
   - `remote.github_issues_disabled` for `has_issues=false` as a low Project Hygiene deduction.
@@ -22,10 +27,11 @@ Post-v1 hardening for explicit remote scan and report contracts.
 - Release/tag freshness is documented as deferred until RepoTrust can distinguish release-managed installable projects from repositories where no GitHub Release practice is normal.
 - Config documentation now states that explicit file-based policy applies to local scans and explicit remote scans.
 - PRD now separates the v0.1.0 baseline from the current post-v1 remote scan implementation.
+- README now uses bilingual `Installation` and `Usage` headings for Korean community readability and RepoTrust dogfooding.
 
 ### Validation
 
-- `.venv/bin/python -m pytest -q` passed with 64 tests.
+- `.venv/bin/python -m pytest -q` passed with 80 tests.
 - Clean venv editable install, CLI entry point, fixture JSON generation, JSON validation, and clean venv pytest passed.
 
 ## v0.1.0 - 2026-04-28

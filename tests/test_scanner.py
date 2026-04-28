@@ -1,8 +1,10 @@
 import json
 import shutil
+from inspect import signature
 from pathlib import Path
 
 from repotrust.detection import detect_files
+from repotrust.models import ScanResult
 from repotrust.reports import render_html, render_json, render_markdown
 from repotrust.scanner import scan
 
@@ -44,6 +46,9 @@ def test_good_readme_has_no_readme_findings(tmp_path):
 
     assert not [finding for finding in result.findings if finding.category.value == "readme_quality"]
     assert result.score.total >= 90
+    assert result.assessment.verdict == "usable_by_current_checks"
+    assert result.assessment.confidence == "high"
+    assert result.assessment.coverage == "full"
 
 
 def test_readme_without_project_purpose_produces_finding(tmp_path):
@@ -82,6 +87,7 @@ def test_curl_pipe_shell_is_high_severity(tmp_path):
     risky = [finding for finding in result.findings if finding.id == "install.risky.shell_pipe_install"]
     assert risky
     assert risky[0].severity.value == "high"
+    assert result.assessment.verdict == "do_not_install_before_review"
 
 
 def test_process_substitution_shell_is_high_severity(tmp_path):
@@ -129,6 +135,30 @@ def test_python_module_pip_install_counts_as_install_command(tmp_path):
     assert "install.no_commands" not in ids
 
 
+def test_numbered_bilingual_readme_headings_count_as_install_and_usage_sections(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n"
+        "Project explains enough about what it does for users to understand whether they should install it or delegate it to an agent safely.\n\n"
+        "## 1. Installation / 설치\n\n"
+        "python -m pip install project\n\n"
+        "## 2. Usage / 사용법\n\n"
+        "project scan .\n\n"
+        "## Contributing\n\n"
+        "Open issues and review release notes.\n",
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+
+    ids = {finding.id for finding in result.findings}
+    assert "readme.no_install_section" not in ids
+    assert "readme.no_usage_section" not in ids
+
+
+def test_scan_result_assessment_is_computed_not_constructor_injected():
+    assert "assessment" not in signature(ScanResult).parameters
+
+
 def test_security_and_ci_findings(tmp_path):
     (tmp_path / "README.md").write_text(
         "# Project\n\n## Installation\n\npip install project\n\n## Usage\n\nproject\n" + "More docs. " * 60,
@@ -155,7 +185,7 @@ def test_github_parse_only_json_contract_has_stable_finding_id():
     result = scan("https://github.com/owner/repo")
     data = json.loads(render_json(result))
 
-    assert data["schema_version"] == "1.0"
+    assert data["schema_version"] == "1.1"
     assert data["target"]["kind"] == "github"
     assert data["target"]["owner"] == "owner"
     assert data["target"]["repo"] == "repo"
@@ -171,6 +201,10 @@ def test_github_parse_only_json_contract_has_stable_finding_id():
     assert [finding["id"] for finding in data["findings"]] == [
         "target.github_not_fetched"
     ]
+    assert data["score"]["total"] == 70
+    assert data["assessment"]["verdict"] == "insufficient_evidence"
+    assert data["assessment"]["confidence"] == "low"
+    assert data["assessment"]["coverage"] == "metadata_only"
 
 
 def test_json_report_shape(tmp_path):
@@ -178,6 +212,7 @@ def test_json_report_shape(tmp_path):
     data = json.loads(render_json(result))
 
     assert set(data) == {
+        "assessment",
         "detected_files",
         "findings",
         "generated_at",
@@ -185,7 +220,7 @@ def test_json_report_shape(tmp_path):
         "score",
         "target",
     }
-    assert data["schema_version"] == "1.0"
+    assert data["schema_version"] == "1.1"
     assert set(data["target"]) == {
         "host",
         "kind",
@@ -213,6 +248,14 @@ def test_json_report_shape(tmp_path):
         "risk_label",
         "total",
     }
+    assert set(data["assessment"]) == {
+        "confidence",
+        "coverage",
+        "next_actions",
+        "reasons",
+        "summary",
+        "verdict",
+    }
     assert data["findings"]
     assert set(data["findings"][0]) == {
         "category",
@@ -229,8 +272,9 @@ def test_markdown_report_sections(tmp_path):
     markdown = render_markdown(result)
 
     assert "# RepoTrust Report" in markdown
-    assert "## Category Scores" in markdown
-    assert "## Detected Files" in markdown
+    assert "## Assessment" in markdown
+    assert "## Risk Breakdown" in markdown
+    assert "## Evidence Matrix" in markdown
     assert "## Findings" in markdown
 
 
@@ -242,12 +286,13 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert '<html lang="ko">' in html
     assert "<h1>저장소 신뢰도 점검 결과</h1>" in html
     assert f"<strong>{result.score.total}/{result.score.max_score}</strong>" in html
-    assert "<h2>전체 판단</h2>" in html
-    assert "<h2>이 리포트 읽는 법</h2>" in html
-    assert "<h2>검사 영역별 점수</h2>" in html
-    assert "<h2>발견된 파일과 의미</h2>" in html
-    assert "<h2>발견 항목과 추천 조치</h2>" in html
-    assert "<h2>다음에 할 일</h2>" in html
+    assert "<h2>Assessment</h2>" in html
+    assert "<h2>Assessment Process</h2>" in html
+    assert "<h2>Evidence Matrix</h2>" in html
+    assert "<h2>Risk Breakdown</h2>" in html
+    assert "<h2>Why This Score</h2>" in html
+    assert "<h2>Prioritized Findings</h2>" in html
+    assert "<h2>Next Actions</h2>" in html
     assert 'class="finding severity-high"' in html
     assert "<dt>검사 영역</dt>" in html
     assert "<dt>심각도</dt>" in html
