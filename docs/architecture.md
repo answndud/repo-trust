@@ -9,7 +9,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 - `src/repotrust/scanner.py`: orchestration for local targets and GitHub URL targets.
 - `src/repotrust/targets.py`: target classification and GitHub URL parsing.
 - `src/repotrust/detection.py`: root-level repository file detection.
-- `src/repotrust/remote.py`: explicit GitHub remote scan boundary and future remote implementation home.
+- `src/repotrust/remote.py`: explicit GitHub remote scan implementation, GitHub API failure mapping, and remote metadata detection.
 - `src/repotrust/rules.py`: deterministic rule checks that emit findings.
 - `src/repotrust/scoring.py`: category scores, total score, grade, and risk label.
 - `src/repotrust/reports.py`: Markdown, JSON, and static HTML report rendering.

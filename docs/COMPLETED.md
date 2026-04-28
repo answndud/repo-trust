@@ -222,3 +222,12 @@
 - 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `50 passed`를 확인했다. Fake remote success case는 100점과 detected README/LICENSE/SECURITY/manifest/lockfile/workflow/Dependabot을 확인했다. Risky remote README는 `install.risky.shell_pipe_install` finding을 생성했다. Remote report rendering test는 JSON schema version과 Markdown report section을 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote scoring/report integration과 문서에 한정됨을 확인했다.
 - 결과: Remote GitHub scan MVP의 기능 구현 story들이 완료됐다. 다음 작업은 `Post-v1 loop completion review`다.
+
+## 023: Remote GitHub scan MVP completion review
+
+- 완료일: 2026-04-28
+- 배경: Remote GitHub scan MVP의 CLI boundary, GitHub client/failure findings, metadata detection, scoring/report integration story가 끝났으므로 전체 기능 완성 여부를 확인해야 했다.
+- 변경 내용: 전체 검증과 smoke check를 수행했다. `docs/trd.md`와 `docs/architecture.md`에서 remote scan 구현 상태 표현을 현재 동작에 맞게 보정했다. active 작업이 모두 끝났으므로 `docs/PLAN.md`와 `docs/PROGRESS.md`는 `현재 active 작업 없음` 상태로 정리했다.
+- 코드/문서: `docs/trd.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `50 passed`였다. 자체 local scan은 100/100, A, Low risk, finding 0개였다. `good-python` fixture JSON과 `risky-install` fixture HTML smoke check가 통과했다. 실제 GitHub remote scan `repotrust scan https://github.com/answndud/repo-trust --remote --format json`은 100/100, A, Low risk, finding 1개(`remote.github_metadata_collected`)였고 README, LICENSE, SECURITY, pyproject.toml, pylock.toml, Dependabot, workflows를 탐지했다. 기본 GitHub URL scan은 여전히 parse-only finding `target.github_not_fetched`를 반환했다. `git diff --stat`과 주요 diff를 검토해 남은 변경이 completion 문서 정리에 한정됨을 확인했다.
+- 결과: Remote GitHub scan MVP가 완료됐다. 현재 active 작업은 없다. 다음 작업은 사용자가 post-v1 범위를 지정하면 `PLAN.md`에 새로 추가한다.

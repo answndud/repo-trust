@@ -187,7 +187,7 @@ Current implementation boundary:
 Interface:
 
 - `repotrust scan <github-url>` 기본 동작은 URL parse-only로 유지한다.
-- remote 구현을 시작할 때 `repotrust scan <github-url> --remote`를 추가한다.
+- `repotrust scan <github-url> --remote`는 명시적으로 GitHub API remote scan을 실행한다.
 - `--remote`는 GitHub URL target에서만 유효하다.
 - local path scan은 네트워크를 절대 사용하지 않는다.
 
