@@ -12,11 +12,11 @@
 
 ## 현재 작업
 
-Remote GitHub scan MVP story 3: Remote metadata detection
+Remote GitHub scan MVP story 4: Remote scoring/report integration
 
 ## 개발 상태 요약
 
-GitHub client와 실패 finding story를 완료했다. 이제 repository metadata, contents, workflow response를 `DetectedFiles`로 변환한다. partial failure는 file absence와 구분하는 finding으로 표현한다.
+Remote metadata detection story를 완료했다. 이제 remote detected files를 기존 rule/scoring/report contract에 연결해 remote scan 결과가 local scan처럼 trust score와 findings를 설명하도록 만든다.
 
 ## Blocker
 
@@ -24,11 +24,11 @@ GitHub client와 실패 finding story를 완료했다. 이제 repository metadat
 
 ## 최근 검증
 
-Remote client/failure story 검증: `.venv/bin/python -m pytest -q`는 `45 passed`. Fake transport tests로 repository success, unauthorized, not found, rate limited, API error, token non-leak를 확인했다.
+Remote metadata detection story 검증: `.venv/bin/python -m pytest -q`는 `48 passed`. Fake transport tests로 root contents에서 README/LICENSE/SECURITY/manifest/lockfile을 탐지하고 workflows response에서 CI workflow를 탐지함을 확인했다. contents/workflows partial failure는 `remote.github_partial_scan` finding으로 표현된다.
 
 ## 다음 액션
 
-1. contents API response fixture를 fake transport에 추가한다.
-2. README/LICENSE/SECURITY/manifests/lockfiles를 remote root contents에서 탐지한다.
-3. workflows API response를 `ci_workflows`로 변환한다.
-4. partial failure finding을 추가한다.
+1. remote detected files를 local-like rules에 연결할 범위를 정한다.
+2. remote README content 없이 수행 가능한 security/project hygiene scoring을 먼저 연결한다.
+3. remote report JSON/Markdown tests를 추가한다.
+4. remote-specific finding과 local finding이 함께 렌더링되는지 확인한다.

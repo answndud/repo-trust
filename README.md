@@ -30,7 +30,7 @@ GitHub URLs are parsed by default, but repositories are not cloned or fetched.
 repotrust scan https://github.com/openai/codex --format json
 ```
 
-Remote GitHub scanning is being added behind explicit opt-in. The current implementation requests repository metadata and reports API failures, while contents/workflow analysis is still in progress:
+Remote GitHub scanning is being added behind explicit opt-in. The current implementation requests repository metadata, root contents, and workflow metadata, while full rule/scoring integration is still in progress:
 
 ```bash
 repotrust scan https://github.com/openai/codex --remote --format json

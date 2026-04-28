@@ -204,3 +204,12 @@
 - 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `tests/test_cli.py`, `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `45 passed`를 확인했다. fake transport tests로 200 success, 401 unauthorized, 404 not found, 403 rate limit, 500 API error를 확인했다. token non-leak test에서 Authorization header에는 token이 들어가지만 finding message/evidence에는 token이 포함되지 않음을 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote client/failure mapping과 문서에 한정됨을 확인했다.
 - 결과: Remote scan은 repository metadata API 실패를 설명 가능한 finding으로 표현할 수 있게 됐다. 다음 작업은 `Remote GitHub scan MVP story 3: Remote metadata detection`이다.
+
+## 021: Remote GitHub scan MVP story 3 - Remote metadata detection
+
+- 완료일: 2026-04-28
+- 배경: GitHub client와 실패 finding이 준비됐으므로 repository metadata, root contents, workflow response를 기존 `DetectedFiles` 모델로 변환해야 했다. API 실패를 파일 부재로 오해하지 않도록 partial failure도 finding으로 표현해야 했다.
+- 변경 내용: GitHub client에 root contents와 Actions workflows endpoint 호출을 추가했다. Root contents response에서 README, LICENSE, SECURITY, dependency manifest, lockfile을 탐지한다. Workflows response에서 workflow path를 `ci_workflows`로 변환한다. Contents 또는 workflows endpoint가 실패하면 `remote.github_partial_scan` finding을 추가하고, 성공한 endpoint의 metadata는 유지한다.
+- 코드/문서: `src/repotrust/remote.py`, `tests/test_remote.py`, `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `48 passed`를 확인했다. Fake transport tests로 remote detected files 변환, contents partial failure, workflows partial failure를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote metadata detection과 문서에 한정됨을 확인했다.
+- 결과: Remote scan이 GitHub root contents와 workflows metadata를 `DetectedFiles`로 변환할 수 있게 됐다. 다음 작업은 `Remote GitHub scan MVP story 4: Remote scoring/report integration`이다.

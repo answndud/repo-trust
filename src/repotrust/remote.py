@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 from urllib.error import HTTPError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from .models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
@@ -12,6 +13,26 @@ from .scoring import calculate_score
 
 
 GITHUB_API_BASE_URL = "https://api.github.com"
+README_NAMES = {"README.md", "README.rst", "README.txt", "README"}
+LICENSE_NAMES = {"LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING"}
+SECURITY_NAMES = {"SECURITY.md"}
+DEPENDENCY_MANIFESTS = {
+    "package.json",
+    "pyproject.toml",
+    "requirements.txt",
+    "requirements-dev.txt",
+    "go.mod",
+}
+LOCKFILES = {
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "poetry.lock",
+    "pylock.toml",
+    "uv.lock",
+    "Pipfile.lock",
+    "go.sum",
+}
 
 
 @dataclass(frozen=True)
@@ -68,6 +89,19 @@ class GitHubClient:
             self._headers(),
         )
 
+    def get_root_contents(self, owner: str, repo: str, ref: str | None = None) -> GitHubResponse:
+        url = f"{self.api_base_url}/repos/{owner}/{repo}/contents"
+        if ref:
+            url = f"{url}?{urlencode({'ref': ref})}"
+        return self.transport.request("GET", url, self._headers())
+
+    def get_workflows(self, owner: str, repo: str) -> GitHubResponse:
+        return self.transport.request(
+            "GET",
+            f"{self.api_base_url}/repos/{owner}/{repo}/actions/workflows",
+            self._headers(),
+        )
+
     def _headers(self) -> dict[str, str]:
         headers = {
             "Accept": "application/vnd.github+json",
@@ -85,12 +119,29 @@ def scan_remote_github(
     client: GitHubClient | None = None,
 ) -> ScanResult:
     client = client or GitHubClient.from_environment()
-    response = client.get_repository(target.owner or "", target.repo or "")
-    finding = _finding_from_repository_response(response)
-    findings = [finding]
+    owner = target.owner or ""
+    repo = target.repo or ""
+
+    repository_response = client.get_repository(owner, repo)
+    repository_finding = _finding_from_repository_response(repository_response)
+    if repository_finding.id != "remote.github_metadata_collected":
+        findings = [repository_finding]
+        return ScanResult(
+            target=target,
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings, weights=weights),
+        )
+
+    contents_response = client.get_root_contents(owner, repo, ref=target.ref)
+    workflows_response = client.get_workflows(owner, repo)
+    findings = [repository_finding]
+    findings.extend(_partial_findings(contents_response, workflows_response))
+    detected_files = _detected_files_from_remote(contents_response, workflows_response)
+
     return ScanResult(
         target=target,
-        detected_files=DetectedFiles(),
+        detected_files=detected_files,
         findings=findings,
         score=calculate_score(findings, weights=weights),
     )
@@ -155,3 +206,80 @@ def _is_rate_limited(response: GitHubResponse) -> bool:
     return response.status_code in {403, 429} and (
         remaining == "0" or "rate limit" in message or "secondary rate" in message
     )
+
+
+def _partial_findings(
+    contents_response: GitHubResponse,
+    workflows_response: GitHubResponse,
+) -> list[Finding]:
+    findings = []
+    if not 200 <= contents_response.status_code < 300:
+        findings.append(_partial_scan_finding("repository contents", contents_response.status_code))
+    if not 200 <= workflows_response.status_code < 300:
+        findings.append(_partial_scan_finding("GitHub Actions workflows", workflows_response.status_code))
+    return findings
+
+
+def _partial_scan_finding(endpoint: str, status_code: int) -> Finding:
+    return Finding(
+        id="remote.github_partial_scan",
+        category=Category.TARGET,
+        severity=Severity.MEDIUM,
+        message="GitHub remote scan completed with partial metadata.",
+        evidence=f"{endpoint} endpoint returned HTTP {status_code}.",
+        recommendation="Retry later or verify repository permissions before treating missing remote signals as absent.",
+    )
+
+
+def _detected_files_from_remote(
+    contents_response: GitHubResponse,
+    workflows_response: GitHubResponse,
+) -> DetectedFiles:
+    root_files = _root_file_paths(contents_response)
+    workflow_paths = _workflow_paths(workflows_response)
+    return DetectedFiles(
+        readme=_first_match(root_files, README_NAMES),
+        license=_first_match(root_files, LICENSE_NAMES),
+        security=_first_match(root_files, SECURITY_NAMES),
+        ci_workflows=workflow_paths,
+        dependency_manifests=_all_matches(root_files, DEPENDENCY_MANIFESTS),
+        lockfiles=_all_matches(root_files, LOCKFILES),
+    )
+
+
+def _root_file_paths(response: GitHubResponse) -> list[str]:
+    if not 200 <= response.status_code < 300 or not isinstance(response.data, list):
+        return []
+    paths = []
+    for item in response.data:
+        if not isinstance(item, dict) or item.get("type") != "file":
+            continue
+        path = item.get("path") or item.get("name")
+        if isinstance(path, str):
+            paths.append(path)
+    return sorted(paths)
+
+
+def _workflow_paths(response: GitHubResponse) -> list[str]:
+    if not 200 <= response.status_code < 300 or not isinstance(response.data, dict):
+        return []
+    workflows = response.data.get("workflows")
+    if not isinstance(workflows, list):
+        return []
+    paths = []
+    for workflow in workflows:
+        if not isinstance(workflow, dict):
+            continue
+        path = workflow.get("path")
+        if isinstance(path, str):
+            paths.append(path)
+    return sorted(paths)
+
+
+def _first_match(paths: list[str], candidates: set[str]) -> str | None:
+    matches = _all_matches(paths, candidates)
+    return matches[0] if matches else None
+
+
+def _all_matches(paths: list[str], candidates: set[str]) -> list[str]:
+    return [path for path in paths if path in candidates]

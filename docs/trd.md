@@ -180,7 +180,8 @@ Current implementation boundary:
 - `--remote` is rejected for local path targets.
 - GitHub URL without `--remote` remains parse-only.
 - GitHub URL with `--remote` enters `remote.py`, requests repository metadata, and converts repository metadata API failures into findings.
-- Remote contents and workflow metadata detection are still split into later post-v1 stories.
+- Remote root contents and workflow metadata are converted into `DetectedFiles`.
+- Full remote rule/scoring integration is still split into a later post-v1 story.
 
 Interface:
 
