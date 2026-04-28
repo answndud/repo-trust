@@ -34,9 +34,25 @@ Use these when changing CLI or report behavior:
 ```bash
 .venv/bin/repotrust scan .
 .venv/bin/repotrust scan . --format json
-.venv/bin/repotrust scan . --config repotrust.toml
 .venv/bin/repotrust scan . --format html --output /tmp/repotrust-report.html
 .venv/bin/repotrust scan https://github.com/openai/codex --format json
+```
+
+For config smoke checks, create an explicit temporary config first:
+
+```bash
+cat > /tmp/repotrust.toml <<'EOF'
+[policy]
+fail_under = 80
+
+[weights]
+readme_quality = 0.25
+install_safety = 0.30
+security_posture = 0.25
+project_hygiene = 0.20
+EOF
+
+.venv/bin/repotrust scan . --config /tmp/repotrust.toml
 ```
 
 Expected behavior:

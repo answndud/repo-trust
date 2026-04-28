@@ -5,6 +5,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 ## Current Package Layout
 
 - `src/repotrust/cli.py`: Typer CLI entrypoint and terminal behavior.
+- `src/repotrust/config.py`: explicit TOML config loading and validation.
 - `src/repotrust/scanner.py`: orchestration for local targets and GitHub URL targets.
 - `src/repotrust/targets.py`: target classification and GitHub URL parsing.
 - `src/repotrust/detection.py`: root-level repository file detection.
@@ -17,11 +18,12 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 ## Data Flow
 
 1. `repotrust scan <target>` enters through `cli.py`.
-2. `scanner.scan()` calls `targets.parse_target()`.
-3. Local paths are inspected with `detection.detect_files()`.
-4. Rule functions in `rules.py` emit `Finding` objects.
-5. `scoring.calculate_score()` converts findings into category and total scores.
-6. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
+2. If `--config <path>` is provided, `config.py` loads and validates the local policy file.
+3. `scanner.scan()` calls `targets.parse_target()`.
+4. Local paths are inspected with `detection.detect_files()`.
+5. Rule functions in `rules.py` emit `Finding` objects.
+6. `scoring.calculate_score()` converts findings into category and total scores.
+7. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
 
 GitHub URLs currently stop after parsing. The result includes an informational finding that remote scanning is not enabled.
 
@@ -43,4 +45,3 @@ GitHub URLs currently stop after parsing. The result includes an informational f
 ## Reference Basis
 
 This harness follows the Codex guidance that project instructions should live in `AGENTS.md` and deeper repository knowledge should be discoverable through repository-local docs. The linked blog post is treated only as a reference index; Codex official documentation is the standard for Codex-specific conventions.
-

@@ -19,7 +19,8 @@ The package exposes the `repotrust` CLI after installation.
 repotrust scan .
 repotrust scan . --format json --output report.json
 repotrust scan . --format html --output report.html
-repotrust scan . --config repotrust.toml
+repotrust scan . --fail-under 80
+repotrust scan . --config /path/to/repotrust.toml
 repotrust --version
 ```
 
@@ -55,7 +56,7 @@ project_hygiene = 0.20
 Use it with:
 
 ```bash
-repotrust scan . --config repotrust.toml
+repotrust scan . --config /path/to/repotrust.toml
 ```
 
 CLI flags override config values. For example, `--fail-under` takes precedence over `policy.fail_under`.

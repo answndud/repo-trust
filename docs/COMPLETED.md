@@ -150,3 +150,12 @@
 - 코드/문서: `docs/trd.md`에 remote scan interface, API 범위, failure finding, 테스트 접근을 추가했다. `docs/adr.md`에 `ADR-009: Remote GitHub scan은 명시적 --remote로만 설계한다`를 추가했다. `docs/prd.md`의 향후 확장 아이디어를 parse-only 기본 동작과 명시적 remote scan으로 정리했다. `docs/trd.md`의 현재 CLI 옵션 목록에는 이미 구현된 `--config <path>`도 반영했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `37 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote scan 설계 문서와 하네스 상태 문서에 한정됨을 확인했다.
 - 결과: Remote GitHub scan은 CLI v1 밖의 post-v1 확장으로 명확히 분리됐고, CLI v1 완성 판정 전에 필요한 설계 문서가 정리됐다. 다음 작업은 `릴리스 전 품질 점검`이다.
+
+## 015: CLI v1 완성 판정
+
+- 완료일: 2026-04-28
+- 배경: local repository scan, GitHub URL parse-only 처리, Markdown/JSON/HTML report, 설정 파일, CLI UX, 하네스 문서가 CLI v1 범위대로 안정화됐는지 확인해야 했다. Remote GitHub scan은 설계까지만 완료하고 구현은 post-v1으로 분리했다.
+- 변경 내용: 릴리스 전 품질 점검을 수행하며 README의 config 예시를 명시적 path 기준으로 보정했다. `docs/trd.md`의 config 설명을 구현 완료 상태에 맞게 수정했고, `docs/architecture.md`에 `config.py` 책임과 data flow를 추가했다. `docs/testing-and-validation.md`에는 명시적 임시 config를 사용하는 smoke check 절차를 추가했다. active 작업이 모두 끝났으므로 `docs/PLAN.md`와 `docs/PROGRESS.md`는 `현재 active 작업 없음` 상태로 정리했다.
+- 코드/문서: 기능 코드 변경은 없었다. `README.md`, `docs/trd.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`에서 `37 passed`를 확인했다. `good-python` fixture Markdown/JSON report를 생성하고 JSON을 `json.tool`로 검증했다. `risky-install` fixture HTML report를 `/tmp/repotrust-risky.html`로 생성했다. 자체 `repotrust scan . --format json`은 92/100, A, Low risk였고 남은 finding은 `security.no_lockfile`, `hygiene.no_license`였다. 두 finding은 LICENSE와 lockfile 정책 선택 전까지 보류하기로 이미 결정한 항목이다. 임시 config smoke check, GitHub URL parse-only JSON check, `--help`, `scan --help`, `--version`, `--fail-under 95` exit code 1도 확인했다. `git diff --stat`과 주요 diff를 검토해 문서 보정 외 회귀 위험이 없음을 확인했다.
+- 결과: RepoTrust CLI v1은 사용 가능한 MVP 기준으로 완성됐다. 현재 active 작업은 없다. 다음 작업은 사용자가 post-v1 범위를 지정하면 `PLAN.md`에 새로 추가한다.
