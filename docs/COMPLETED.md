@@ -87,3 +87,12 @@
 - 코드/문서: 코드 변경은 없었다. `AGENTS.md`에 push 운영 규칙을 추가했고, active 작업 문서를 작업 시작/완료 상태에 맞게 갱신했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `22 passed`를 확인했다. 자체 스캔은 92/100, A 상태를 유지했고 남은 finding은 `security.no_lockfile`, `hygiene.no_license`이다.
 - 결과: 정책 선택이 필요한 항목을 임의로 처리하지 않고 보류했다. 현재 active 작업은 없다.
+
+## 008: CLI version 옵션 추가
+
+- 완료일: 2026-04-28
+- 배경: CLI 도구는 설치/디버깅/리포트 공유 시 실행 중인 버전을 확인할 수 있어야 한다. 패키지에는 이미 `__version__ = "0.1.0"`이 있었지만 CLI에서 확인하는 옵션은 없었다.
+- 변경 내용: `repotrust --version` 옵션을 추가해 `repotrust 0.1.0` 형식으로 출력하도록 했다. Typer 앱은 subcommand 없이 version callback을 실행할 수 있도록 `invoke_without_command=True`를 설정했다.
+- 코드/문서: `src/repotrust/cli.py`에 version option을 추가했다. `tests/test_cli.py`에 version 테스트를 추가했다. `README.md`의 usage 예시에 `repotrust --version`을 추가했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `23 passed`를 확인했다.
+- 결과: 사용자가 설치된 RepoTrust CLI 버전을 바로 확인할 수 있게 됐다. 현재 active 작업은 없다.

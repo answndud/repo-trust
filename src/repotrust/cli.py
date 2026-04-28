@@ -8,16 +8,31 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from . import __version__
 from .reports import render_report
 from .scanner import scan as scan_target
 
-app = typer.Typer(help="Evaluate repository trust signals and generate reports.")
+app = typer.Typer(
+    help="Evaluate repository trust signals and generate reports.",
+    invoke_without_command=True,
+)
 status_console = Console(stderr=True)
 
 
 @app.callback()
-def main() -> None:
+def main(
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            help="Show the RepoTrust version and exit.",
+        ),
+    ] = False,
+) -> None:
     """Evaluate repository trust signals and generate reports."""
+    if version:
+        typer.echo(f"repotrust {__version__}")
+        raise typer.Exit()
 
 
 @app.command()

@@ -8,6 +8,13 @@ from repotrust.cli import app
 runner = CliRunner()
 
 
+def test_cli_version():
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "repotrust 0.1.0"
+
+
 def test_cli_scan_markdown(tmp_path):
     result = runner.invoke(app, ["scan", str(tmp_path), "--format", "markdown"])
 

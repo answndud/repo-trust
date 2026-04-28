@@ -19,6 +19,7 @@ The package exposes the `repotrust` CLI after installation.
 repotrust scan .
 repotrust scan . --format json --output report.json
 repotrust scan . --format html --output report.html
+repotrust --version
 ```
 
 GitHub URLs are parsed in v1, but repositories are not cloned or fetched yet.
