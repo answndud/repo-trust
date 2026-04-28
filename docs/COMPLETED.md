@@ -429,3 +429,12 @@
 - 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다.
 - 결과: README가 중복 명령을 줄이고 초보자 사용 흐름에 맞춘 간결한 한국어 가이드로 정리됐다. 현재 active 작업은 없다.
+
+## 046: README 전체 재작성
+
+- 완료일: 2026-04-28
+- 배경: 이전 README는 중복은 줄었지만 실제 따라 하기 흐름, 섹션 구분, 명령 예시의 자연스러움이 부족했다.
+- 변경 내용: README를 설치, 첫 리포트 만들기, 리포트에서 볼 것, 자주 쓰는 명령, GitHub URL 검사, CI, 설정, fixture, 신뢰 신호, 개발자용 검증 순서로 처음부터 다시 작성했다. 설치부터 HTML 리포트 확인까지의 흐름을 앞쪽에 배치하고, 설명과 명령을 분리해 읽기 쉽게 정리했다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `71 passed`를 확인했다.
+- 결과: README가 실제 사용자 onboarding 흐름에 맞춘 한국어 가이드로 재작성됐다. 현재 active 작업은 없다.

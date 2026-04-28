@@ -1,87 +1,121 @@
 # RepoTrust
 
-RepoTrust는 오픈소스 저장소를 설치하거나 dependency로 추가하기 전에, 그 저장소를 믿고 써도 되는지 빠르게 점검하는 Python CLI 도구입니다.
+RepoTrust는 오픈소스 저장소를 설치하거나 프로젝트 dependency로 추가하기 전에, 기본적인 신뢰 신호를 빠르게 점검하는 Python CLI 도구입니다.
 
-RepoTrust가 확인하는 질문은 단순합니다.
+README, 설치 명령, 보안 정책, CI, lockfile, 라이선스 같은 파일을 보고 “이 저장소를 지금 믿고 써도 되는지” 판단할 수 있는 리포트를 만듭니다.
 
-- README의 설치 명령을 그대로 실행해도 되는가?
-- 회사나 개인 프로젝트의 dependency로 넣어도 되는가?
-- AI coding agent에게 설치와 실행을 맡겨도 되는가?
-- README, LICENSE, SECURITY.md, CI, lockfile 같은 기본 신뢰 신호가 있는가?
+## 1. 설치
 
-RepoTrust는 최종 결정을 대신하지 않습니다. 대신 점수, 발견 항목, 근거, 추천 조치를 함께 보여줘서 사람이 판단하기 쉽게 만듭니다.
-
-## 빠른 시작
-
-처음 한 번만 설치합니다.
+현재는 로컬 개발용 설치를 기준으로 사용합니다. 저장소 루트에서 한 번만 실행하세요.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[dev]'
+```
+
+설치가 끝났는지 확인합니다.
+
+```bash
 repo-trust --version
 ```
 
-설치 후에는 아래 명령만 기억하면 됩니다.
+예상 출력:
 
-```bash
-# 현재 저장소를 한국어 HTML 리포트로 저장
-repo-trust . --format html --output report.html
-
-# GitHub URL을 안전하게 parse-only 점검
-repo-trust "https://github.com/openai/codex"
-
-# JSON 리포트 생성
-repo-trust . --format json --output report.json
+```text
+repo-trust 0.1.0
 ```
 
-파일명만 지정하면 결과는 자동으로 `result/` 폴더에 날짜가 붙어 저장됩니다.
+터미널을 새로 열었다면 다시 가상환경을 켜야 합니다.
+
+```bash
+source .venv/bin/activate
+```
+
+## 2. 첫 리포트 만들기
+
+현재 저장소를 HTML 리포트로 저장합니다.
+
+```bash
+repo-trust . --format html --output report.html
+```
+
+파일명만 지정하면 RepoTrust가 `result/` 폴더를 만들고 날짜를 붙여 저장합니다.
 
 ```text
 result/report-YYYY-MM-DD.html
-result/report-YYYY-MM-DD.json
 ```
 
-## 기본 사용법
+예를 들어 2026년 4월 28일에 실행하면 아래 파일이 생깁니다.
 
-### 로컬 저장소 점검
+```text
+result/report-2026-04-28.html
+```
 
-현재 디렉터리를 점검합니다. 이 모드는 네트워크를 사용하지 않습니다.
+브라우저에서 이 HTML 파일을 열어 결과를 확인하면 됩니다.
+
+## 3. 리포트에서 볼 것
+
+HTML 리포트는 한국어로 작성됩니다. 처음에는 아래 네 부분만 보면 됩니다.
+
+| 위치 | 확인할 내용 |
+| --- | --- |
+| 전체 판단 | 지금 바로 설치해도 되는지에 대한 요약 |
+| 검사 영역별 점수 | README, 설치 안전성, 보안, 프로젝트 관리 중 약한 영역 |
+| 발견된 파일과 의미 | README, LICENSE, SECURITY.md, CI, lockfile 같은 근거 파일 |
+| 발견 항목과 추천 조치 | 실제 문제, 근거, 다음에 해야 할 일 |
+
+심각도는 이렇게 해석하세요.
+
+| Severity | 의미 |
+| --- | --- |
+| `info` | 참고 정보 |
+| `low` | 확인하면 좋은 낮은 위험 |
+| `medium` | dependency로 쓰기 전에 검토할 항목 |
+| `high` | 설치 전에 반드시 확인할 항목 |
+
+`high`가 있으면 README의 설치 명령을 바로 실행하지 말고, 리포트의 “실제 근거”와 “추천 조치”를 먼저 확인하세요.
+
+## 4. 자주 쓰는 명령
+
+현재 저장소를 터미널에 Markdown으로 출력:
 
 ```bash
 repo-trust .
 ```
 
-HTML 리포트를 만들려면:
+현재 저장소를 HTML 리포트로 저장:
 
 ```bash
 repo-trust . --format html --output report.html
 ```
 
-JSON 리포트를 만들려면:
+현재 저장소를 JSON 리포트로 저장:
 
 ```bash
 repo-trust . --format json --output report.json
 ```
 
-`--output`에 파일명만 쓰면 `result/파일명-YYYY-MM-DD.확장자`로 저장됩니다. 위치를 직접 정하고 싶으면 경로를 포함해서 쓰면 됩니다.
+저장 위치를 직접 정하고 싶으면 경로를 포함하세요.
 
 ```bash
 repo-trust . --format html --output reports/my-report.html
 repo-trust . --format html --output /tmp/repotrust.html
 ```
 
-### GitHub URL 점검
+파일명만 쓰면 `result/파일명-YYYY-MM-DD.확장자`로 저장되고, 경로를 쓰면 지정한 위치에 그대로 저장됩니다.
 
-기본 GitHub URL 점검은 URL만 파싱합니다. clone도 하지 않고 GitHub API도 호출하지 않습니다.
+## 5. GitHub URL 검사
+
+GitHub URL도 입력할 수 있습니다.
 
 ```bash
 repo-trust "https://github.com/openai/codex"
 ```
 
-이 경우 `target.github_not_fetched` finding이 나옵니다. 의미는 “GitHub URL은 인식했지만 저장소 파일은 가져오지 않았다”입니다.
+기본 GitHub URL 검사는 안전하게 URL만 파싱합니다. clone하지 않고 GitHub API도 호출하지 않습니다. 이때는 `target.github_not_fetched` finding이 나올 수 있습니다.
 
-원격 metadata까지 확인하려면 명시적으로 `--remote`를 붙입니다.
+원격 저장소 metadata까지 확인하려면 `--remote`를 명시하세요.
 
 ```bash
 repo-trust "https://github.com/openai/codex" --remote --format html --output codex.html
@@ -89,7 +123,7 @@ repo-trust "https://github.com/openai/codex" --remote --format html --output cod
 
 `--remote`는 GitHub REST API의 read-only metadata를 조회합니다. repository를 clone하지 않습니다.
 
-Private repository를 보거나 rate limit을 줄이고 싶으면 `GITHUB_TOKEN`을 설정합니다.
+Private repository를 검사하거나 rate limit을 줄이고 싶으면 `GITHUB_TOKEN`을 사용합니다.
 
 ```bash
 GITHUB_TOKEN=ghp_example repo-trust "https://github.com/owner/private-repo" --remote
@@ -97,52 +131,25 @@ GITHUB_TOKEN=ghp_example repo-trust "https://github.com/owner/private-repo" --re
 
 Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 
-## 리포트 읽는 법
+## 6. CI에서 실패 기준 걸기
 
-HTML 리포트는 초보자가 읽기 쉽게 한국어로 작성됩니다.
-
-- **전체 판단**: 지금 바로 설치해도 될지 빠르게 보는 요약입니다.
-- **검사 영역별 점수**: README, 설치 안전성, 보안 태세, 프로젝트 관리 상태 중 약한 부분을 보여줍니다.
-- **발견된 파일과 의미**: README, LICENSE, SECURITY.md, workflow, lockfile 같은 근거 파일을 설명합니다.
-- **발견 항목과 추천 조치**: 무엇이 문제인지, 어떤 근거가 있는지, 다음에 무엇을 해야 하는지 알려줍니다.
-
-점수 category는 네 가지입니다.
-
-| Category | 의미 |
-| --- | --- |
-| README Quality | README가 목적, 설치, 사용법을 충분히 설명하는지 |
-| Install Safety | 설치 명령이 위험한 원격 스크립트 실행을 유도하지 않는지 |
-| Security Posture | SECURITY.md, CI, Dependabot, lockfile 같은 보안/재현성 신호가 있는지 |
-| Project Hygiene | LICENSE, dependency manifest 같은 기본 관리 신호가 있는지 |
-
-Finding의 `severity`는 이렇게 보면 됩니다.
-
-| Severity | 의미 |
-| --- | --- |
-| `info` | 참고 정보 |
-| `low` | 당장 위험하진 않지만 확인하면 좋은 항목 |
-| `medium` | dependency 채택 전에 검토해야 하는 항목 |
-| `high` | 설치 전 반드시 확인해야 하는 항목 |
-
-## CI에서 사용하기
-
-점수가 기준보다 낮을 때 실패시키려면 `--fail-under`를 사용합니다.
+점수가 기준보다 낮을 때 CI를 실패시키려면 `--fail-under`를 사용합니다.
 
 ```bash
 repo-trust . --format json --output report.json --fail-under 80
 ```
 
-동작은 다음과 같습니다.
+동작:
 
-- score가 80 이상이면 exit code `0`
-- score가 80 미만이면 exit code `1`
+- 점수가 80 이상이면 exit code `0`
+- 점수가 80 미만이면 exit code `1`
 - 잘못된 인자나 config 오류는 exit code `2`
 
-리포트는 실패 기준에 걸려도 먼저 저장됩니다. CI artifact로 `result/report-YYYY-MM-DD.json`을 남기기 좋습니다.
+점수가 낮아도 리포트 파일은 먼저 저장됩니다. CI artifact로 `result/report-YYYY-MM-DD.json`을 남길 수 있습니다.
 
-## 설정 파일
+## 7. 설정 파일
 
-명시적으로 TOML config를 넘길 수 있습니다.
+정책 점수 기준과 category weight를 TOML 파일로 지정할 수 있습니다.
 
 ```toml
 [policy]
@@ -155,14 +162,17 @@ security_posture = 0.25
 project_hygiene = 0.20
 ```
 
-사용 예시:
+사용:
 
 ```bash
 repo-trust . --config /path/to/repotrust.toml
-repo-trust "https://github.com/owner/repo" --remote --config /path/to/repotrust.toml
 ```
 
-CLI flag가 config보다 우선합니다. 예를 들어 `--fail-under`는 `policy.fail_under`보다 우선합니다.
+CLI 옵션이 config보다 우선합니다. 예를 들어 아래 명령의 `--fail-under 90`은 config의 `policy.fail_under`보다 우선합니다.
+
+```bash
+repo-trust . --config /path/to/repotrust.toml --fail-under 90
+```
 
 현재 지원하는 config:
 
@@ -179,42 +189,49 @@ CLI flag가 config보다 우선합니다. 예를 들어 `--fail-under`는 `polic
 - config 자동 탐지
 - remote credential 설정
 
-## 예제로 연습하기
+## 8. 연습용 fixture
 
-좋은 예시 저장소 fixture:
+좋은 예시 저장소:
 
 ```bash
 repo-trust tests/fixtures/repos/good-python --format html --output good-python.html
 ```
 
-위험한 설치 명령이 들어 있는 fixture:
+위험한 설치 명령이 들어 있는 저장소:
 
 ```bash
 repo-trust tests/fixtures/repos/risky-install --format html --output risky-install.html
 ```
 
-JSON을 확인하려면:
+JSON 구조를 보고 싶으면:
 
 ```bash
 repo-trust tests/fixtures/repos/good-python --format json --output good-python.json
 python -m json.tool result/good-python-*.json
 ```
 
-## 현재 하지 않는 일
+## 9. RepoTrust가 보는 신뢰 신호
 
-RepoTrust는 아직 아래 기능을 제공하지 않습니다.
+RepoTrust는 현재 네 영역을 점수화합니다.
 
-- GitHub App
-- 웹 대시보드
-- remote clone
-- dependency vulnerability DB 조회
-- contributor profile 분석
-- release/tag freshness 점수화
-- config 자동 탐지
+| 영역 | 보는 것 |
+| --- | --- |
+| README Quality | README가 목적, 설치, 사용법을 충분히 설명하는지 |
+| Install Safety | 설치 명령이 위험한 원격 스크립트 실행을 유도하지 않는지 |
+| Security Posture | SECURITY.md, CI, Dependabot, lockfile이 있는지 |
+| Project Hygiene | LICENSE, dependency manifest 같은 기본 관리 신호가 있는지 |
 
-## 개발자 메모
+RepoTrust는 아직 아래 항목을 점수화하지 않습니다.
 
-기본 검증:
+- 취약점 DB 조회
+- contributor 신뢰도
+- release/tag freshness
+- star, fork, watcher 수
+- GitHub App 상태
+
+## 10. 개발자용 검증
+
+테스트 실행:
 
 ```bash
 python -m pytest -q
@@ -226,7 +243,13 @@ dependency를 바꾼 경우 lockfile 갱신:
 python -m pip lock -e '.[dev]' -o pylock.toml
 ```
 
-기존 개발용 명령인 `repotrust scan TARGET`도 계속 동작합니다. 사용자 문서에서는 더 짧은 `repo-trust TARGET` 형태를 기본으로 설명합니다.
+기존 개발용 명령도 계속 동작합니다.
+
+```bash
+repotrust scan .
+```
+
+사용자 문서에서는 더 짧은 `repo-trust TARGET` 형태를 기본으로 설명합니다.
 
 ## 문서
 
