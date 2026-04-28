@@ -6,7 +6,10 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 
 - `src/repotrust/cli.py`: Typer CLI entrypoints, localized product help, and command orchestration. `repo-trust` and `repo-trust-kr` share the same product commands; the legacy `repotrust scan` entrypoint remains separate.
 - `src/repotrust/console.py`: interactive Console Mode shell, locale-aware workflow prompts, and recent report listing.
+- `src/repotrust/console_i18n.py`: localized Console Mode titles, workflow menu labels, prompt labels, and recent report messages.
 - `src/repotrust/dashboard.py`: locale-aware Command Mode terminal assessment renderer and legacy summary renderer.
+- `src/repotrust/dashboard_i18n.py`: localized dashboard labels, finding message translations, recommendation translations, and beginner-oriented Korean status text.
+- `src/repotrust/help_i18n.py`: localized product help text and help language selector for `repo-trust` direct commands.
 - `src/repotrust/evidence.py`: shared evidence matrix status mapping for found, missing, and unknown signals.
 - `src/repotrust/remote_markers.py`: shared remote endpoint labels used by remote findings and evidence unknown mapping.
 - `src/repotrust/config.py`: explicit TOML config loading and validation.

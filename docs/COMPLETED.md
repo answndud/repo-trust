@@ -555,3 +555,39 @@
 - 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`는 `89 passed`였다. `git diff --check`도 통과했다. README diff를 검토해 `check`가 파일을 저장하지 않는 점, Console/Command Mode 구분, 최근 리포트 목록 동작, GitHub URL 예시의 변동 가능성 안내가 유지됨을 확인했다.
 - 결과: README가 최신 개발 상태와 맞고, 초보자가 한국어 콘솔에서 시작해 HTML/JSON 저장과 터미널 점검까지 따라갈 수 있는 구조가 됐다. 현재 active 작업은 없다.
+
+## 060: Dashboard i18n table extraction
+
+- 완료일: 2026-04-28
+- 배경: 한국어 대시보드 UX가 확장되면서 `dashboard.py`에 Rich 렌더링 함수와 번역 table, finding message/recommendation mapping이 함께 쌓여 유지보수 경계가 흐려졌다.
+- 변경 내용: `src/repotrust/dashboard_i18n.py`를 추가해 dashboard label, evidence/status label, beginner summary, next action, finding message, recommendation 번역을 분리했다. `dashboard.py`는 새 i18n helper를 import해 panel/table 렌더링과 score/risk badge 조립에 집중하도록 정리했다.
+- 코드/문서: `src/repotrust/dashboard.py`, `src/repotrust/dashboard_i18n.py`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `89 passed`였다. `.venv/bin/repo-trust-kr check tests/fixtures/repos/risky-install`로 한국어 command header, dashboard, finding message, recommendation 번역 smoke를 확인했다. `git diff --check`도 통과했다.
+- 결과: Command Mode dashboard 렌더러와 locale 문구 mapping이 분리됐고, 사용자-facing CLI 동작과 JSON/report contract는 변경되지 않았다. 현재 active 작업은 없다.
+
+## 061: Console i18n table extraction
+
+- 완료일: 2026-04-28
+- 배경: `console.py`도 Console Mode shell 흐름과 영어/한국어 workflow 문구 table을 한 파일에 함께 갖고 있어, dashboard i18n 분리 후에도 locale data 책임이 일관되지 않았다.
+- 변경 내용: `src/repotrust/console_i18n.py`를 추가해 Console Mode title, mission, workflow menu, prompt, recent report 문구를 분리했다. `console.py`는 새 helper를 import해 interactive shell 흐름, workflow routing, recent report listing에 집중하도록 정리했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `89 passed`였다. `printf 'q\n' | .venv/bin/repo-trust`와 `printf 'q\n' | .venv/bin/repo-trust-kr`로 영어/한국어 Console Mode smoke를 확인했다. `git diff --check`도 통과했다.
+- 결과: Console Mode shell과 locale 문구 mapping이 분리됐고, `repo-trust`/`repo-trust-kr` 무인자 실행 UX와 Command Mode 동작은 유지된다. 현재 active 작업은 없다.
+
+## 062: README review hardening
+
+- 완료일: 2026-04-28
+- 배경: README review findings는 최신 README에 대부분 반영되어 있었지만, 같은 오해가 다시 생기지 않도록 Console Mode/Command Mode 차이, `check` 저장 동작, recent reports 동작, GitHub URL 예시 변동성을 더 직접적으로 설명할 필요가 있었다.
+- 변경 내용: Usage 섹션에 Console Mode와 Command Mode의 진입 방식 차이를 문장으로 추가하고, `check`는 두 방식 모두 파일을 저장하지 않는다고 명시했다. Console Mode 5번 workflow는 파일을 열거나 브라우저를 실행하지 않고 목록만 보여준다고 보강했다. GitHub `check` 화면 예시는 고정 예상값이 아니라 출력 형태 예시이며 실제 값이 GitHub API 응답, rate limit, 인증 상태, 저장소 상태에 따라 달라질 수 있다고 예시 앞에 배치했다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `89 passed`였다. `git diff --check`도 통과했다.
+- 결과: README review findings 4개 항목이 현재 문서 기준에서 명확히 방지되도록 보강됐다. 현재 active 작업은 없다.
+
+## 063: CLI help i18n extraction
+
+- 완료일: 2026-04-28
+- 배경: Console Mode와 Command Mode dashboard 문구를 각각 i18n 모듈로 분리했지만, `cli.py`에는 product help text와 help language selector 문구가 남아 있어 command wiring과 locale data가 섞여 있었다.
+- 변경 내용: `src/repotrust/help_i18n.py`를 추가해 root/html/json/check product help text, help option label, help language selector, localized help lookup을 분리했다. `cli.py`는 help callback과 Console Mode help에서 새 helper를 호출하도록 정리했다.
+- 코드/문서: `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `docs/architecture.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `89 passed`였다. `printf '2\n' | .venv/bin/repo-trust --help`와 `printf '2\n' | .venv/bin/repo-trust html --help`로 한국어 help selector와 direct command help를 확인했다. `git diff --check`도 통과했다.
+- 결과: CLI help 문구 data와 command orchestration이 분리됐고, `repo-trust`/`repo-trust-kr` help 언어 선택 동작은 유지된다. 현재 active 작업은 없다.

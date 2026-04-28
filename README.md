@@ -30,6 +30,8 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
+차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 메뉴 번호를 골라 실행합니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`는 두 방식 모두 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
+
 ## Console Mode
 
 명령어 옵션을 외우지 않아도 되는 메뉴 방식입니다.
@@ -56,7 +58,7 @@ dependency, agent, audit를 위한 저장소 신뢰도 점검 도구
 q  종료
 ```
 
-5번 workflow는 파일을 직접 열지 않고 `result/` 폴더에 있는 최근 HTML/JSON 리포트 목록만 보여줍니다.
+5번 workflow는 파일을 직접 열거나 브라우저를 실행하지 않습니다. `result/` 폴더에 있는 최근 HTML/JSON 리포트 목록만 보여줍니다.
 
 영어 화면이 필요하면 `repo-trust`를 입력하면 됩니다.
 
@@ -130,6 +132,8 @@ repo-trust-kr check https://github.com/openai/codex
 
 **화면 예시**
 
+아래는 출력 형태를 보여주는 예시입니다. 실제 값은 GitHub API 응답, rate limit, 인증 상태, 저장소의 최신 상태에 따라 달라집니다.
+
 ```text
 RepoTrust 한국어 모드
 검사 대상 https://github.com/openai/codex
@@ -143,10 +147,8 @@ RepoTrust 한국어 모드
 
 다음에 할 일
 1. 점수와 근거가 기대와 맞는지 확인하세요.
-2. 중요한 프로젝트에 쓰기 전에는 HTML 리포트를 저장해 보관하세요.
+2. 공유하거나 나중에 보려면 html 명령으로 HTML 리포트를 따로 만드세요.
 ```
-
-위 출력은 화면 구조 예시입니다. GitHub URL 검사는 GitHub API 응답, rate limit, 인증 상태, 저장소 변경에 따라 점수, confidence, coverage, finding이 달라질 수 있습니다.
 
 `check` 명령은 HTML/JSON 파일을 저장하지 않습니다. 공유하거나 나중에 다시 볼 리포트가 필요하면 `html` 또는 `json` 명령을 사용하세요.
 
