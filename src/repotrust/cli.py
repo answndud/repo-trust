@@ -357,13 +357,6 @@ def _run_product_scan(
     mode = _scan_mode(parsed_target.kind, remote)
     output_path = None if terminal_only else output or _default_output_path(target, report_format)
 
-    print_command_header(
-        console=status_console,
-        target=target,
-        mode=mode,
-        report_format=report_format.value,
-        locale=locale,
-    )
     _run_scan(
         target=target,
         report_format=report_format,
@@ -427,11 +420,11 @@ def _run_scan(
         output = _resolve_output_path(output)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(rendered, encoding="utf-8")
-        if dashboard_locale == "ko":
+        if dashboard_locale == "ko" and not dashboard:
             status_console.print(
                 f"{normalized_format} 리포트를 [bold]{output}[/bold]에 저장했습니다."
             )
-        else:
+        elif not dashboard:
             status_console.print(f"Wrote {normalized_format} report to [bold]{output}[/bold]")
     else:
         if not dashboard:

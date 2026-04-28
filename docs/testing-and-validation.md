@@ -65,8 +65,11 @@ EOF
 Expected behavior:
 
 - Local paths are scanned without network access.
-- `repo-trust` without a subcommand opens Console Mode with a Kali-style prompt header, workflow list, and recent reports.
-- Product terminal UI should include `repotrust㉿` and `└─$`, and should not reintroduce pink/magenta/cyan/green-heavy theme strings.
+- `repo-trust` without a subcommand opens Console Mode with a Kali-style prompt header, primary shortcut actions, and recent reports.
+- In a real TTY, Console Mode uses alternate screen like a pager so previous terminal history is not visible while the menu is open; non-TTY output remains plain for tests and pipes.
+- Console Mode Home should show four primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
+- Console Mode should show `Selected:` feedback, GitHub URL example input, `[B] Back` target-input control, and a processing line before the result dashboard.
+- Command Mode/help terminal UI should include `repotrust㉿` and `└─$`, and product terminal sources should not reintroduce pink/magenta/bright-green theme strings.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.
 - `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance with the shared Kali-style terminal theme.
@@ -87,9 +90,9 @@ Expected behavior:
 | --- | ---: | --- | --- |
 | `repo-trust` without subcommand | 0 | selected workflow result | Console Mode shell on stderr |
 | `repo-trust --help` | 0 | help text | no launcher |
-| `repo-trust html/json` with GitHub URL | 0 unless `--fail-under` fails | dated file in `result/` unless `--output` is set | stderr `Trust Assessment` dashboard |
-| `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | terminal report only | stderr `Trust Assessment` dashboard |
-| `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr `Trust Assessment` dashboard |
+| `repo-trust html/json` with GitHub URL | 0 unless `--fail-under` fails | dated file in `result/` unless `--output` is set | stderr RESULT dashboard with report path at bottom |
+| `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | terminal report only | stderr RESULT dashboard |
+| `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr RESULT dashboard |
 | Existing local path with default threshold | 0 | stdout unless `--output` is set | stderr summary |
 | Missing local path | 0 | finding `target.local_path_missing` | stderr summary |
 | Local path with `--remote` | 2 | no report | usage error on stderr |

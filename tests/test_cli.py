@@ -13,6 +13,7 @@ from repotrust.cli import (
     direct_app,
     direct_kr_app,
 )
+from repotrust.console import run_console_mode
 from repotrust.models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
 from repotrust.scoring import calculate_score
 
@@ -28,11 +29,9 @@ PRODUCT_TERMINAL_FILES = [
     Path("src/repotrust/terminal_theme.py"),
 ]
 FORBIDDEN_TERMINAL_THEME_TERMS = {
-    "cyan",
     "magenta",
     "pink",
     "bright_green",
-    "green",
     "repo-trust // console",
     "repotrust // 명령 모드",
 }
@@ -140,12 +139,19 @@ def test_direct_cli_root_starts_interactive_launcher():
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert "RepoTrust Console" in stderr
-    assert "repotrust㉿local" in stderr
-    assert "└─$ select" in stderr
-    assert "workflows" in stderr
-    assert "Scan local repository" in stderr
-    assert "Scan GitHub URL" in stderr
+    assert "RepoTrust v0.1.0" in stderr
+    assert "Analyze repository trust before using it." in stderr
+    assert "Select action:" in stderr
+    assert "[G]  GitHub repo" in stderr
+    assert "[L]  Local repo" in stderr
+    assert "[C]  Quick check" in stderr
+    assert "[J]  Export JSON" in stderr
+    assert "Recent:" in stderr
+    assert "[R] Reports   [?] Help   [Q] Quit" in stderr
+    assert "→ Press a key" in stderr
+    assert "+-- select workflow" not in stderr
+    assert "repotrust㉿local" not in stderr
+    assert "Scan local repository" not in stderr
 
 
 def test_direct_kr_cli_root_starts_korean_interactive_launcher():
@@ -154,14 +160,95 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert "repotrust㉿local" in stderr
-    assert "└─$ 선택" in stderr
-    assert "RepoTrust 한국어 콘솔" in stderr
-    assert "워크플로우" in stderr
-    assert "로컬 저장소 검사" in stderr
-    assert "GitHub URL 검사" in stderr
+    assert "RepoTrust v0.1.0" in stderr
+    assert "사용 전 저장소 신뢰도를 분석합니다." in stderr
+    assert "작업 선택:" in stderr
+    assert "[G]  GitHub 저장소" in stderr
+    assert "[L]  로컬 저장소" in stderr
+    assert "[C]  빠른 점검" in stderr
+    assert "[J]  JSON 내보내기" in stderr
+    assert "최근 리포트:" in stderr
+    assert "[R] 리포트   [?] 도움말   [Q] 종료" in stderr
+    assert "→ 키를 누르세요" in stderr
+    assert "+-- 워크플로우 선택" not in stderr
+    assert "repotrust㉿local" not in stderr
     assert "세션을 종료했습니다." in stderr
     assert "Scan local repository" not in stderr
+
+
+def test_console_mode_uses_alternate_screen_for_real_terminals():
+    events = []
+
+    class FakeScreen:
+        def __enter__(self):
+            events.append("screen-enter")
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            events.append("screen-exit")
+
+    class FakeConsole:
+        is_terminal = True
+
+        def screen(self, hide_cursor=False):
+            events.append(f"hide_cursor={hide_cursor}")
+            return FakeScreen()
+
+        def print(self, *args, **kwargs):
+            events.append("print")
+
+        def input(self, *args, **kwargs):
+            events.append(f"input:{args[0] if args else ''}")
+            return "q"
+
+    run_console_mode(
+        console=FakeConsole(),
+        help_text=lambda: "help",
+        version="0.1.0",
+        run_workflow=lambda workflow: None,
+    )
+
+    assert events[0] == "hide_cursor=False"
+    assert "screen-enter" in events
+    assert "screen-exit" in events
+    assert len([event for event in events if event.startswith("input:")]) == 1
+
+
+def test_console_mode_pauses_before_restoring_after_workflow():
+    events = []
+    inputs = iter(["5", ""])
+
+    class FakeScreen:
+        def __enter__(self):
+            events.append("screen-enter")
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            events.append("screen-exit")
+
+    class FakeConsole:
+        is_terminal = True
+
+        def screen(self, hide_cursor=False):
+            return FakeScreen()
+
+        def print(self, *args, **kwargs):
+            events.append("print")
+
+        def input(self, *args, **kwargs):
+            events.append(f"input:{args[0] if args else ''}")
+            return next(inputs)
+
+    run_console_mode(
+        console=FakeConsole(),
+        help_text=lambda: "help",
+        version="0.1.0",
+        run_workflow=lambda workflow: None,
+    )
+
+    input_events = [event for event in events if event.startswith("input:")]
+    assert len(input_events) == 2
+    assert events.index(input_events[-1]) < events.index("screen-exit")
 
 
 def test_direct_cli_help_shows_product_commands_without_launcher():
@@ -230,28 +317,82 @@ def test_direct_kr_cli_subcommand_help_can_show_english_without_target():
 def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
-    result = runner.invoke(direct_app, [], input="1\n.\n", prog_name="repo-trust")
+    result = runner.invoke(direct_app, [], input="01\n.\n", prog_name="repo-trust")
 
     assert result.exit_code == 0
-    assert "Trust Assessment" in result.stderr
-    assert "Risk Breakdown" in result.stderr
-    assert "Evidence" in result.stderr
-    assert "Wrote html report" in result.stderr
+    assert "Selected: Local repository" in result.stderr
+    assert "Enter local repository path:" in result.stderr
+    assert "[B] Back" in result.stderr
+    assert "Running analysis..." in result.stderr
+    assert "RESULT:" in result.stderr
+    assert "WHY" in result.stderr
+    assert "ACTIONS" in result.stderr
+    assert "Open full report:" in result.stderr
+
+
+def test_direct_cli_interactive_github_shortcut_shows_input_and_processing(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
+    def fake_scan(target_text, weights=None, remote=False):
+        return ScanResult(
+            target=Target(
+                raw=target_text,
+                kind="github",
+                host="github.com",
+                owner="owner",
+                repo="repo",
+            ),
+            detected_files=DetectedFiles(),
+            findings=[],
+            score=calculate_score([]),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        direct_app,
+        [],
+        input="g\nhttps://github.com/owner/repo\n",
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "Selected: GitHub repository" in result.stderr
+    assert "Enter GitHub URL:" in result.stderr
+    assert "Example: https://github.com/openai/openai-python" in result.stderr
+    assert "[B] Back" in result.stderr
+    assert "Running analysis..." in result.stderr
+    assert "RESULT:" in result.stderr
+    assert "Open full report:" in result.stderr
 
 
 def test_direct_kr_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
-    result = runner.invoke(direct_kr_app, [], input="1\n.\n", prog_name="repo-trust-kr")
+    result = runner.invoke(direct_kr_app, [], input="01\n.\n", prog_name="repo-trust-kr")
     stderr = plain_output(result.stderr)
 
     assert result.exit_code == 0
-    assert "로컬 경로" in stderr
-    assert "신뢰도 검사 결과" in result.stderr
-    assert "어디가 괜찮고 어디를 봐야 하나" in result.stderr
-    assert "확인한 근거" in result.stderr
-    assert "html 리포트를" in result.stderr
+    assert "로컬 저장소 경로 입력:" in stderr
+    assert "선택됨: 로컬 저장소" in result.stderr
+    assert "분석 중..." in result.stderr
+    assert "RESULT:" in result.stderr
+    assert "이유" in result.stderr
+    assert "다음 행동" in result.stderr
+    assert "전체 리포트 열기:" in result.stderr
     assert (tmp_path / "result").exists()
+
+
+def test_direct_cli_interactive_back_returns_to_home_without_scan():
+    result = runner.invoke(direct_app, [], input="l\nb\nq\n", prog_name="repo-trust")
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "Selected: Local repository" in stderr
+    assert "[B] Back" in stderr
+    assert "Back to action selection." in stderr
+    assert stderr.count("Select action:") == 2
+    assert "Running analysis..." not in stderr
 
 
 def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
@@ -261,7 +402,7 @@ def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
     (result_dir / "repo-2026-04-28.html").write_text("<html></html>", encoding="utf-8")
     (result_dir / "repo-2026-04-28.json").write_text("{}", encoding="utf-8")
 
-    result = runner.invoke(direct_app, [], input="5\n", prog_name="repo-trust")
+    result = runner.invoke(direct_app, [], input="05\n", prog_name="repo-trust")
 
     assert result.exit_code == 0
     assert result.stdout == ""
@@ -312,11 +453,10 @@ def test_direct_cli_html_github_url_remote_scan_writes_default_output(monkeypatc
     assert output.exists()
     assert "<!doctype html>" in output.read_text(encoding="utf-8")
     assert calls == [("https://github.com/owner/repo", None, True)]
-    assert "RepoTrust" in result.stderr
-    assert "Trust Assessment" in result.stderr
-    assert "Risk Breakdown" in result.stderr
-    assert "Evidence" in result.stderr
-    assert "Top Findings" in result.stderr
+    assert "RESULT:" in result.stderr
+    assert "WHY" in result.stderr
+    assert "ACTIONS" in result.stderr
+    assert "Open full report:" in result.stderr
     assert f"result/repo-{date.today().isoformat()}.html" in plain_output(result.stderr)
 
 
@@ -354,7 +494,8 @@ def test_direct_cli_json_github_url_remote_scan_writes_default_output(monkeypatc
     data = json.loads(output.read_text(encoding="utf-8"))
     assert data["target"]["kind"] == "github"
     assert calls == [("https://github.com/owner/repo", None, True)]
-    assert "Trust Assessment" in result.stderr
+    assert "RESULT:" in result.stderr
+    assert "Open full report:" in result.stderr
 
 
 def test_direct_cli_check_github_url_prints_terminal_dashboard(monkeypatch):
@@ -392,11 +533,10 @@ def test_direct_cli_check_github_url_prints_terminal_dashboard(monkeypatch):
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "# RepoTrust Report" not in result.stderr
-    assert "repotrust㉿scan" in result.stderr
-    assert "Trust Assessment" in result.stderr
+    assert "RESULT:" in result.stderr
     assert "Confidence" in result.stderr
-    assert "Coverage" in result.stderr
-    assert "remote.github_metadata_collected" in result.stderr
+    assert "WHY" in result.stderr
+    assert "GitHub repository metadata was collected." in result.stderr
 
 
 def test_direct_kr_cli_check_github_url_prints_korean_dashboard(monkeypatch):
@@ -435,16 +575,11 @@ def test_direct_kr_cli_check_github_url_prints_korean_dashboard(monkeypatch):
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "# RepoTrust Report" not in result.stderr
-    assert "repotrust㉿scan" in stderr
-    assert "검사 방식 GitHub 원격 검사" in stderr
-    assert "신뢰도 검사 결과" in stderr
-    assert "결론" in stderr
-    assert "확실도" in stderr
-    assert "어디가 괜찮고 어디를 봐야 하나" in stderr
-    assert "확인한 근거" in stderr
-    assert "먼저 볼 문제" in stderr
-    assert "다음에 할 일" in stderr
-    assert "정보" in stderr
+    assert "RESULT:" in stderr
+    assert "GitHub 원격 검사" in stderr
+    assert "이유" in stderr
+    assert "다음 행동" in stderr
+    assert "GitHub 저장소 기본 정보를 확인했습니다." in stderr
 
 
 def test_direct_kr_cli_json_writes_file_with_korean_status(monkeypatch, tmp_path):
@@ -476,9 +611,8 @@ def test_direct_kr_cli_json_writes_file_with_korean_status(monkeypatch, tmp_path
     assert result.exit_code == 0
     assert result.stdout == ""
     assert output.exists()
-    assert "json 리포트를" in result.stderr
-    assert "신뢰도 검사 결과" in result.stderr
-    assert "결과 파일" in result.stderr
+    assert "RESULT:" in result.stderr
+    assert "전체 리포트 열기:" in result.stderr
     data = json.loads(output.read_text(encoding="utf-8"))
     assert data["schema_version"] == "1.1"
     assert data["target"]["kind"] == "github"

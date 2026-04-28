@@ -600,3 +600,75 @@
 - 코드/문서: `src/repotrust/cli.py`, `src/repotrust/terminal_theme.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/dashboard.py`, `src/repotrust/dashboard_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`는 `90 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `.venv/bin/repo-trust check .`, `.venv/bin/repo-trust-kr check .`, `printf '2\n' | .venv/bin/repo-trust --help`, `.venv/bin/repo-trust html . --output /tmp/repotrust-kali-terminal.html` smoke를 확인했다.
 - 결과: 터미널 UX는 Kali prompt/MOTD 스타일로 복구됐고, 이미 push된 실패 커밋은 force push 없이 corrective commit으로 바로잡을 준비가 됐다. 현재 active 작업은 없다.
+
+## 065: Console Mode alternate screen
+
+- 완료일: 2026-04-28
+- 배경: Console Mode가 기존 터미널 내역 위에 바로 출력되어 화면이 지저분해 보였고, 사용자는 `git log --oneline`처럼 이전 내역이 보이지 않는 새 화면 느낌을 원했다.
+- 변경 내용: `run_console_mode()`가 실제 TTY에서 Rich alternate screen을 사용하도록 바꿨다. `q`로 종료할 때는 바로 원래 화면으로 돌아가고, scan/recent/help workflow를 실행한 뒤에는 결과를 읽을 수 있도록 Enter pause 후 원래 화면으로 복귀한다. non-TTY/test runner에서는 기존 출력 flow를 유지한다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `92 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `.venv/bin/repo-trust check .` smoke를 확인했다.
+- 결과: 실제 터미널에서 Console Mode는 pager처럼 별도 화면으로 열리고, 테스트/파이프 환경에서는 기존 CLI contract를 유지한다. 현재 active 작업은 없다.
+
+## 066: Console Mode professional input prompt
+
+- 완료일: 2026-04-28
+- 배경: Console Mode의 선택 입력부가 기본 Rich Prompt처럼 보여 전문적인 Kali-style 콘솔 화면과 맞지 않았다.
+- 변경 내용: Console Mode menu 입력을 local helper로 렌더링해 `workflow  01-06 | q` / `워크플로우  01-06 | q` 안내와 별도 `└─$` command line으로 분리했다. `1`과 `01`을 모두 같은 workflow로 normalize하고, non-TTY transcript에서는 입력 prompt 뒤 줄바꿈을 보정했다. workflow target prompt도 같은 `└─$` command line을 공유한다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `92 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `printf '05\n' | .venv/bin/repo-trust` smoke를 확인했다.
+- 결과: 번호 선택부는 기본 choices suffix 없이 command prompt처럼 보이며, zero-padded workflow 번호도 지원한다. 현재 active 작업은 없다.
+
+## 067: Console Mode ASCII input guide
+
+- 완료일: 2026-04-28
+- 배경: `workflow  01-06 | q` 한 줄 안내만으로는 사용자가 번호를 어떻게 입력해야 하는지 직관적으로 이해하기 어려웠다.
+- 변경 내용: Console Mode 선택 입력부에 ASCII 안내창을 추가해 선택 방법, 입력 예시, 종료 키를 함께 보여준다. 안내창은 `01-06`, `Enter`, `q`를 명확히 표시하고, 실제 입력은 기존 Kali-style `└─$` command prompt에서 받는다. 한국어 폭 정렬은 Rich `cell_len` 기준으로 보정했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `92 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `printf '05\n' | .venv/bin/repo-trust` smoke를 확인했다.
+- 결과: 메뉴 번호 입력부가 설명창과 입력창으로 분리되어, 처음 보는 사용자도 `01` 같은 번호를 입력하고 Enter를 누르면 된다는 흐름을 바로 읽을 수 있다. 현재 active 작업은 없다.
+
+## 068: Console Mode input guide simplification
+
+- 완료일: 2026-04-28
+- 배경: 워크플로우 선택 설명창은 화면을 다시 무겁게 만들었고, 사용자는 설명창 자체가 필요 없다고 판단했다.
+- 변경 내용: Console Mode의 ASCII 설명 박스와 관련 helper/i18n key를 제거했다. 메뉴 아래에는 `select 01-06, q to quit, then Enter` / `01-06 선택, q 종료, 입력 후 Enter` 한 줄 안내와 `└─$` 입력줄만 남겼다. `1`과 `01` normalize 동작은 유지했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `92 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `printf '05\n' | .venv/bin/repo-trust` smoke를 확인했다.
+- 결과: Console Mode 선택부는 설명 박스 없이 간결한 힌트와 Kali-style prompt만 남는다. 현재 active 작업은 없다.
+
+## 069: Console Mode product dashboard redesign
+
+- 완료일: 2026-04-28
+- 배경: Console Mode가 여전히 메뉴와 설명을 한 화면에 나열하는 구조라 정보 위계와 interaction focus가 약했다. 사용자는 production-grade CLI UX 기준으로 Home/Input/Processing/Result 흐름과 shortcut 중심 조작을 요구했다.
+- 변경 내용: Home 화면을 `tool/signal`, primary actions, recent reports, controls로 분리했다. Primary actions는 `[G] GitHub report`, `[L] Local report`, `[C] Quick check`, `[J] JSON export` 네 개로 제한하고, `[R] recent`, `[?] help`, `[Q] quit`는 보조 controls로 내렸다. 기존 `1`-`6`, `01`-`06` 입력은 shortcut으로 normalize해 호환성을 유지했다. workflow 실행 전 processing feedback을 출력하고, GitHub shortcut 입력 flow를 테스트로 고정했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `93 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `printf 'c\n.\n' | .venv/bin/repo-trust` smoke를 확인했다.
+- 결과: Console Mode는 action-driven terminal dashboard 형태가 되었고, input과 processing 단계가 Home 화면과 분리되어 보인다. 현재 active 작업은 없다.
+
+## 070: Console Mode focused interaction redesign
+
+- 완료일: 2026-04-28
+- 배경: shortcut 기반 Home으로 바꾼 뒤에도 Home 화면이 여전히 정적이고, `signal`, recent report 목록, 시스템 메시지형 prompt가 남아 있어 시선 흐름과 선택 피드백이 약했다.
+- 변경 내용: Console Mode Home을 `RepoTrust vX`, 한 줄 가치 설명, separator, `Select action`, 4개 primary actions, compact recent count, secondary controls만 남긴 구조로 줄였다. recent report 목록은 `[R]` 선택 시에만 열리도록 Home에서는 count로 축약했다. 선택 후 `Selected:` 상태를 출력하고, GitHub URL 입력에는 예시 URL을 보여준다. processing copy는 짧은 `Running analysis...`로 바꿨다. action은 cyan, selected feedback은 green 스타일을 허용하도록 terminal visual contract를 갱신했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `93 passed`였다. `git diff --check`도 통과했다. `printf 'q\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr`, `printf 'g\nhttps://github.com/owner/repo\n' | .venv/bin/repo-trust`, `printf 'c\n.\n' | .venv/bin/repo-trust` smoke를 확인했다.
+- 결과: Console Mode는 설명 중심 화면에서 focused terminal dashboard로 바뀌었고, Home/Input/Processing/Result 단계가 눈에 구분된다. 현재 active 작업은 없다.
+
+## 071: Console Mode back navigation polish
+
+- 완료일: 2026-04-28
+- 배경: action을 잘못 선택했을 때 입력 단계에서 Home으로 돌아갈 방법이 없었고, action 목록 shortcut 표기가 controls의 `[R]` 형식과 일관되지 않았다.
+- 변경 내용: Home action 표기를 `[G]`, `[L]`, `[C]`, `[J]`로 통일했다. target 입력 단계에 `[B] Back` / `[B] 뒤로` 안내를 추가하고, `b` 또는 `B` 입력 시 scan을 실행하지 않고 Home으로 돌아가도록 Console Mode loop를 조정했다. Back 경로는 테스트로 고정했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `94 passed`였다. `git diff --check`도 통과했다. `printf 'l\nb\nq\n' | .venv/bin/repo-trust`, `printf 'g\nhttps://github.com/owner/repo\n' | .venv/bin/repo-trust`, `printf 'q\n' | .venv/bin/repo-trust-kr` smoke를 확인했다.
+- 결과: Console Mode는 잘못 선택한 action에서 빠져나올 수 있고, shortcut 표기는 Home과 controls 전체에서 일관된 bracket 형식을 사용한다. 현재 active 작업은 없다.
+
+## 072: Result dashboard interface redesign
+
+- 완료일: 2026-04-28
+- 배경: 기능과 구조는 충분해졌지만 결과 화면이 `Wrote...`, `Trust Assessment`, `Risk Breakdown`, `Evidence`를 순서대로 흘리는 로그 출력처럼 보여 핵심 판단이 약했다.
+- 변경 내용: terminal dashboard를 `RESULT`, `WHY`, `ACTIONS`, `REPORT`, `DETAILS` 블록으로 재구성했다. 저장 파일 안내는 결과 상단 로그에서 제거하고 `Open full report:` 블록으로 내렸다. failed/incomplete coverage에서는 세부 점수와 evidence table을 숨기고 unavailable 메시지를 보여준다. finding ID 대신 사용자에게 의미 있는 message와 recommendation을 WHY에 먼저 표시한다. missing local path는 전용 next action과 예시 명령을 제공한다.
+- 코드/문서: `src/repotrust/cli.py`, `src/repotrust/dashboard.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `94 passed`였다. `git diff --check`도 통과했다. `.venv/bin/repo-trust check /tmp/does-not-exist`, `.venv/bin/repo-trust check .`, `.venv/bin/repo-trust html . --output /tmp/repotrust-result-ui.html` smoke를 확인했다.
+- 결과: 결과 화면은 로그 나열이 아니라 판단 중심 인터페이스로 보이며, 실패/불충분 상태에서는 유효하지 않은 세부 표를 보여주지 않는다. 현재 active 작업은 없다.

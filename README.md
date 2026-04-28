@@ -30,11 +30,12 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
-차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 메뉴 번호를 골라 실행합니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`는 두 방식 모두 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
+차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`는 두 방식 모두 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
 ## Console Mode
 
 명령어 옵션을 외우지 않아도 되는 메뉴 방식입니다.
+실제 터미널에서는 alternate screen을 사용하므로 이전 터미널 출력이 뒤에 보이지 않습니다. scan이나 recent reports 같은 workflow를 실행한 뒤에는 결과를 읽고 Enter를 누르면 원래 화면으로 돌아갑니다.
 
 **입력할 명령**
 
@@ -45,28 +46,21 @@ repo-trust-kr
 **화면 예시**
 
 ```text
-┌──(repotrust㉿local)-[console]
-│ tool         RepoTrust 한국어 콘솔 v0.1.0
-│ profile      dependency, agent, audit를 위한 저장소 신뢰도 점검 도구
-│ 목적           저장소를 설치하거나 의존성으로 추가하거나 AI agent에게 맡겨도
-되는지 확인 가능한 근거로 판단합니다.
-│ 명령 모드        repo-trust html <대상>   repo-trust json <대상>   repo-trust
-check <대상>
-
-│ 워크플로우
-│ 01  로컬 저장소 검사 -> HTML 리포트  이미 clone한 폴더가 있을 때
-│ 02  GitHub URL 검사 -> HTML 리포트  브라우저용 원격 리포트가 필요할 때
-│ 03  GitHub URL 내보내기 -> JSON 리포트  자동화용 데이터가 필요할 때
-│ 04  빠른 점검 -> 대시보드  터미널에서 바로 판단할 때
-│ 05  최근 리포트 목록 -> 파일 목록  이전 결과 파일을 찾을 때
-│ 06  명령어 도움말 -> 도움말  직접 명령과 옵션을 확인할 때
-│ q  종료 -> 종료  검사하지 않음
-│ 최근 리포트
-│ result/codex-YYYY-MM-DD.html
-└─$ 선택 [1/2/3/4/5/6/q] (1):
+RepoTrust v0.1.0
+사용 전 저장소 신뢰도를 분석합니다.
+────────────────────────────────────
+작업 선택:
+G  GitHub 저장소  GitHub 저장소 분석
+L  로컬 저장소    로컬 저장소 분석
+C  빠른 점검      즉시 요약 보기
+J  JSON 내보내기  기계가 읽는 리포트 저장
+────────────────────────────────────
+최근 리포트: 3개
+[R] 리포트   [?] 도움말   [Q] 종료
+→ 키를 누르세요
 ```
 
-5번 workflow는 파일을 직접 열거나 브라우저를 실행하지 않습니다. `result/` 폴더에 있는 최근 HTML/JSON 리포트 목록만 보여줍니다.
+단축키는 대소문자를 구분하지 않습니다. 잘못 선택했다면 입력 단계에서 `[B]`를 눌러 작업 선택 화면으로 돌아갈 수 있습니다. 기존 숫자 입력도 호환되므로 `1` 또는 `01`은 로컬 리포트, `5` 또는 `05`는 최근 리포트 목록으로 동작합니다. `[R]` workflow는 파일을 직접 열거나 브라우저를 실행하지 않습니다. `result/` 폴더에 있는 최근 HTML/JSON 리포트 목록만 보여줍니다.
 
 영어 화면이 필요하면 `repo-trust`를 입력하면 됩니다.
 
@@ -143,23 +137,23 @@ repo-trust-kr check https://github.com/openai/codex
 아래는 출력 형태를 보여주는 예시입니다. 실제 값은 GitHub API 응답, rate limit, 인증 상태, 저장소의 최신 상태에 따라 달라집니다.
 
 ```text
-┌──(repotrust㉿scan)-[target]
-│ 검사 대상        https://github.com/openai/codex
-│ 검사 방식 GitHub 원격 검사  리포트 형식 터미널
-│ 신뢰도 검사 결과
-│ 결론           현재 검사 기준으로 사용 가능
-│ 확실도 높음  검사 범위 충분히 확인
-│ 점수 92/100  등급 A  위험도 위험 낮음
-│ 발견 항목        높음:0  보통:0  낮음:0  정보:1
+────────────────────────────────────
+RESULT: 현재 기준 통과
+────────────────────────────────────
+Risk: 위험 낮음
+Score: 92/100  Grade: A
+Confidence: 높음 (확인 가능한 근거를 충분히 검사함)
+Target: https://github.com/openai/codex
+Mode: GitHub 원격 검사
 
-│ 확인한 근거
-확인 항목             상태  근거
-README 설명서         있음  README.md
-라이선스              있음  LICENSE
+────────────────────────────────────
+이유
+현재 규칙에서 차단할 문제를 찾지 못했습니다.
 
-│ 다음에 할 일
+────────────────────────────────────
+다음 행동
 1. 점수와 근거가 기대와 맞는지 확인하세요.
-2. 공유하거나 나중에 보려면 html 명령으로 HTML 리포트를 따로 만드세요.
+2. 중요한 프로젝트에 쓰기 전에는 HTML 리포트를 저장해 보관하세요.
 ```
 
 `check` 명령은 HTML/JSON 파일을 저장하지 않습니다. 공유하거나 나중에 다시 볼 리포트가 필요하면 `html` 또는 `json` 명령을 사용하세요.
@@ -233,11 +227,11 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 
 | 위치 | 확인할 내용 |
 | --- | --- |
-| Assessment | 최종 verdict, 점수, confidence, coverage |
-| Evidence Matrix | README, LICENSE, SECURITY.md, CI, lockfile 같은 근거가 확인됐는지 |
-| Why This Score | finding과 scan completeness가 점수에 준 영향 |
-| Prioritized Findings | 실제 문제, 근거, 추천 조치 |
-| Next Actions | 지금 바로 할 후속 조치 |
+| RESULT | 최종 판단, 위험도, 점수, confidence |
+| 이유 | 판단에 영향을 준 주요 finding 또는 통과 이유 |
+| 다음 행동 | 지금 바로 실행할 후속 조치 |
+| 리포트 | 저장된 HTML/JSON 리포트 위치 |
+| DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
 심각도는 이렇게 해석하면 됩니다.
 

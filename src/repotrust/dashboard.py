@@ -30,6 +30,7 @@ from .terminal_theme import (
     kali_prompt_header,
     kali_section,
     kali_table,
+    muted,
     state_style,
 )
 
@@ -68,26 +69,22 @@ def print_assessment_dashboard(
     output_label: Path | None,
     locale: str = "en",
 ) -> None:
-    console.print(kali_section(text("assessment_title", locale)))
-    console.print(
-        _assessment_text(
-            result=result,
-            mode=mode,
-            output_label=output_label,
-            locale=locale,
-        )
-    )
-    console.print(kali_section(text("risk_breakdown_title", locale)))
-    console.print(_risk_breakdown_table(result, locale=locale))
-    console.print(kali_section(text("evidence_title", locale)))
-    console.print(_evidence_table(result, locale=locale))
-    console.print(kali_section(text("top_findings_title", locale)))
-    console.print(_top_findings_table(result, locale=locale))
-    console.print(kali_section(text("next_actions_title", locale)))
+    console.print(_result_header(result, locale=locale))
+    console.print(_result_summary(result, mode=mode, locale=locale))
+    console.print(_block_title("WHY", "이유", locale))
+    console.print(_why_text(result, locale=locale))
+    console.print(_block_title("ACTIONS", "다음 행동", locale))
     console.print(_next_actions_text(result, output_label, locale=locale))
+    console.print(_block_title("REPORT", "리포트", locale))
+    console.print(_report_text(output_label, locale=locale))
 
-    if verbose and result.findings:
-        print_findings(console=console, result=result, locale=locale)
+    if _has_complete_evidence(result):
+        console.print(_block_title("DETAILS", "세부 정보", locale))
+        console.print(_risk_breakdown_table(result, locale=locale))
+        console.print(_evidence_table(result, locale=locale))
+    else:
+        console.print(_block_title("DETAILS", "세부 정보", locale))
+        console.print(_incomplete_details_text(result, locale=locale))
 
 
 def print_legacy_summary(*, console: Console, result: ScanResult, verbose: bool) -> None:
@@ -119,6 +116,111 @@ def print_findings(*, console: Console, result: ScanResult, locale: str = "en") 
             message_text(finding.message, locale),
         )
     console.print(finding_table)
+
+
+def _result_header(result: ScanResult, *, locale: str) -> str:
+    line = "─" * 36
+    if locale == "ko":
+        return f"[bright_black]{line}[/]\n{_headline(result, locale)}\n[bright_black]{line}[/]"
+    return f"[bright_black]{line}[/]\n{_headline(result, locale)}\n[bright_black]{line}[/]"
+
+
+def _headline(result: ScanResult, locale: str) -> str:
+    verdict = result.assessment.verdict
+    if locale == "ko":
+        if verdict == "do_not_install_before_review":
+            return "[red bold]RESULT: 설치하지 마세요[/]"
+        if verdict == "insufficient_evidence":
+            return "[yellow bold]RESULT: 판단 근거 부족[/]"
+        if verdict == "usable_after_review":
+            return "[yellow bold]RESULT: 검토 후 사용 가능[/]"
+        return "[blue bold]RESULT: 현재 기준 통과[/]"
+    if verdict == "do_not_install_before_review":
+        return "[red bold]RESULT: DO NOT INSTALL[/]"
+    if verdict == "insufficient_evidence":
+        return "[yellow bold]RESULT: INSUFFICIENT EVIDENCE[/]"
+    if verdict == "usable_after_review":
+        return "[yellow bold]RESULT: REVIEW BEFORE USE[/]"
+    return "[blue bold]RESULT: USABLE BY CURRENT CHECKS[/]"
+
+
+def _result_summary(result: ScanResult, *, mode: str, locale: str) -> str:
+    assessment = result.assessment
+    confidence_reason = _confidence_reason(result, locale=locale)
+    if locale == "ko":
+        return (
+            f"Risk: {_risk_badge(result.score.risk_label, locale)}\n"
+            f"Score: {badge(f'{result.score.total}/{result.score.max_score}', style='blue')}  "
+            f"Grade: {badge(result.score.grade, style='white')}\n"
+            f"Confidence: {_confidence_badge(assessment.confidence, locale)} {muted(confidence_reason)}\n"
+            f"Target: {result.target.raw}\n"
+            f"Mode: {mode_label(mode, locale)}"
+        )
+    return (
+        f"Risk: {_risk_badge(result.score.risk_label, locale)}\n"
+        f"Score: {badge(f'{result.score.total}/{result.score.max_score}', style='blue')}  "
+        f"Grade: {badge(result.score.grade, style='white')}\n"
+        f"Confidence: {_confidence_badge(assessment.confidence, locale)} {muted(confidence_reason)}\n"
+        f"Target: {result.target.raw}\n"
+        f"Mode: {mode}"
+    )
+
+
+def _confidence_reason(result: ScanResult, *, locale: str) -> str:
+    coverage = result.assessment.coverage
+    if locale == "ko":
+        if coverage == "failed":
+            return "(분석 실패)"
+        if coverage in {"metadata_only", "partial"}:
+            return "(분석이 완전하지 않음)"
+        return "(확인 가능한 근거를 충분히 검사함)"
+    if coverage == "failed":
+        return "(analysis failed)"
+    if coverage in {"metadata_only", "partial"}:
+        return "(analysis incomplete)"
+    return "(available evidence checked)"
+
+
+def _block_title(en: str, ko: str, locale: str) -> str:
+    return f"\n[bright_black]{'─' * 36}[/]\n[bold]{ko if locale == 'ko' else en}[/]"
+
+
+def _why_text(result: ScanResult, *, locale: str) -> str:
+    if not result.findings:
+        if locale == "ko":
+            return "현재 규칙에서 차단할 문제를 찾지 못했습니다."
+        return "No blocking issues were found by the enabled checks."
+
+    findings = sorted(result.findings, key=_finding_sort_key)[:3]
+    lines: list[str] = []
+    for finding in findings:
+        prefix = "!" if finding.severity.value in {"high", "medium"} else "-"
+        message = message_text(finding.message, locale)
+        recommendation = recommendation_text(finding.recommendation, locale)
+        lines.append(f"{prefix} {message}\n  → {recommendation}")
+    return "\n".join(lines)
+
+
+def _report_text(output_label: Path | None, *, locale: str) -> str:
+    if output_label is None:
+        return "파일 저장 안 함" if locale == "ko" else "No file written for this terminal-only check."
+    if locale == "ko":
+        return f"전체 리포트 열기:\n→ {output_label}"
+    return f"Open full report:\n→ {output_label}"
+
+
+def _has_complete_evidence(result: ScanResult) -> bool:
+    return result.assessment.coverage == "full"
+
+
+def _incomplete_details_text(result: ScanResult, *, locale: str) -> str:
+    if locale == "ko":
+        if result.assessment.coverage == "failed":
+            return "분석이 실패해 세부 점수와 근거 표를 신뢰할 수 없습니다."
+        return "분석이 완전하지 않아 일부 세부 점수와 근거 표를 생략합니다."
+    if result.assessment.coverage == "failed":
+        return "Analysis failed — detailed scores and evidence are unavailable."
+    return "Analysis incomplete — detailed scores and evidence may be unavailable."
 
 
 def _assessment_text(
@@ -208,13 +310,21 @@ def _top_findings_table(result: ScanResult, *, locale: str) -> Table:
 
 
 def _next_actions_text(result: ScanResult, output_label: Path | None, *, locale: str) -> str:
-    actions = localized_actions(result, locale)
-    if output_label is not None:
+    if any(finding.id == "target.local_path_missing" for finding in result.findings):
         if locale == "ko":
-            actions.append(f"{output_label} 파일을 열어서 자세한 근거를 확인하세요.")
+            actions = [
+                "올바른 로컬 저장소 경로로 다시 실행하세요.",
+                "예: repo-trust /your/project/path",
+            ]
         else:
-            actions.append(f"Open {output_label} for the full evidence trail.")
-    else:
+            actions = [
+                "Re-run with a valid repository path.",
+                "Example: repo-trust /your/project/path",
+            ]
+        return "\n".join(f"{index}. {action}" for index, action in enumerate(actions, start=1))
+
+    actions = localized_actions(result, locale)
+    if output_label is None:
         actions.append(text("save_html_action", locale))
     return "\n".join(f"{index}. {action}" for index, action in enumerate(actions, start=1))
 
