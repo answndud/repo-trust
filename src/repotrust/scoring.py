@@ -18,7 +18,8 @@ DEDUCTIONS = {
 }
 
 
-def calculate_score(findings: list[Finding]) -> Score:
+def calculate_score(findings: list[Finding], weights: dict[str, float] | None = None) -> Score:
+    active_weights = weights or WEIGHTS
     categories = {category: 100 for category in WEIGHTS}
     for finding in findings:
         category = finding.category.value
@@ -27,7 +28,7 @@ def calculate_score(findings: list[Finding]) -> Score:
         categories[category] = max(0, categories[category] - DEDUCTIONS[finding.severity])
 
     total = round(
-        sum(categories[category] * weight for category, weight in WEIGHTS.items())
+        sum(categories[category] * weight for category, weight in active_weights.items())
     )
     grade, risk_label = grade_for_score(total)
     return Score(categories=categories, total=total, grade=grade, risk_label=risk_label)
@@ -43,4 +44,3 @@ def grade_for_score(score: int) -> tuple[str, str]:
     if score >= 60:
         return "D", "Elevated risk"
     return "F", "High risk"
-

@@ -19,6 +19,7 @@ The package exposes the `repotrust` CLI after installation.
 repotrust scan .
 repotrust scan . --format json --output report.json
 repotrust scan . --format html --output report.html
+repotrust scan . --config repotrust.toml
 repotrust --version
 ```
 
@@ -35,6 +36,29 @@ Run the test suite before handing off changes:
 ```bash
 .venv/bin/python -m pytest -q
 ```
+
+## Configuration
+
+RepoTrust can load an explicit TOML config file:
+
+```toml
+[policy]
+fail_under = 80
+
+[weights]
+readme_quality = 0.25
+install_safety = 0.30
+security_posture = 0.25
+project_hygiene = 0.20
+```
+
+Use it with:
+
+```bash
+repotrust scan . --config repotrust.toml
+```
+
+CLI flags override config values. For example, `--fail-under` takes precedence over `policy.fail_under`.
 
 ## Fixture Reports
 

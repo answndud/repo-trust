@@ -34,6 +34,7 @@ Use these when changing CLI or report behavior:
 ```bash
 .venv/bin/repotrust scan .
 .venv/bin/repotrust scan . --format json
+.venv/bin/repotrust scan . --config repotrust.toml
 .venv/bin/repotrust scan . --format html --output /tmp/repotrust-report.html
 .venv/bin/repotrust scan https://github.com/openai/codex --format json
 ```
@@ -43,6 +44,7 @@ Expected behavior:
 - Local paths are scanned.
 - GitHub URLs are parsed but not cloned or fetched.
 - `--fail-under` exits with code `1` when the score is below the threshold.
+- `--config` applies explicit local policy when the file exists and is valid.
 - JSON report content remains valid JSON when stdout is redirected.
 
 ## Fixture Repositories

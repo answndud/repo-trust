@@ -10,6 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 from . import __version__
+from .config import ConfigError, RepoTrustConfig, load_config
 from .reports import render_report
 from .scanner import scan as scan_target
 
@@ -61,6 +62,10 @@ def scan(
         Path | None,
         typer.Option("--output", "-o", help="Write the report to this file."),
     ] = None,
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
+    ] = None,
     fail_under: Annotated[
         int | None,
         typer.Option("--fail-under", help="Exit with code 1 if total score is below this value."),
@@ -72,8 +77,9 @@ def scan(
 ) -> None:
     """Scan a repository target."""
     normalized_format = report_format.value
+    loaded_config = _load_cli_config(config)
 
-    result = scan_target(target)
+    result = scan_target(target, weights=loaded_config.weights)
     rendered = render_report(result, normalized_format)
     if output:
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -84,8 +90,18 @@ def scan(
 
     _print_summary(result, verbose)
 
-    if fail_under is not None and result.score.total < fail_under:
+    effective_fail_under = fail_under if fail_under is not None else loaded_config.fail_under
+    if effective_fail_under is not None and result.score.total < effective_fail_under:
         raise typer.Exit(code=1)
+
+
+def _load_cli_config(config_path: Path | None) -> RepoTrustConfig:
+    if config_path is None:
+        return RepoTrustConfig()
+    try:
+        return load_config(config_path)
+    except ConfigError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--config") from exc
 
 
 def _print_summary(result, verbose: bool) -> None:

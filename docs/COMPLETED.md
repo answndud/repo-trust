@@ -132,3 +132,12 @@
 - 코드/문서: 코드 변경은 없었다. `docs/trd.md`에 Config File v1 Design 섹션을 추가했고, `docs/adr.md`에 `ADR-008: 설정 파일 v1은 repotrust.toml로 설계한다`를 추가했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `27 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 설정 설계 문서에 한정됨을 확인했다.
 - 결과: 설정 파일 구현 범위가 결정됐다. 다음 작업은 `설정 파일 v1 구현`이다.
+
+## 013: 설정 파일 v1 구현
+
+- 완료일: 2026-04-28
+- 배경: 설정 파일 설계에서 `repotrust.toml`의 최소 범위를 `policy.fail_under`와 category weights로 제한하기로 결정했다. CI/조직 정책에서 threshold와 가중치를 조정할 수 있도록 구현이 필요했다.
+- 변경 내용: `src/repotrust/config.py`를 추가해 명시적 TOML config를 읽고 검증한다. CLI에 `--config <path>` 옵션을 추가했다. `policy.fail_under`는 `--fail-under` 기본값으로 동작하며 CLI flag가 우선한다. `[weights]`는 score 계산에 반영된다. Python 3.10 호환을 위해 `tomli` 조건부 dependency를 추가했다. invalid config와 missing config는 usage error로 실패한다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/config.py`, `src/repotrust/cli.py`, `src/repotrust/scanner.py`, `src/repotrust/scoring.py`, `tests/test_config.py`, `tests/test_cli.py`, `README.md`, `docs/trd.md`, `docs/testing-and-validation.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `37 passed`를 확인했다. valid config JSON smoke check, invalid config smoke check를 실행했다. `git diff --stat`과 주요 diff를 검토해 config 구현, 테스트, 문서 변경이 함께 반영됐음을 확인했다.
+- 결과: RepoTrust CLI가 명시적 `repotrust.toml` 정책 파일을 읽어 fail threshold와 score weights를 적용할 수 있게 됐다. 다음 작업은 `Remote GitHub scan 설계`다.

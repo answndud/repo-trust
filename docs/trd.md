@@ -158,7 +158,7 @@ Out of scope for config v1:
 - Remote GitHub credentials.
 - Organization-wide inherited config.
 
-Implementation note: Python 3.11+ includes `tomllib`, so TOML can be read without adding a runtime dependency. Python 3.10 compatibility will need a small fallback decision before implementation.
+Implementation note: Python 3.11+ includes `tomllib`; Python 3.10 uses the conditional `tomli` dependency declared in `pyproject.toml`.
 
 ## v1 기술 제약
 

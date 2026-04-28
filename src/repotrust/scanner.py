@@ -9,7 +9,7 @@ from .scoring import calculate_score
 from .targets import parse_target
 
 
-def scan(target_text: str) -> ScanResult:
+def scan(target_text: str, weights: dict[str, float] | None = None) -> ScanResult:
     target = parse_target(target_text)
 
     if target.kind == "github":
@@ -18,7 +18,7 @@ def scan(target_text: str) -> ScanResult:
             target=target,
             detected_files=DetectedFiles(),
             findings=findings,
-            score=calculate_score(findings),
+            score=calculate_score(findings, weights=weights),
         )
 
     repo_path = Path(target.path or target.raw).expanduser()
@@ -28,7 +28,7 @@ def scan(target_text: str) -> ScanResult:
             target=target,
             detected_files=DetectedFiles(),
             findings=findings,
-            score=calculate_score(findings),
+            score=calculate_score(findings, weights=weights),
         )
 
     detected = detect_files(repo_path)
@@ -37,6 +37,5 @@ def scan(target_text: str) -> ScanResult:
         target=target,
         detected_files=detected,
         findings=findings,
-        score=calculate_score(findings),
+        score=calculate_score(findings, weights=weights),
     )
-
