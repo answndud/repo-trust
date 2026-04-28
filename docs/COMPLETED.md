@@ -141,3 +141,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/config.py`, `src/repotrust/cli.py`, `src/repotrust/scanner.py`, `src/repotrust/scoring.py`, `tests/test_config.py`, `tests/test_cli.py`, `README.md`, `docs/trd.md`, `docs/testing-and-validation.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`를 실행했고 `37 passed`를 확인했다. valid config JSON smoke check, invalid config smoke check를 실행했다. `git diff --stat`과 주요 diff를 검토해 config 구현, 테스트, 문서 변경이 함께 반영됐음을 확인했다.
 - 결과: RepoTrust CLI가 명시적 `repotrust.toml` 정책 파일을 읽어 fail threshold와 score weights를 적용할 수 있게 됐다. 다음 작업은 `Remote GitHub scan 설계`다.
+
+## 014: Remote GitHub scan 설계
+
+- 완료일: 2026-04-28
+- 배경: GitHub URL은 v1에서 parse-only로 처리하지만, 이후 확장에서는 clone 없이 GitHub API 기반으로 remote metadata를 확인할 필요가 있다. 사용자가 지정한 CLI v1 범위에서는 구현하지 않고 설계까지만 완료하기로 했다.
+- 변경 내용: remote scan은 기본 scan 동작이 아니라 `--remote` 명시 옵션으로만 실행하도록 결정했다. local path scan은 네트워크를 사용하지 않고, GitHub URL 기본 동작은 계속 parse-only로 유지한다. 인증은 선택적 `GITHUB_TOKEN` 사용으로 설계하고, token 출력 금지 원칙을 기록했다. repository metadata, contents/README, workflow 목록을 read-only API 범위로 정리했고, 인증 실패, repository not found, rate limit, API error, partial scan을 finding으로 표현하도록 설계했다.
+- 코드/문서: `docs/trd.md`에 remote scan interface, API 범위, failure finding, 테스트 접근을 추가했다. `docs/adr.md`에 `ADR-009: Remote GitHub scan은 명시적 --remote로만 설계한다`를 추가했다. `docs/prd.md`의 향후 확장 아이디어를 parse-only 기본 동작과 명시적 remote scan으로 정리했다. `docs/trd.md`의 현재 CLI 옵션 목록에는 이미 구현된 `--config <path>`도 반영했다.
+- 검증: `.venv/bin/python -m pytest -q`를 실행했고 `37 passed`를 확인했다. `git diff --stat`과 주요 diff를 검토해 변경 범위가 remote scan 설계 문서와 하네스 상태 문서에 한정됨을 확인했다.
+- 결과: Remote GitHub scan은 CLI v1 밖의 post-v1 확장으로 명확히 분리됐고, CLI v1 완성 판정 전에 필요한 설계 문서가 정리됐다. 다음 작업은 `릴리스 전 품질 점검`이다.

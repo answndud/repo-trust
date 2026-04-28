@@ -143,3 +143,29 @@
 - Python 3.10 지원을 유지하면서 TOML 파서 fallback이 필요할 때.
 - 조직별 policy inheritance가 필요해질 때.
 - rule disable/override 요구가 반복적으로 생길 때.
+
+## ADR-009: Remote GitHub scan은 명시적 `--remote`로만 설계한다
+
+상태: Accepted
+
+결정:
+
+- 기본 `repotrust scan <github-url>` 동작은 계속 URL 파싱만 수행한다.
+- 네트워크를 사용하는 GitHub API scan은 `--remote`를 명시했을 때만 수행한다.
+- remote scan은 clone을 사용하지 않고 GitHub REST API의 read-only metadata만 사용한다.
+- 인증은 선택 사항이며, 구현 시 `GITHUB_TOKEN` 환경 변수를 우선 사용한다.
+- API 실패, 인증 실패, rate limit, partial scan은 모두 finding으로 표현한다.
+- remote scan 구현은 CLI v1 완성 범위 밖이며, v1에서는 설계까지만 완료한다.
+
+이유:
+
+- scan 명령이 암묵적으로 네트워크를 사용하면 예측 가능성과 재현성이 떨어진다.
+- clone 없이 metadata를 조회하면 설치 전 신뢰 판단이라는 제품 목적에 맞다.
+- API 실패를 파일 부재로 오해하면 점수 신뢰도가 떨어진다.
+- v1은 local scan과 report contract를 안정화하는 데 집중해야 한다.
+
+재검토 조건:
+
+- 사용자가 GitHub URL scan을 기본 기대 동작으로 요구할 때.
+- API rate limit이나 private repo 지원 요구가 커질 때.
+- GitHub App 또는 웹 대시보드 개발을 시작할 때.

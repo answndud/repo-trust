@@ -22,6 +22,7 @@ repotrust scan <target>
 - `--format markdown|json|html`
 - `--output <path>`
 - `--fail-under <score>`
+- `--config <path>`
 - `--verbose`
 
 ## 데이터 흐름
@@ -166,6 +167,55 @@ Implementation note: Python 3.11+ includes `tomllib`; Python 3.10 uses the condi
 - clone, fetch, GitHub API call은 하지 않는다.
 - dependency manifest를 읽더라도 실제 vulnerability lookup은 하지 않는다.
 - README command parsing은 skeleton 수준의 regex heuristic이다.
+
+## Remote GitHub Scan Design
+
+Remote GitHub scan은 v1 이후의 명시적 opt-in 확장으로 설계한다. GitHub URL을 입력했다는 이유만으로 네트워크 scan을 암묵적으로 실행하지 않는다.
+
+Interface:
+
+- `repotrust scan <github-url>` 기본 동작은 URL parse-only로 유지한다.
+- remote 구현을 시작할 때 `repotrust scan <github-url> --remote`를 추가한다.
+- `--remote`는 GitHub URL target에서만 유효하다.
+- local path scan은 네트워크를 절대 사용하지 않는다.
+
+Authentication:
+
+- public repository 기본 metadata는 인증 없이도 scan할 수 있게 설계한다.
+- `GITHUB_TOKEN`이 있으면 더 높은 rate limit 또는 private repository 접근에 사용한다.
+- token 값은 finding, report, log에 절대 출력하지 않는다.
+
+Read-only API scope:
+
+- Repository metadata: `GET /repos/{owner}/{repo}`.
+- README/content metadata: repository contents API. README와 root file인 LICENSE, SECURITY, manifest, lockfile을 확인한다.
+- CI signal: GitHub Actions workflows API, 특히 repository workflow 목록을 확인한다.
+- Release signal은 나중에 releases endpoint로 추가할 수 있지만 첫 remote MVP 필수 범위는 아니다.
+
+Failure modes as findings:
+
+- `remote.github_unauthorized`: authentication required or token lacks access.
+- `remote.github_not_found`: repository does not exist or is not visible.
+- `remote.github_rate_limited`: primary or secondary rate limit prevents scan completion.
+- `remote.github_api_error`: other non-success API response.
+- `remote.github_partial_scan`: some endpoints failed but enough data was collected to score partially.
+
+Scoring behavior:
+
+- Remote scan은 기존 `ScanResult`, `Finding`, scoring model을 재사용한다.
+- 알 수 없는 remote 상태는 신뢰 판단 영향도에 따라 `info` 또는 `medium` finding으로 표현한다.
+- API 실패를 repository file 부재로 조용히 해석하지 않는다.
+
+Testing approach:
+
+- unit test는 mocked HTTP response 또는 local fake transport를 사용한다.
+- test는 실제 네트워크 접근이나 실제 GitHub credential을 요구하지 않는다.
+
+Reference basis:
+
+- GitHub REST repository contents docs: `https://docs.github.com/en/rest/repos/contents`
+- GitHub REST workflows docs: `https://docs.github.com/en/rest/actions/workflows`
+- GitHub REST rate limit docs: `https://docs.github.com/rest/using-the-rest-api/rate-limits-for-the-rest-api`
 
 ## 확장 포인트
 
