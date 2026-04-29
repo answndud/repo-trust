@@ -144,6 +144,13 @@
 - 조직별 policy inheritance가 필요해질 때.
 - rule disable/override 요구가 반복적으로 생길 때.
 
+후속 결정:
+
+- config v2는 반복된 CI/조직 정책 요구를 반영해 `[rules] disabled`, `[severity_overrides]`, `[policy.profiles]`를 추가한다.
+- rule disable과 severity override는 scanner rule 자체를 끄지 않고, scan 후 finding set에 적용한 뒤 score와 assessment를 다시 계산한다.
+- `repo-trust gate`는 JSON report를 먼저 보존하고 score/profile policy 실패를 exit code `1`로 표현한다.
+- remote credential 저장과 조직 policy inheritance는 계속 제외한다.
+
 ## ADR-009: Legacy remote GitHub scan은 명시적 `--remote`로만 설계한다
 
 상태: Accepted for legacy `repotrust scan`; product CLI는 ADR-010을 따른다.
@@ -196,7 +203,7 @@
 
 - Remote metadata 중 archived 상태처럼 명확한 maintenance risk는 score-deducting finding으로 둘 수 있다.
 - fork/private/default branch/stars/language/size/created date 같은 정보는 v0.1.x에서는 evidence-only context로 시작한다.
-- release/tag freshness는 바로 고감점하지 않고, no release practice와 release가 중요하지 않은 project type을 구분할 수 있을 때 낮은 severity부터 도입한다.
+- release/tag freshness는 package manifest가 있는 remote repository에 한해 낮은 severity로 도입하고, no release practice와 API failure는 stale maintenance로 해석하지 않는다.
 - API 실패나 권한 부족으로 알 수 없는 상태는 missing signal로 변환하지 않고 remote failure 또는 partial finding으로 유지한다.
 - contributor profile 분석은 source attribution, privacy, impersonation risk가 설계될 때까지 보류한다.
 
@@ -209,5 +216,5 @@
 재검토 조건:
 
 - 조직 policy config에서 evidence-only metadata를 score에 반영하고 싶다는 요구가 생길 때.
-- package ecosystem별 release practice를 구분할 수 있을 때.
+- organization policy가 release freshness threshold나 severity를 조정해야 할 때.
 - remote scan이 GitHub App 또는 dashboard로 확장될 때.

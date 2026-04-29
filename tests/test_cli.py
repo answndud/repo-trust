@@ -105,7 +105,7 @@ def test_cli_scan_json(tmp_path):
 
     assert result.exit_code == 0
     data = json.loads(result.stdout)
-    assert data["schema_version"] == "1.1"
+    assert data["schema_version"] == "1.2"
     assert data["assessment"]["coverage"] == "full"
     assert data["target"]["kind"] == "local"
     assert "RepoTrust Summary" in result.stderr
@@ -121,7 +121,7 @@ def test_repo_self_scan_is_public_readiness_clean():
 
     assert result.exit_code == 0
     data = json.loads(Path("/tmp/repotrust-self-test.json").read_text(encoding="utf-8"))
-    assert data["schema_version"] == "1.1"
+    assert data["schema_version"] == "1.2"
     assert data["score"]["grade"] == "A"
     assert data["assessment"]["confidence"] == "high"
     assert data["assessment"]["coverage"] == "full"
@@ -262,6 +262,7 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "html" in stdout
     assert "json" in stdout
     assert "check" in stdout
+    assert "gate" in stdout
     assert "RepoTrust Console" not in stdout
 
 
@@ -275,6 +276,7 @@ def test_direct_cli_help_can_show_korean_product_commands():
     assert "사용법:" in stdout
     assert "HTML 신뢰 리포트를 저장합니다." in stdout
     assert "파일 저장 없이 터미널 대시보드로 검사합니다." in stdout
+    assert "JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다." in stdout
 
 
 def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
@@ -614,7 +616,7 @@ def test_direct_kr_cli_json_writes_file_with_korean_status(monkeypatch, tmp_path
     assert "RESULT:" in result.stderr
     assert "전체 리포트 열기:" in result.stderr
     data = json.loads(output.read_text(encoding="utf-8"))
-    assert data["schema_version"] == "1.1"
+    assert data["schema_version"] == "1.2"
     assert data["target"]["kind"] == "github"
 
 
@@ -858,6 +860,71 @@ project_hygiene = 0.0
     assert data["score"]["total"] == data["score"]["categories"]["readme_quality"]
 
 
+def test_cli_config_can_disable_findings(monkeypatch, tmp_path):
+    config = tmp_path / "repotrust.toml"
+    config.write_text('[rules]\ndisabled = ["security.no_policy"]\n', encoding="utf-8")
+
+    def fake_scan(target_text, weights=None, remote=False):
+        finding = Finding(
+            id="security.no_policy",
+            category=Category.SECURITY_POSTURE,
+            severity=Severity.MEDIUM,
+            message="No security policy file was found.",
+            evidence="No SECURITY.md or .github/SECURITY.md was detected.",
+            recommendation="Add a SECURITY.md file.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(raw=target_text, kind="local", path=target_text),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings, weights=weights),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json", "--config", str(config)])
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data["findings"] == []
+    assert data["score"]["total"] == 100
+
+
+def test_cli_config_can_override_finding_severity(monkeypatch, tmp_path):
+    config = tmp_path / "repotrust.toml"
+    config.write_text(
+        '[severity_overrides]\n"security.no_policy" = "low"\n',
+        encoding="utf-8",
+    )
+
+    def fake_scan(target_text, weights=None, remote=False):
+        finding = Finding(
+            id="security.no_policy",
+            category=Category.SECURITY_POSTURE,
+            severity=Severity.MEDIUM,
+            message="No security policy file was found.",
+            evidence="No SECURITY.md or .github/SECURITY.md was detected.",
+            recommendation="Add a SECURITY.md file.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(raw=target_text, kind="local", path=target_text),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings, weights=weights),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json", "--config", str(config)])
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data["findings"][0]["severity"] == "low"
+    assert data["score"]["categories"]["security_posture"] == 92
+
+
 def test_cli_remote_scan_receives_config_weights(monkeypatch, tmp_path):
     config = tmp_path / "repotrust.toml"
     config.write_text(
@@ -967,6 +1034,21 @@ def test_cli_invalid_config_exits_with_usage_error(tmp_path):
     assert "must define exactly" in stderr
 
 
+def test_cli_invalid_policy_does_not_echo_secret_values(tmp_path):
+    config = tmp_path / "repotrust.toml"
+    config.write_text(
+        '[severity_overrides]\n"security.no_policy" = "ghp_secret_value"\n',
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["scan", str(tmp_path), "--config", str(config)])
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 2
+    assert "--config" in stderr
+    assert "ghp_secret_value" not in stderr
+
+
 def test_cli_missing_config_exits_with_usage_error(tmp_path):
     missing_config = tmp_path / "missing.toml"
 
@@ -982,6 +1064,96 @@ def test_cli_fail_under(tmp_path):
     result = runner.invoke(app, ["scan", str(tmp_path), "--fail-under", "100"])
 
     assert result.exit_code == 1
+
+
+def test_direct_cli_gate_preserves_json_when_profile_policy_fails(monkeypatch, tmp_path):
+    config = tmp_path / "repotrust.toml"
+    config.write_text(
+        '[policy.profiles]\nagent_delegate = "usable_after_review"\n',
+        encoding="utf-8",
+    )
+
+    def fake_scan(target_text, weights=None, remote=False):
+        finding = Finding(
+            id="install.npm_lifecycle_script",
+            category=Category.INSTALL_SAFETY,
+            severity=Severity.MEDIUM,
+            message="package.json contains install lifecycle scripts.",
+            evidence="package.json scripts include postinstall.",
+            recommendation="Review install scripts before delegation.",
+        )
+        findings = [finding]
+        return ScanResult(
+            target=Target(raw=target_text, kind="local", path=target_text),
+            detected_files=DetectedFiles(),
+            findings=findings,
+            score=calculate_score(findings, weights=weights),
+        )
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
+
+    result = runner.invoke(
+        direct_app,
+        ["gate", str(tmp_path), "--config", str(config)],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 1
+    data = json.loads(result.stdout)
+    assert data["assessment"]["profiles"]["agent_delegate"]["verdict"] == (
+        "do_not_install_before_review"
+    )
+    assert "Policy gate failed" in stderr
+    assert "profile agent_delegate" in stderr
+
+
+def test_direct_cli_gate_example_policy_passes_good_fixture(tmp_path):
+    output = tmp_path / "gate.json"
+
+    result = runner.invoke(
+        direct_app,
+        [
+            "gate",
+            "tests/fixtures/repos/good-python",
+            "--config",
+            "examples/repotrust.toml",
+            "--output",
+            str(output),
+        ],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    data = json.loads(output.read_text(encoding="utf-8"))
+    assert data["schema_version"] == "1.2"
+    assert data["score"]["total"] == 100
+
+
+def test_direct_cli_gate_example_policy_fails_risky_fixture_but_writes_json(tmp_path):
+    output = tmp_path / "gate.json"
+
+    result = runner.invoke(
+        direct_app,
+        [
+            "gate",
+            "tests/fixtures/repos/risky-install",
+            "--config",
+            "examples/repotrust.toml",
+            "--output",
+            str(output),
+        ],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 1
+    data = json.loads(output.read_text(encoding="utf-8"))
+    assert data["assessment"]["profiles"]["install"]["verdict"] == (
+        "do_not_install_before_review"
+    )
+    assert "Policy gate failed" in stderr
 
 
 def test_cli_invalid_format_exits_with_usage_error(tmp_path):

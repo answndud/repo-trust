@@ -102,7 +102,7 @@ repo-trust json https://github.com/openai/codex
 result/codex-YYYY-MM-DD.json
 ```
 
-JSON 파일은 `schema_version`, `target`, `detected_files`, `findings`, `score`, `assessment`, `generated_at`을 포함합니다. 터미널 대시보드는 stderr로만 출력되므로 JSON 파일 내용과 섞이지 않습니다.
+JSON 파일은 `schema_version`, `target`, `detected_files`, `findings`, `score`, `assessment`, `generated_at`을 포함합니다. `assessment.profiles`에는 설치, dependency 채택, AI agent 위임 목적별 판단이 들어갑니다. 터미널 대시보드는 stderr로만 출력되므로 JSON 파일 내용과 섞이지 않습니다. 자동화에서 파싱할 key와 compatibility 기준은 [docs/json-report-reference.md](docs/json-report-reference.md)에 정리되어 있습니다.
 
 ### 로컬 폴더를 HTML로 저장
 
@@ -149,6 +149,12 @@ Mode: GitHub 원격 검사
 ────────────────────────────────────
 이유
 현재 규칙에서 차단할 문제를 찾지 못했습니다.
+
+────────────────────────────────────
+목적별 판단
+설치: 현재 검사 기준으로 사용 가능
+의존성: 현재 검사 기준으로 사용 가능
+agent 위임: 현재 검사 기준으로 사용 가능
 
 ────────────────────────────────────
 다음 행동
@@ -229,6 +235,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 | --- | --- |
 | RESULT | 최종 판단, 위험도, 점수, confidence |
 | 이유 | 판단에 영향을 준 주요 finding 또는 통과 이유 |
+| 목적별 판단 | 설치, dependency 채택, AI agent 위임 관점의 별도 verdict |
 | 다음 행동 | 지금 바로 실행할 후속 조치 |
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
@@ -262,15 +269,55 @@ repo-trust json https://github.com/openai/codex --fail-under 80
 
 점수가 낮아도 리포트 파일은 먼저 저장됩니다.
 
+CI에서 JSON을 stdout으로 남기면서 정책 실패만 exit code로 표현하려면 `gate`를 사용합니다.
+
+```bash
+repo-trust gate . --config /path/to/repotrust.toml
+```
+
+`gate`는 기본적으로 JSON을 stdout에 출력합니다. `--output`을 주면 JSON 파일을 먼저 저장한 뒤 정책 실패 여부를 exit code로 반환합니다.
+
+### CI gate 빠른 시작
+
+이 저장소의 예시는 그대로 복사해 시작할 수 있습니다.
+
+1. `examples/repotrust.toml`을 프로젝트의 정책에 맞게 검토합니다.
+2. GitHub Actions를 쓴다면 `examples/github-actions-repotrust-gate.yml` 내용을 `.github/workflows/repotrust.yml`로 복사합니다.
+3. CI 또는 로컬에서 gate를 실행합니다.
+
+```bash
+repo-trust gate . --config examples/repotrust.toml --output repotrust-report.json
+```
+
+정책 실패를 확인하려면 risky fixture로 실행해 볼 수 있습니다. 이 명령은 exit code `1`을 반환하지만 JSON report는 먼저 저장합니다.
+
+```bash
+repo-trust gate tests/fixtures/repos/risky-install --config examples/repotrust.toml --output /tmp/repotrust-fail.json
+python -m json.tool /tmp/repotrust-fail.json
+```
+
 ## 설정 파일
 
-정책 점수 기준과 category weight를 TOML 파일로 지정할 수 있습니다.
+정책 점수 기준, 목적별 profile gate, category weight, finding 예외를 TOML 파일로 지정할 수 있습니다.
+
+복사 가능한 시작점은 `examples/repotrust.toml`에 있습니다.
 
 **설정 파일 예시**
 
 ```toml
 [policy]
 fail_under = 80
+
+[policy.profiles]
+install = "usable_after_review"
+dependency = "usable_after_review"
+agent_delegate = "usable_by_current_checks"
+
+[rules]
+disabled = ["remote.github_issues_disabled"]
+
+[severity_overrides]
+"security.no_policy" = "low"
 
 [weights]
 readme_quality = 0.25
@@ -285,7 +332,11 @@ project_hygiene = 0.20
 repo-trust html . --config /path/to/repotrust.toml
 ```
 
-CLI 옵션이 config보다 우선합니다. 현재 지원하는 config는 `policy.fail_under`와 네 category weight입니다. rule enable/disable, finding별 severity override, config 자동 탐지는 아직 지원하지 않습니다.
+CLI 옵션이 config보다 우선합니다. `policy.profiles`는 `install`, `dependency`, `agent_delegate`에 대해 최소 허용 verdict를 지정합니다. verdict는 낮은 순서대로 `do_not_install_before_review`, `insufficient_evidence`, `usable_after_review`, `usable_by_current_checks`입니다.
+
+`rules.disabled`는 지정한 finding ID를 리포트와 점수 계산에서 제외합니다. `severity_overrides`는 finding ID별 severity를 `info`, `low`, `medium`, `high` 중 하나로 바꾼 뒤 점수와 assessment를 다시 계산합니다. config 자동 탐지와 중앙 조직 policy server는 아직 지원하지 않습니다.
+
+정책에서 사용할 finding ID와 예외 처리 기준은 [docs/finding-reference.md](docs/finding-reference.md)에 정리되어 있습니다. JSON report를 직접 파싱하는 도구는 [docs/json-report-reference.md](docs/json-report-reference.md)를 기준으로 구현하세요.
 
 ## RepoTrust가 보는 신뢰 신호
 
@@ -293,20 +344,25 @@ CLI 옵션이 config보다 우선합니다. 현재 지원하는 config는 `polic
 | --- | --- |
 | README Quality | README가 목적, 설치, 사용법을 충분히 설명하는지 |
 | Install Safety | 설치 명령이 위험한 원격 스크립트 실행을 유도하지 않는지 |
-| Security Posture | SECURITY.md, CI, Dependabot, lockfile이 있는지 |
+| Security Posture | SECURITY.md, CI, Dependabot, lockfile, dependency pinning 신호가 있는지 |
 | Project Hygiene | LICENSE, dependency manifest 같은 기본 관리 신호가 있는지 |
+
+`package.json`의 install lifecycle script와 exact version이 아닌 Node/Python direct dependency도 보수적인 finding으로 표시합니다. GitHub 원격 검사에서는 package manifest가 있는 저장소에 한해 오래된 최신 release/tag도 낮은 심각도로 알려줍니다. 이 검사는 취약점 여부를 판단하지 않고, 설치 중 자동 실행되거나 시간이 지나며 다른 dependency가 설치될 수 있는 신호를 알려줍니다.
 
 아직 아래 항목은 점수화하지 않습니다.
 
 - 취약점 DB 조회
 - contributor 신뢰도
-- release/tag freshness
 - star, fork, watcher 수
 - GitHub App 상태
 
 ## 기존 호환 명령
 
 기존 개발용 명령인 `repotrust scan`도 계속 동작합니다. 새 사용자 문서와 공식 예시는 `repo-trust`와 `repo-trust-kr` 기준으로 설명합니다.
+
+## 릴리즈 노트
+
+현재 변경 사항과 공개 전 검증 목록은 `CHANGELOG.md`에 정리합니다. 배포 전에 JSON schema, `repo-trust gate`, GitHub remote scan 동작, sample report 생성 절차가 README와 changelog에서 같은 의미로 설명되는지 확인하세요.
 
 ## 개발자 검증
 
@@ -316,6 +372,18 @@ CLI 옵션이 config보다 우선합니다. 현재 지원하는 config는 `polic
 
 ```bash
 python -m pytest -q
+```
+
+패키징이나 CLI entrypoint를 바꿨다면 clean venv에서 wheel install smoke도 확인합니다.
+
+**입력할 명령**
+
+```bash
+python -m pip wheel --no-deps . --wheel-dir /tmp/repotrust-wheelhouse
+python -m pip install /tmp/repotrust-wheelhouse/repotrust-*.whl
+repo-trust --version
+repo-trust-kr --version
+repotrust --version
 ```
 
 dependency를 바꾼 경우에만 lockfile을 갱신합니다.

@@ -672,3 +672,120 @@
 - 코드/문서: `src/repotrust/cli.py`, `src/repotrust/dashboard.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`는 `94 passed`였다. `git diff --check`도 통과했다. `.venv/bin/repo-trust check /tmp/does-not-exist`, `.venv/bin/repo-trust check .`, `.venv/bin/repo-trust html . --output /tmp/repotrust-result-ui.html` smoke를 확인했다.
 - 결과: 결과 화면은 로그 나열이 아니라 판단 중심 인터페이스로 보이며, 실패/불충분 상태에서는 유효하지 않은 세부 표를 보여주지 않는다. 현재 active 작업은 없다.
+
+## 073: Remote SECURITY.md parity 수정
+
+- 완료일: 2026-04-29
+- 배경: Local scan은 root `SECURITY.md`와 `.github/SECURITY.md`를 모두 보안 정책 신호로 인정하지만, Remote GitHub scan은 root `SECURITY.md`만 확인해 `.github/SECURITY.md`를 사용하는 저장소를 잘못 감점할 수 있었다.
+- 변경 내용: Remote scan이 root contents에서 `SECURITY.md`를 찾지 못하면 `.github/SECURITY.md` contents endpoint를 추가로 조회하도록 했다. 해당 파일이 확인되면 `DetectedFiles.security`에 반영하고, 조회 실패는 `remote.github_partial_scan`과 unknown evidence로 표시해 `security.no_policy` 감점으로 오해하지 않도록 했다.
+- 코드/문서: `src/repotrust/remote.py`, `src/repotrust/evidence.py`, `src/repotrust/remote_markers.py`, `tests/test_remote.py`, `docs/trd.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_remote.py -q`에서 `20 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `96 passed`를 확인했다. `.venv/bin/repo-trust check https://github.com/openai/codex --parse-only`는 parse-only capped result를 정상 출력했다.
+- 결과: Remote GitHub scan이 `.github/SECURITY.md`를 local scan과 같은 보안 정책 신호로 다룬다. 다음 작업은 `Install command evidence extractor 도입`이다.
+
+## 074: Install command evidence extractor 도입
+
+- 완료일: 2026-04-29
+- 배경: Install Safety rule이 README 전체 텍스트에서 위험 패턴을 검색해 `do not use sudo` 같은 경고 문장이나 설치 섹션 밖 anti-pattern 예시를 실제 설치 명령처럼 오판할 수 있었다.
+- 변경 내용: README Installation/Setup 섹션 안의 command-like line만 추출하는 helper를 추가하고, risky install pattern matching이 이 evidence 목록만 검사하도록 바꿨다. 설치 섹션의 실제 `curl ... | sh`, `bash <(curl ...)`, `python -c`, direct VCS install은 계속 finding으로 남긴다.
+- 코드/문서: `src/repotrust/rules.py`, `tests/test_scanner.py`, `docs/domain-context.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_scanner.py -q`에서 `19 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `98 passed`를 확인했다. `.venv/bin/repo-trust check tests/fixtures/repos/risky-install`는 기존 risky install finding을 정상 출력했다.
+- 결과: Install Safety가 실제 설치 명령 근거 중심으로 동작해 자연어 경고와 설치 섹션 밖 예시에 대한 false positive를 줄인다. 다음 작업은 `GitHub subpath target 처리 명확화`다.
+
+## 075: GitHub subpath target 처리 명확화
+
+- 완료일: 2026-04-29
+- 배경: GitHub `tree`/`blob` URL의 `subpath`는 파싱되지만 remote scan은 repository root 기준으로 파일과 README를 평가했다. 이 상태는 monorepo 하위 패키지를 평가한 것처럼 보이는 오해를 만들 수 있었다.
+- 변경 내용: `target.github_subpath_unsupported` finding을 추가해 subpath URL이 하위 폴더 단독 평가가 아님을 명시했다. Remote subpath scan은 score cap 85, coverage `partial`, verdict `usable_after_review`로 표시한다. Parse-only subpath scan은 기존 parse-only cap 70을 유지하되 subpath limitation finding과 local checkout next action을 함께 보여준다.
+- 코드/문서: `src/repotrust/rules.py`, `src/repotrust/scanner.py`, `src/repotrust/remote.py`, `src/repotrust/models.py`, `src/repotrust/scoring.py`, `src/repotrust/reports.py`, `src/repotrust/dashboard_i18n.py`, `tests/test_scanner.py`, `tests/test_remote.py`, `docs/domain-context.md`, `docs/trd.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_scanner.py tests/test_remote.py -q`에서 `41 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `100 passed`를 확인했다. `.venv/bin/repo-trust check https://github.com/owner/repo/tree/main/packages/example --parse-only`는 subpath limitation과 parse-only limitation을 함께 출력했다.
+- 결과: GitHub subpath URL report가 repository-root scan과 subdirectory-only scan을 혼동하지 않도록 명확한 finding, cap, next action을 제공한다. 리뷰 finding 3개 처리 milestone은 완료됐다.
+
+## 076: Dependency/package risk scanner 추가
+
+- 완료일: 2026-04-29
+- 배경: 기존 dependency manifest 검사는 파일 존재 여부와 lockfile 유무만 보았기 때문에, 설치 중 자동 실행되는 npm lifecycle script나 시간이 지나며 다른 dependency를 설치할 수 있는 unpinned direct dependency를 설명하지 못했다.
+- 변경 내용: Local rule layer가 `package.json`, `pyproject.toml`, `requirements.txt`, `requirements-dev.txt`를 보수적으로 읽어 package-level finding을 생성하도록 했다. `dependency.npm_lifecycle_script`는 medium install safety finding으로, `dependency.unpinned_node_dependency`와 `dependency.unpinned_python_dependency`는 low security posture finding으로 추가했다. 기존 `security.no_lockfile`은 그대로 유지하고 exact dependency에는 unpinned finding을 내지 않도록 테스트했다.
+- 코드/문서: `src/repotrust/rules.py`, `src/repotrust/reports.py`, `src/repotrust/dashboard_i18n.py`, `tests/test_scanner.py`, `README.md`, `docs/domain-context.md`, `docs/trd.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_scanner.py -q`에서 `25 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `104 passed`를 확인했다. `.venv/bin/repo-trust check tests/fixtures/repos/good-python`은 `100/100` 결과를 유지했다. 자체 JSON report는 `98/100`으로, unpinned Python dependency low finding만 추가됐고 `json.tool` 검증을 통과했다.
+- 결과: RepoTrust가 dependency 채택 판단에 필요한 첫 package-level local risk signal을 제공한다. 다음 작업은 `목적별 assessment profile 분리`다.
+
+## 077: 목적별 assessment profile 분리
+
+- 완료일: 2026-04-29
+- 배경: 하나의 verdict만으로는 "설치해도 되는가", "dependency로 넣어도 되는가", "AI agent에게 맡겨도 되는가"라는 서로 다른 질문에 직접 답하기 어려웠다.
+- 변경 내용: `AssessmentProfile`을 추가하고 `assessment.profiles.install`, `assessment.profiles.dependency`, `assessment.profiles.agent_delegate`를 JSON contract에 포함했다. 기존 `assessment.verdict`, `confidence`, `coverage`, `summary`, `reasons`, `next_actions`는 유지했고, schema version은 `1.2`로 올렸다. Terminal dashboard, Markdown, HTML report에 목적별 판단을 노출했다. Agent delegation profile은 high finding과 medium install-safety finding을 더 엄격하게 차단한다.
+- 코드/문서: `src/repotrust/models.py`, `src/repotrust/reports.py`, `src/repotrust/dashboard.py`, `src/repotrust/dashboard_i18n.py`, `tests/test_scanner.py`, `tests/test_remote.py`, `tests/test_cli.py`, `README.md`, `docs/domain-context.md`, `docs/testing-and-validation.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_scanner.py tests/test_remote.py tests/test_cli.py -q`에서 `97 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `107 passed`를 확인했다. `.venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json` 실행 후 `json.tool`과 profile verdict를 확인했다. `git diff --check`도 통과했다.
+- 결과: RepoTrust 리포트가 전체 verdict와 함께 목적별 verdict를 제공한다. 다음 작업은 `Remote release/tag freshness 구현`이다.
+
+## 078: Remote release/tag freshness 구현
+
+- 완료일: 2026-04-29
+- 배경: release/tag freshness는 유용한 maintenance signal이지만, GitHub Release가 없거나 tags-only 관행인 저장소를 stale로 오판하면 false positive가 크다. package manifest가 있는 remote repository에 한해 확인 가능한 release/tag 날짜만 낮은 심각도로 보고하도록 구현했다.
+- 변경 내용: Remote GitHub client에 latest release, tags list, tag commit endpoint를 추가했다. root dependency manifest가 있는 remote repository에서 latest release date를 우선 확인하고, release가 404이면 latest tag commit date로 fallback한다. freshness 기준보다 오래된 경우에만 `remote.release_or_tag_stale` low project hygiene finding을 생성하며, no release/tag practice와 release/tag API failure는 stale finding이나 partial scan으로 바꾸지 않는다.
+- 코드/문서: `src/repotrust/remote.py`, `src/repotrust/reports.py`, `src/repotrust/dashboard_i18n.py`, `tests/test_remote.py`, `README.md`, `docs/adr.md`, `docs/domain-context.md`, `docs/prd.md`, `docs/testing-and-validation.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_remote.py -q`에서 `25 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `111 passed`를 확인했다. `git diff --check`도 통과했다.
+- 결과: Remote scan이 package-managed 저장소의 오래된 release/tag를 보수적인 low finding으로 설명한다. 다음 작업은 `CI/조직 정책 모드 확장`이다.
+
+## 079: CI/조직 정책 모드 확장
+
+- 완료일: 2026-04-29
+- 배경: RepoTrust를 CI와 팀 정책에서 쓰려면 단순 score threshold 외에도 finding 예외, severity 조정, 목적별 profile gate를 명시할 수 있어야 했다.
+- 변경 내용: `repotrust.toml` v2 policy로 `[rules] disabled`, `[severity_overrides]`, `[policy.profiles]`를 추가했다. Scanner가 낸 finding set에 config policy를 적용한 뒤 score와 assessment를 다시 계산하도록 했다. `repo-trust gate`와 `repo-trust-kr gate` 명령을 추가해 JSON report를 stdout 또는 `--output`에 먼저 보존하고, score/profile policy 실패를 exit code `1`로 반환한다. invalid policy는 usage error로 처리하고 invalid secret-like value를 stderr에 echo하지 않도록 테스트했다.
+- 코드/문서: `src/repotrust/config.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/adr.md`, `docs/architecture.md`, `docs/domain-context.md`, `docs/prd.md`, `docs/testing-and-validation.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`에서 `53 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `115 passed`를 확인했다. 임시 `repotrust.toml`로 `.venv/bin/repo-trust json . --config <tmp> --output /tmp/repotrust-079.json`와 `.venv/bin/repo-trust gate . --config <tmp>`를 실행하고 두 JSON report를 `json.tool`로 검증했다.
+- 결과: RepoTrust가 CI에서 JSON contract를 유지하면서 조직별 예외와 목적별 minimum verdict를 적용할 수 있다. 다음 작업은 `릴리즈 준비와 패키징 smoke`다.
+
+## 080: 릴리즈 준비와 패키징 smoke
+
+- 완료일: 2026-04-29
+- 배경: 기능이 늘어난 뒤 release note와 packaging metadata가 현재 동작을 따라오지 못했고, public install 관점에서 product entrypoint와 wheel install smoke를 다시 확인해야 했다.
+- 변경 내용: `pyproject.toml`에 license, author, keywords, classifiers, project URLs를 추가했다. `CHANGELOG.md`의 Unreleased 항목을 JSON schema `1.2`, 목적별 profile, config v2, `repo-trust gate`, remote freshness, Korean product CLI 기준으로 갱신했다. README에 release note 위치와 wheel install smoke를 추가하고, testing guide의 packaging verification을 clean wheel install, product/legacy entrypoint 확인, product JSON/gate/HTML와 legacy JSON sample report 검증 절차로 확장했다.
+- 코드/문서: `pyproject.toml`, `CHANGELOG.md`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pip install -e '.[dev]'`를 실행해 editable install을 확인했다. `.venv/bin/python -m pytest -q`에서 `115 passed`를 확인했다. `.venv/bin/python -m pip wheel --no-deps . --wheel-dir <tmp>`로 `repotrust-0.1.0-py3-none-any.whl` 생성을 확인했다. 별도 clean venv에 wheel을 설치해 `repo-trust`, `repo-trust-kr`, `repotrust` entrypoint가 모두 `0.1.0`을 출력하는지 확인했다. Clean wheel 환경에서 product JSON, gate JSON, product HTML, legacy JSON sample report를 생성하고 JSON reports를 `json.tool`로 검증했다. Self-scan JSON은 schema `1.2`, score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었다.
+- 결과: RepoTrust는 현재 변경 세트 기준 release readiness smoke를 통과했다. 다음 작업은 `CI policy 예시와 config template 추가`다.
+
+## 081: CI policy 예시와 config template 추가
+
+- 완료일: 2026-04-29
+- 배경: `repo-trust gate`와 config v2가 구현됐지만, 사용자가 CI에 붙일 때 바로 복사할 sample policy와 GitHub Actions 예시가 없었다.
+- 변경 내용: `examples/repotrust.toml`에 score threshold, profile gate, finding disable, severity override를 포함한 CI policy template을 추가했다. `examples/github-actions-repotrust-gate.yml`에는 checkout, Python setup, RepoTrust install, gate 실행, report artifact 업로드 흐름을 담았다. README에는 CI gate 빠른 시작과 실패 예시를 추가했고, testing guide는 committed sample config 기준으로 gate pass/fail smoke를 설명하게 바꿨다. `tests/test_config.py`와 `tests/test_cli.py`가 sample config load, good fixture pass, risky fixture fail-with-json 동작을 검증한다.
+- 코드/문서: `examples/repotrust.toml`, `examples/github-actions-repotrust-gate.yml`, `tests/test_config.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_config.py tests/test_cli.py -q`에서 `61 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `118 passed`를 확인했다. `examples/repotrust.toml`로 `repo-trust gate tests/fixtures/repos/good-python --output /tmp/repotrust-example-good.json`을 실행해 exit 0과 JSON 검증을 확인했다. 같은 sample config로 `tests/fixtures/repos/risky-install` gate를 실행해 exit 1과 JSON report 보존을 확인했다.
+- 결과: 사용자가 CI policy를 복사해 시작할 수 있는 config/workflow 예시와 검증 경로가 생겼다. 다음 작업은 `Finding catalog와 policy reference 추가`다.
+
+## 082: Finding catalog와 policy reference 추가
+
+- 완료일: 2026-04-29
+- 배경: config v2에서 `rules.disabled`와 `severity_overrides`가 가능해졌기 때문에, 사용자가 finding ID를 정책 예외로 다룰 때 ID 의미와 profile/score 영향을 확인할 reference가 필요했다.
+- 변경 내용: `docs/finding-reference.md`를 추가해 target, README, install safety, security posture, dependency, project hygiene, remote finding ID를 category, 기본 severity, score cap, policy 사용 기준과 함께 정리했다. README와 AGENTS 문서 맵에서 reference로 연결했다. `tests/test_docs.py`는 `src/repotrust`의 finding ID string literal이 reference 문서에 누락되지 않았는지 검증한다. CHANGELOG에도 finding ID reference 추가를 기록했다.
+- 코드/문서: `docs/finding-reference.md`, `tests/test_docs.py`, `README.md`, `AGENTS.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_docs.py -q`에서 `1 passed`를 확인했다. `.venv/bin/python -m pytest -q`에서 `119 passed`를 확인했다. `.venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-catalog-check.json`을 실행했고 JSON은 schema `1.2`, score `51`, grade `F`로 `json.tool` 검증을 통과했다.
+- 결과: CI policy와 exception review에서 사용할 stable finding ID reference가 생겼다. 다음 작업은 `JSON report schema reference 추가`다.
+
+## 083: JSON report schema reference 추가
+
+- 완료일: 2026-04-29
+- 배경: CI와 외부 도구가 RepoTrust JSON report를 안정적으로 파싱하려면 schema `1.2`의 key 구조, compatibility 기준, purpose profile 위치를 한 문서에서 확인할 수 있어야 했다.
+- 변경 내용: `docs/json-report-reference.md`를 추가해 top-level object, `target`, `detected_files`, `findings[]`, `score`, `assessment`, `assessment.profiles` 구조와 enum-like 값, schema compatibility policy, jq/Python parsing 예시를 정리했다. README, AGENTS 문서 맵, TRD, CHANGELOG에서 새 reference로 연결했다.
+- 코드/문서: `docs/json-report-reference.md`, `tests/test_docs.py`, `README.md`, `AGENTS.md`, `CHANGELOG.md`, `docs/trd.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_docs.py -q`에서 `2 passed`를 확인했다. `.venv/bin/repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-schema-good.json`을 실행해 schema `1.2`, top-level keys, profile keys를 확인했고 `json.tool` 검증을 통과했다. `.venv/bin/python -m pytest -q`에서 `120 passed`를 확인했다. `git diff --check`도 통과했다.
+- 결과: JSON report schema `1.2`를 파싱하는 CI와 외부 도구가 따라야 할 key contract와 호환성 기준이 문서화됐다. 다음 작업은 `Release candidate final review와 commit 준비`다.
+
+## 084: Release candidate final review와 commit 준비
+
+- 완료일: 2026-04-29
+- 배경: 누적된 post-v1 변경 세트가 product CLI, config/gate, remote scan, assessment profile, docs/tests를 넓게 건드렸기 때문에 commit 전에 범위와 검증 결과를 다시 확인해야 했다.
+- 변경 내용: `git status`, `git diff --stat`, untracked 파일 목록을 검토해 변경 범위를 product CLI/gate/config v2, remote scan hardening, assessment profiles, package risk rules, reference docs, CI examples, tests로 분류했다. Untracked 파일인 `docs/finding-reference.md`, `docs/json-report-reference.md`, `examples/`, `tests/test_docs.py`는 의도된 새 문서/예시/테스트 파일로 확인했다. README/CHANGELOG/testing guide의 현재 validation 숫자는 120 tests와 schema `1.2` 기준으로 맞는지 확인했다.
+- 코드/문서: 기능 코드는 새로 수정하지 않았다. 작업 상태 문서인 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`만 release candidate review 결과와 다음 commit 작업에 맞게 갱신했다.
+- 검증: `.venv/bin/python -m pytest -q`에서 `120 passed`를 확인했다. `examples/repotrust.toml`로 good fixture gate는 exit 0과 valid JSON을, risky fixture gate는 expected exit 1과 valid JSON을 확인했다. wheel build와 clean venv wheel install을 실행해 `repo-trust`, `repo-trust-kr`, `repotrust` entrypoint가 모두 `0.1.0`을 출력하는지 확인했다. self JSON은 schema `1.2`, score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었다. self HTML, product/legacy fixture JSON, parse-only dashboard, version commands, `git diff --check`도 통과했다.
+- 결과: commit 전 blocker는 발견되지 않았다. 추천 commit boundary는 현재 modified 파일과 의도된 untracked 파일 전체를 하나의 release candidate hardening commit으로 묶는 것이다. 추천 commit message는 `Prepare post-v1 release candidate`이다. 다음 작업은 `Release candidate commit 생성`이다.
+
+## 085: Release candidate commit 생성
+
+- 완료일: 2026-04-29
+- 배경: release candidate final review에서 blocker가 없음을 확인했으므로, 누적 post-v1 변경 세트를 하나의 commit으로 고정해야 했다.
+- 변경 내용: 의도된 modified 파일과 untracked 문서/예시/테스트 파일을 stage하고 `Prepare post-v1 release candidate` commit으로 저장했다. 원격 push, release tag, PyPI 배포는 이번 작업 범위에서 제외했다.
+- 코드/문서: commit 대상은 product CLI/gate/config v2, remote scan hardening, assessment profiles, package risk rules, reference docs, CI examples, tests, release readiness docs 전체다.
+- 검증: commit 직전 `git status --short`로 대상 파일을 확인하고, `git diff --cached --stat`로 staged 범위를 확인했다. 직전 release candidate review에서 `.venv/bin/python -m pytest -q`, gate sample smoke, wheel clean install smoke, self JSON/HTML smoke, `git diff --check`가 모두 통과했다.
+- 결과: release candidate 변경 세트가 로컬 commit으로 고정됐다. 다음 작업은 `Release candidate 원격 반영 여부 결정`이다.

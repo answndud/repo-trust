@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
+from typing import Any
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
+    import tomli as tomllib
 
 from .models import Category, DetectedFiles, Finding, Severity
 
@@ -11,6 +18,21 @@ USAGE_SECTION_RE = re.compile(r"^#{1,6}\s+.*\b(usage|quickstart|quick start|exam
 MAINTENANCE_RE = re.compile(r"\b(contributing|maintain|support|changelog|release)\b", re.I)
 INSTALL_COMMAND_RE = re.compile(
     r"(?im)^\s*(?:[`$>]\s*)?(?:\.venv/bin/)?(python3?\s+-m\s+pip|pip|pipx|npm|pnpm|yarn|uv|poetry|go|cargo|curl|wget|brew|docker)\b.*$"
+)
+HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
+COMMAND_START_RE = re.compile(
+    r"(?i)^(?:sudo\s+)?(?:\.venv/bin/)?"
+    r"(?:python3?\s+-m\s+pip|python3?|pip|pipx|npm|pnpm|yarn|uv|poetry|go|cargo|curl|wget|brew|docker|bash|sh|chmod)\b"
+)
+COMMAND_PROMPT_RE = re.compile(r"^(?:\$|>)\s+")
+PYTHON_PINNED_RE = re.compile(r"(?:^|[;\s])[^;\s]+(?:(?:===|==)[^;\s]+| @ [^;\s]+)")
+NODE_EXACT_VERSION_RE = re.compile(r"^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
+NPM_INSTALL_LIFECYCLE_SCRIPTS = ("preinstall", "install", "postinstall", "prepare")
+NODE_DEPENDENCY_SECTIONS = (
+    "dependencies",
+    "devDependencies",
+    "optionalDependencies",
+    "peerDependencies",
 )
 RISKY_INSTALL_PATTERNS = (
     {
@@ -64,6 +86,7 @@ def run_local_rules(repo_path: Path, detected: DetectedFiles) -> list[Finding]:
     findings.extend(readme_quality_rules(detected, readme_text))
     findings.extend(install_safety_rules(detected, readme_text))
     findings.extend(security_posture_rules(detected))
+    findings.extend(package_risk_rules(repo_path, detected))
     findings.extend(project_hygiene_rules(detected))
     return findings
 
@@ -76,6 +99,17 @@ def github_not_fetched_finding() -> Finding:
         message="GitHub URL was parsed without remote metadata collection.",
         evidence="The scanner did not clone the repository or call the GitHub API for this run.",
         recommendation="Run repo-trust html/json/check without --parse-only, or scan a local checkout for file-level analysis.",
+    )
+
+
+def github_subpath_unsupported_finding(subpath: str) -> Finding:
+    return Finding(
+        id="target.github_subpath_unsupported",
+        category=Category.TARGET,
+        severity=Severity.MEDIUM,
+        message="GitHub tree/blob subpath URLs are not scanned at subdirectory scope.",
+        evidence=f"Requested subpath: {subpath}",
+        recommendation="Scan a local checkout of that subdirectory, or pass the repository root URL if a root-level assessment is intended.",
     )
 
 
@@ -176,7 +210,7 @@ def install_safety_rules(detected: DetectedFiles, readme_text: str) -> list[Find
         ]
 
     findings: list[Finding] = []
-    install_commands = INSTALL_COMMAND_RE.findall(readme_text)
+    install_commands = _install_command_lines(readme_text)
     if not install_commands:
         findings.append(
             Finding(
@@ -190,15 +224,15 @@ def install_safety_rules(detected: DetectedFiles, readme_text: str) -> list[Find
         )
 
     for risky_pattern in RISKY_INSTALL_PATTERNS:
-        match = risky_pattern["pattern"].search(readme_text)
-        if match:
+        evidence = _first_matching_command(install_commands, risky_pattern["pattern"])
+        if evidence:
             findings.append(
                 Finding(
                     id=risky_pattern["id"],
                     category=Category.INSTALL_SAFETY,
                     severity=risky_pattern["severity"],
                     message=f"README install instructions include a risky pattern: {risky_pattern['label']}.",
-                    evidence=_line_for_match(readme_text, match.start()),
+                    evidence=evidence,
                     recommendation="Prefer package-manager installs with pinned versions, checksums, or reviewed scripts.",
                 )
             )
@@ -254,6 +288,27 @@ def security_posture_rules(detected: DetectedFiles) -> list[Finding]:
     return findings
 
 
+def package_risk_rules(repo_path: Path, detected: DetectedFiles) -> list[Finding]:
+    findings: list[Finding] = []
+    if "package.json" in detected.dependency_manifests:
+        package_data = _read_json_object(repo_path / "package.json")
+        findings.extend(_node_package_findings(package_data))
+
+    python_dependency = _first_unpinned_python_dependency(repo_path, detected)
+    if python_dependency:
+        findings.append(
+            Finding(
+                id="dependency.unpinned_python_dependency",
+                category=Category.SECURITY_POSTURE,
+                severity=Severity.LOW,
+                message="Python dependency declaration is not pinned to an exact version.",
+                evidence=python_dependency,
+                recommendation="Pin direct dependencies or rely on a committed lockfile and review dependency update policy.",
+            )
+        )
+    return findings
+
+
 def project_hygiene_rules(detected: DetectedFiles) -> list[Finding]:
     findings: list[Finding] = []
     if not detected.license:
@@ -288,6 +343,23 @@ def _read_text(path: Path) -> str:
         return ""
 
 
+def _read_json_object(path: Path) -> dict[str, Any]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _read_toml_object(path: Path) -> dict[str, Any]:
+    try:
+        with path.open("rb") as toml_file:
+            data = tomllib.load(toml_file)
+    except (OSError, tomllib.TOMLDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
 def _has_project_purpose(readme_text: str) -> bool:
     in_code_block = False
     for raw_line in readme_text.splitlines():
@@ -304,9 +376,176 @@ def _has_project_purpose(readme_text: str) -> bool:
     return False
 
 
-def _line_for_match(text: str, offset: int) -> str:
-    line_start = text.rfind("\n", 0, offset) + 1
-    line_end = text.find("\n", offset)
-    if line_end == -1:
-        line_end = len(text)
-    return text[line_start:line_end].strip()
+def _install_command_lines(readme_text: str) -> list[str]:
+    commands: list[str] = []
+    in_install_section = False
+    install_heading_level: int | None = None
+    in_code_block = False
+
+    for raw_line in readme_text.splitlines():
+        line = raw_line.strip()
+        if line.startswith("```") or line.startswith("~~~"):
+            in_code_block = not in_code_block
+            continue
+
+        heading = HEADING_RE.match(line)
+        if heading and not in_code_block:
+            level = len(heading.group(1))
+            title = heading.group(2)
+            if (
+                in_install_section
+                and install_heading_level is not None
+                and level <= install_heading_level
+            ):
+                in_install_section = False
+                install_heading_level = None
+            if INSTALL_SECTION_RE.search(f"{heading.group(1)} {title}"):
+                in_install_section = True
+                install_heading_level = level
+            continue
+
+        if not in_install_section:
+            continue
+
+        command = _normalize_command_line(line)
+        if command and _looks_like_command(command):
+            commands.append(command)
+
+    return commands
+
+
+def _normalize_command_line(line: str) -> str:
+    command = line.strip().strip("`").strip()
+    command = COMMAND_PROMPT_RE.sub("", command)
+    return command.strip()
+
+
+def _looks_like_command(line: str) -> bool:
+    if not line or line.startswith("#"):
+        return False
+    return bool(COMMAND_START_RE.search(line) or INSTALL_COMMAND_RE.search(line))
+
+
+def _first_matching_command(commands: list[str], pattern: re.Pattern[str]) -> str | None:
+    for command in commands:
+        if pattern.search(command):
+            return command
+    return None
+
+
+def _node_package_findings(package_data: dict[str, Any]) -> list[Finding]:
+    findings = []
+    lifecycle_script = _first_npm_lifecycle_script(package_data)
+    if lifecycle_script:
+        findings.append(
+            Finding(
+                id="dependency.npm_lifecycle_script",
+                category=Category.INSTALL_SAFETY,
+                severity=Severity.MEDIUM,
+                message="package.json defines an npm install lifecycle script.",
+                evidence=lifecycle_script,
+                recommendation="Review install lifecycle scripts before installing or delegating this repository to an agent.",
+            )
+        )
+
+    unpinned_dependency = _first_unpinned_node_dependency(package_data)
+    if unpinned_dependency:
+        findings.append(
+            Finding(
+                id="dependency.unpinned_node_dependency",
+                category=Category.SECURITY_POSTURE,
+                severity=Severity.LOW,
+                message="Node dependency declaration is not pinned to an exact version.",
+                evidence=unpinned_dependency,
+                recommendation="Pin direct dependencies or commit a package lockfile and review dependency update policy.",
+            )
+        )
+    return findings
+
+
+def _first_npm_lifecycle_script(package_data: dict[str, Any]) -> str | None:
+    scripts = package_data.get("scripts")
+    if not isinstance(scripts, dict):
+        return None
+    for script_name in NPM_INSTALL_LIFECYCLE_SCRIPTS:
+        command = scripts.get(script_name)
+        if isinstance(command, str) and command.strip():
+            return f"package.json scripts.{script_name}: {command.strip()}"
+    return None
+
+
+def _first_unpinned_node_dependency(package_data: dict[str, Any]) -> str | None:
+    for section_name in NODE_DEPENDENCY_SECTIONS:
+        dependencies = package_data.get(section_name)
+        if not isinstance(dependencies, dict):
+            continue
+        for package_name, version in sorted(dependencies.items()):
+            if isinstance(version, str) and not _is_pinned_node_version(version):
+                return f"package.json {section_name}.{package_name}: {version}"
+    return None
+
+
+def _is_pinned_node_version(version: str) -> bool:
+    return bool(NODE_EXACT_VERSION_RE.match(version.strip()))
+
+
+def _first_unpinned_python_dependency(
+    repo_path: Path,
+    detected: DetectedFiles,
+) -> str | None:
+    if "pyproject.toml" in detected.dependency_manifests:
+        dependency = _first_unpinned_pyproject_dependency(repo_path / "pyproject.toml")
+        if dependency:
+            return dependency
+
+    for manifest in ("requirements.txt", "requirements-dev.txt"):
+        if manifest not in detected.dependency_manifests:
+            continue
+        dependency = _first_unpinned_requirement(repo_path / manifest, manifest)
+        if dependency:
+            return dependency
+    return None
+
+
+def _first_unpinned_pyproject_dependency(path: Path) -> str | None:
+    data = _read_toml_object(path)
+    project = data.get("project")
+    if not isinstance(project, dict):
+        return None
+
+    dependencies = project.get("dependencies")
+    if isinstance(dependencies, list):
+        for dependency in dependencies:
+            if isinstance(dependency, str) and not _is_pinned_python_requirement(dependency):
+                return f"pyproject.toml project.dependencies: {dependency}"
+
+    optional_dependencies = project.get("optional-dependencies")
+    if isinstance(optional_dependencies, dict):
+        for group_name, group_dependencies in sorted(optional_dependencies.items()):
+            if not isinstance(group_dependencies, list):
+                continue
+            for dependency in group_dependencies:
+                if isinstance(dependency, str) and not _is_pinned_python_requirement(dependency):
+                    return f"pyproject.toml project.optional-dependencies.{group_name}: {dependency}"
+    return None
+
+
+def _first_unpinned_requirement(path: Path, manifest: str) -> str | None:
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return None
+    for line in lines:
+        requirement = line.strip()
+        if not requirement or requirement.startswith(("#", "-", "git+", "http://", "https://")):
+            continue
+        if not _is_pinned_python_requirement(requirement):
+            return f"{manifest}: {requirement}"
+    return None
+
+
+def _is_pinned_python_requirement(requirement: str) -> bool:
+    normalized = requirement.strip()
+    if not normalized:
+        return True
+    return bool(PYTHON_PINNED_RE.search(normalized))

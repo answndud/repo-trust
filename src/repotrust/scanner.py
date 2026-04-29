@@ -3,9 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from .detection import detect_files
-from .models import DetectedFiles, ScanResult
+from .models import DetectedFiles, Finding, ScanResult
 from .remote import scan_remote_github
-from .rules import github_not_fetched_finding, local_path_missing_finding, run_local_rules
+from .rules import (
+    github_not_fetched_finding,
+    github_subpath_unsupported_finding,
+    local_path_missing_finding,
+    run_local_rules,
+)
 from .scoring import calculate_score
 from .targets import parse_target
 
@@ -24,7 +29,8 @@ def scan(
     if target.kind == "github":
         if remote:
             return scan_remote_github(target, weights=weights)
-        findings = [github_not_fetched_finding()]
+        findings = _github_target_findings(target.subpath)
+        findings.append(github_not_fetched_finding())
         return ScanResult(
             target=target,
             detected_files=DetectedFiles(),
@@ -53,3 +59,9 @@ def scan(
         findings=findings,
         score=calculate_score(findings, weights=weights),
     )
+
+
+def _github_target_findings(subpath: str | None) -> list[Finding]:
+    if not subpath:
+        return []
+    return [github_subpath_unsupported_finding(subpath)]

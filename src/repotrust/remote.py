@@ -4,6 +4,7 @@ import json
 import os
 from base64 import b64decode
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Protocol
 from urllib.error import HTTPError
 from urllib.parse import urlencode
@@ -14,9 +15,11 @@ from .remote_markers import (
     REMOTE_CONTENTS_ENDPOINT,
     REMOTE_DEPENDABOT_ENDPOINT,
     REMOTE_README_ENDPOINT,
+    REMOTE_SECURITY_POLICY_ENDPOINT,
     REMOTE_WORKFLOWS_ENDPOINT,
 )
 from .rules import (
+    github_subpath_unsupported_finding,
     install_safety_rules,
     project_hygiene_rules,
     readme_quality_rules,
@@ -29,6 +32,7 @@ GITHUB_API_BASE_URL = "https://api.github.com"
 README_NAMES = {"README.md", "README.rst", "README.txt", "README"}
 LICENSE_NAMES = {"LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING"}
 SECURITY_NAMES = {"SECURITY.md"}
+GITHUB_SECURITY_PATH = ".github/SECURITY.md"
 DEPENDENCY_MANIFESTS = {
     "package.json",
     "pyproject.toml",
@@ -46,6 +50,7 @@ LOCKFILES = {
     "Pipfile.lock",
     "go.sum",
 }
+RELEASE_FRESHNESS_STALE_DAYS = 540
 
 
 @dataclass(frozen=True)
@@ -132,6 +137,24 @@ class GitHubClient:
             self._headers(),
         )
 
+    def get_latest_release(self, owner: str, repo: str) -> GitHubResponse:
+        return self.transport.request(
+            "GET",
+            f"{self.api_base_url}/repos/{owner}/{repo}/releases/latest",
+            self._headers(),
+        )
+
+    def get_tags(self, owner: str, repo: str) -> GitHubResponse:
+        url = f"{self.api_base_url}/repos/{owner}/{repo}/tags?{urlencode({'per_page': 1})}"
+        return self.transport.request("GET", url, self._headers())
+
+    def get_commit(self, owner: str, repo: str, sha: str) -> GitHubResponse:
+        return self.transport.request(
+            "GET",
+            f"{self.api_base_url}/repos/{owner}/{repo}/commits/{sha}",
+            self._headers(),
+        )
+
     def _headers(self) -> dict[str, str]:
         headers = {
             "Accept": "application/vnd.github+json",
@@ -166,10 +189,37 @@ def scan_remote_github(
     contents_response = client.get_root_contents(owner, repo, ref=target.ref)
     readme_response = client.get_readme(owner, repo, ref=target.ref)
     workflows_response = client.get_workflows(owner, repo)
-    dependabot_yml_response = client.get_contents(owner, repo, ".github/dependabot.yml", ref=target.ref)
-    dependabot_yaml_response = client.get_contents(owner, repo, ".github/dependabot.yaml", ref=target.ref)
+    dependabot_yml_response = client.get_contents(
+        owner,
+        repo,
+        ".github/dependabot.yml",
+        ref=target.ref,
+    )
+    dependabot_yaml_response = client.get_contents(
+        owner,
+        repo,
+        ".github/dependabot.yaml",
+        ref=target.ref,
+    )
+    root_files = _root_file_paths(contents_response)
+    release_freshness_findings = _release_freshness_findings(
+        client,
+        owner,
+        repo,
+        root_files,
+    )
+    github_security_response = _fetch_github_security_policy(
+        client,
+        owner,
+        repo,
+        target.ref,
+        contents_response,
+    )
     findings = [repository_finding]
+    if target.subpath:
+        findings.append(github_subpath_unsupported_finding(target.subpath))
     findings.extend(_repository_metadata_findings(repository_response))
+    findings.extend(release_freshness_findings)
     findings.extend(
         _partial_findings(
             contents_response,
@@ -177,6 +227,7 @@ def scan_remote_github(
             workflows_response,
             dependabot_yml_response,
             dependabot_yaml_response,
+            github_security_response,
         )
     )
     detected_files = _detected_files_from_remote(
@@ -185,6 +236,7 @@ def scan_remote_github(
         workflows_response,
         dependabot_yml_response,
         dependabot_yaml_response,
+        github_security_response,
     )
     findings.extend(
         _remote_rules(
@@ -195,6 +247,9 @@ def scan_remote_github(
             dependabot_unknown=_all_dependabot_checks_failed(
                 dependabot_yml_response,
                 dependabot_yaml_response,
+            ),
+            security_policy_unknown=_security_policy_check_failed(
+                github_security_response,
             ),
         )
     )
@@ -301,10 +356,16 @@ def _partial_findings(
     workflows_response: GitHubResponse,
     dependabot_yml_response: GitHubResponse,
     dependabot_yaml_response: GitHubResponse,
+    github_security_response: GitHubResponse | None,
 ) -> list[Finding]:
     findings = []
     if not 200 <= contents_response.status_code < 300:
-        findings.append(_partial_scan_finding(REMOTE_CONTENTS_ENDPOINT, contents_response.status_code))
+        findings.append(
+            _partial_scan_finding(
+                REMOTE_CONTENTS_ENDPOINT,
+                contents_response.status_code,
+            )
+        )
     if readme_response.status_code not in {200, 404}:
         findings.append(_partial_scan_finding(REMOTE_README_ENDPOINT, readme_response.status_code))
     if not 200 <= workflows_response.status_code < 300:
@@ -314,6 +375,13 @@ def _partial_findings(
             _partial_scan_finding(
                 REMOTE_DEPENDABOT_ENDPOINT,
                 dependabot_yml_response.status_code,
+            )
+        )
+    if _security_policy_check_failed(github_security_response):
+        findings.append(
+            _partial_scan_finding(
+                REMOTE_SECURITY_POLICY_ENDPOINT,
+                github_security_response.status_code,
             )
         )
     return findings
@@ -330,12 +398,144 @@ def _partial_scan_finding(endpoint: str, status_code: int) -> Finding:
     )
 
 
+def _release_freshness_findings(
+    client: GitHubClient,
+    owner: str,
+    repo: str,
+    root_files: list[str],
+) -> list[Finding]:
+    if not _has_release_freshness_signal(root_files):
+        return []
+
+    latest_release_response = client.get_latest_release(owner, repo)
+    release_source = _release_date_source(latest_release_response)
+    if release_source:
+        return _stale_release_findings(release_source)
+
+    if latest_release_response.status_code not in {200, 404}:
+        return []
+
+    tags_response = client.get_tags(owner, repo)
+    tag_name, tag_sha = _latest_tag(tags_response)
+    if not tag_name or not tag_sha:
+        return []
+
+    commit_response = client.get_commit(owner, repo, tag_sha)
+    tag_source = _tag_date_source(tag_name, commit_response)
+    if not tag_source:
+        return []
+    return _stale_release_findings(tag_source)
+
+
+def _has_release_freshness_signal(root_files: list[str]) -> bool:
+    return bool(_all_matches(root_files, DEPENDENCY_MANIFESTS))
+
+
+def _release_date_source(
+    response: GitHubResponse,
+) -> tuple[str, str, str, str, datetime] | None:
+    if not 200 <= response.status_code < 300 or not isinstance(response.data, dict):
+        return None
+    date_key = "published_at"
+    raw_date = response.data.get(date_key)
+    if not isinstance(raw_date, str):
+        date_key = "created_at"
+        raw_date = response.data.get(date_key)
+    if not isinstance(raw_date, str):
+        return None
+    parsed = _parse_github_datetime(raw_date)
+    if parsed is None:
+        return None
+    tag = response.data.get("tag_name")
+    label = tag if isinstance(tag, str) and tag else "unknown"
+    return ("latest release", label, date_key, raw_date, parsed)
+
+
+def _tag_date_source(
+    tag_name: str,
+    response: GitHubResponse,
+) -> tuple[str, str, str, str, datetime] | None:
+    if not 200 <= response.status_code < 300 or not isinstance(response.data, dict):
+        return None
+    raw_date = _commit_date(response.data)
+    if raw_date is None:
+        return None
+    parsed = _parse_github_datetime(raw_date)
+    if parsed is None:
+        return None
+    return ("latest tag", tag_name, "commit_date", raw_date, parsed)
+
+
+def _latest_tag(response: GitHubResponse) -> tuple[str | None, str | None]:
+    if not 200 <= response.status_code < 300 or not isinstance(response.data, list):
+        return (None, None)
+    if not response.data:
+        return (None, None)
+    tag = response.data[0]
+    if not isinstance(tag, dict):
+        return (None, None)
+    name = tag.get("name")
+    commit = tag.get("commit")
+    if not isinstance(name, str) or not isinstance(commit, dict):
+        return (None, None)
+    sha = commit.get("sha")
+    if not isinstance(sha, str):
+        return (None, None)
+    return (name, sha)
+
+
+def _commit_date(data: dict[str, Any]) -> str | None:
+    commit = data.get("commit")
+    if not isinstance(commit, dict):
+        return None
+    committer = commit.get("committer")
+    if isinstance(committer, dict) and isinstance(committer.get("date"), str):
+        return committer["date"]
+    author = commit.get("author")
+    if isinstance(author, dict) and isinstance(author.get("date"), str):
+        return author["date"]
+    return None
+
+
+def _stale_release_findings(
+    source: tuple[str, str, str, str, datetime],
+) -> list[Finding]:
+    source_type, label, date_key, raw_date, parsed = source
+    age_days = (datetime.now(timezone.utc) - parsed).days
+    if age_days <= RELEASE_FRESHNESS_STALE_DAYS:
+        return []
+    return [
+        Finding(
+            id="remote.release_or_tag_stale",
+            category=Category.PROJECT_HYGIENE,
+            severity=Severity.LOW,
+            message="Latest release or tag is older than the freshness threshold.",
+            evidence=(
+                f"{source_type} {label} {date_key}={raw_date}; "
+                f"age_days={age_days}; threshold_days={RELEASE_FRESHNESS_STALE_DAYS}."
+            ),
+            recommendation="Review release notes, changelog, and maintenance status before adopting the repository.",
+        )
+    ]
+
+
+def _parse_github_datetime(value: str) -> datetime | None:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 def _detected_files_from_remote(
     contents_response: GitHubResponse,
     readme_response: GitHubResponse,
     workflows_response: GitHubResponse,
     dependabot_yml_response: GitHubResponse,
     dependabot_yaml_response: GitHubResponse,
+    github_security_response: GitHubResponse | None,
 ) -> DetectedFiles:
     root_files = _root_file_paths(contents_response)
     readme = _readme_path(readme_response) or _first_match(root_files, README_NAMES)
@@ -343,7 +543,7 @@ def _detected_files_from_remote(
     return DetectedFiles(
         readme=readme,
         license=_first_match(root_files, LICENSE_NAMES),
-        security=_first_match(root_files, SECURITY_NAMES),
+        security=_security_path(root_files, github_security_response),
         ci_workflows=workflow_paths,
         dependency_manifests=_all_matches(root_files, DEPENDENCY_MANIFESTS),
         lockfiles=_all_matches(root_files, LOCKFILES),
@@ -357,6 +557,7 @@ def _remote_rules(
     contents_unknown: bool,
     workflows_unknown: bool,
     dependabot_unknown: bool,
+    security_policy_unknown: bool,
 ) -> list[Finding]:
     findings: list[Finding] = []
     readme_text = _readme_text(readme_response)
@@ -382,6 +583,7 @@ def _remote_rules(
         contents_unknown=contents_unknown,
         workflows_unknown=workflows_unknown,
         dependabot_unknown=dependabot_unknown,
+        security_policy_unknown=security_policy_unknown,
     )
 
 
@@ -390,6 +592,7 @@ def _filter_unknown_remote_findings(
     contents_unknown: bool,
     workflows_unknown: bool,
     dependabot_unknown: bool,
+    security_policy_unknown: bool,
 ) -> list[Finding]:
     filtered = []
     for finding in findings:
@@ -406,8 +609,25 @@ def _filter_unknown_remote_findings(
             continue
         if dependabot_unknown and finding.id == "security.no_dependabot":
             continue
+        if security_policy_unknown and finding.id == "security.no_policy":
+            continue
         filtered.append(finding)
     return filtered
+
+
+def _fetch_github_security_policy(
+    client: GitHubClient,
+    owner: str,
+    repo: str,
+    ref: str | None,
+    contents_response: GitHubResponse,
+) -> GitHubResponse | None:
+    root_files = _root_file_paths(contents_response)
+    if not 200 <= contents_response.status_code < 300:
+        return None
+    if _first_match(root_files, SECURITY_NAMES):
+        return None
+    return client.get_contents(owner, repo, GITHUB_SECURITY_PATH, ref=ref)
 
 
 def _root_file_paths(response: GitHubResponse) -> list[str]:
@@ -470,6 +690,35 @@ def _dependabot_path(
             if isinstance(path, str):
                 return path
     return None
+
+
+def _security_path(
+    root_files: list[str],
+    github_security_response: GitHubResponse | None,
+) -> str | None:
+    root_security = _first_match(root_files, SECURITY_NAMES)
+    if root_security:
+        return root_security
+    if github_security_response is None:
+        return None
+    if 200 <= github_security_response.status_code < 300 and isinstance(
+        github_security_response.data,
+        dict,
+    ):
+        path = github_security_response.data.get("path") or github_security_response.data.get(
+            "name"
+        )
+        if path == GITHUB_SECURITY_PATH:
+            return path
+        if path == "SECURITY.md":
+            return GITHUB_SECURITY_PATH
+    return None
+
+
+def _security_policy_check_failed(response: GitHubResponse | None) -> bool:
+    if response is None:
+        return False
+    return response.status_code not in {200, 404}
 
 
 def _all_dependabot_checks_failed(

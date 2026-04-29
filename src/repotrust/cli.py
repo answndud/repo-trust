@@ -10,7 +10,13 @@ import typer
 from rich.console import Console
 
 from . import __version__
-from .config import ConfigError, RepoTrustConfig, load_config
+from .config import (
+    VERDICT_RANK,
+    ConfigError,
+    RepoTrustConfig,
+    apply_config_policy,
+    load_config,
+)
 from .console import ConsoleWorkflow, run_console_mode
 from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
 from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
@@ -334,6 +340,61 @@ def check(
     )
 
 
+@direct_app.command("gate", add_help_option=False)
+@direct_kr_app.command("gate", add_help_option=False)
+def gate(
+    ctx: typer.Context,
+    target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
+    help_requested: Annotated[
+        bool,
+        typer.Option(
+            "--help",
+            callback=_help_callback("gate"),
+            help=HELP_OPTION_HELP,
+            is_eager=True,
+        ),
+    ] = False,
+    output: Annotated[
+        Path | None,
+        typer.Option("--output", "-o", help="Write JSON report to this file."),
+    ] = None,
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
+    ] = None,
+    parse_only: Annotated[
+        bool,
+        typer.Option(
+            "--parse-only",
+            help="For GitHub URLs, parse the URL without calling the GitHub API.",
+        ),
+    ] = False,
+    fail_under: Annotated[
+        int | None,
+        typer.Option("--fail-under", help="Exit with code 1 if total score is below this value."),
+    ] = None,
+) -> None:
+    """Write JSON and fail when the configured policy gate fails."""
+    parsed_target = parse_target(target)
+    if parse_only and parsed_target.kind != "github":
+        raise typer.BadParameter(
+            "--parse-only can only be used with GitHub URL targets.",
+            param_hint="--parse-only",
+        )
+
+    _run_scan(
+        target=target,
+        report_format=ReportFormat.JSON,
+        output=output,
+        config=config,
+        remote=parsed_target.kind == "github" and not parse_only,
+        fail_under=fail_under,
+        verbose=False,
+        dashboard=False,
+        dashboard_locale=_product_locale(ctx),
+    )
+
+
 def _run_product_scan(
     *,
     target: str,
@@ -415,6 +476,7 @@ def _run_scan(
         result = scan_target(target, weights=loaded_config.weights, remote=remote)
     except ScanInputError as exc:
         raise typer.BadParameter(str(exc), param_hint="--remote") from exc
+    result = apply_config_policy(result, loaded_config)
     rendered = render_report(result, normalized_format)
     if output:
         output = _resolve_output_path(output)
@@ -442,8 +504,11 @@ def _run_scan(
     else:
         print_legacy_summary(console=status_console, result=result, verbose=verbose)
 
-    effective_fail_under = fail_under if fail_under is not None else loaded_config.fail_under
-    if effective_fail_under is not None and result.score.total < effective_fail_under:
+    failures = _policy_failures(result, loaded_config, fail_under)
+    if failures:
+        status_console.print("[bold red]Policy gate failed[/bold red]")
+        for failure in failures:
+            status_console.print(f"- {failure}")
         raise typer.Exit(code=1)
 
 
@@ -505,6 +570,27 @@ def _load_cli_config(config_path: Path | None) -> RepoTrustConfig:
         return load_config(config_path)
     except ConfigError as exc:
         raise typer.BadParameter(str(exc), param_hint="--config") from exc
+
+
+def _policy_failures(
+    result: ScanResult,
+    config: RepoTrustConfig,
+    fail_under: int | None,
+) -> list[str]:
+    failures: list[str] = []
+    effective_fail_under = fail_under if fail_under is not None else config.fail_under
+    if effective_fail_under is not None and result.score.total < effective_fail_under:
+        failures.append(
+            f"score {result.score.total} is below required minimum {effective_fail_under}"
+        )
+
+    for profile, min_verdict in config.profile_min_verdicts.items():
+        actual_verdict = result.assessment.profiles[profile].verdict
+        if VERDICT_RANK[actual_verdict] < VERDICT_RANK[min_verdict]:
+            failures.append(
+                f"profile {profile} verdict {actual_verdict} is below required {min_verdict}"
+            )
+    return failures
 
 
 def _is_remote_result(result: ScanResult) -> bool:

@@ -15,6 +15,7 @@ from .dashboard_i18n import (
     localized_actions,
     message_text,
     mode_label,
+    profile_label,
     recommendation_text,
     risk_label as localized_risk_label,
     severity_label,
@@ -73,6 +74,8 @@ def print_assessment_dashboard(
     console.print(_result_summary(result, mode=mode, locale=locale))
     console.print(_block_title("WHY", "이유", locale))
     console.print(_why_text(result, locale=locale))
+    console.print(_block_title("PROFILES", "목적별 판단", locale))
+    console.print(_profiles_text(result, locale=locale))
     console.print(_block_title("ACTIONS", "다음 행동", locale))
     console.print(_next_actions_text(result, output_label, locale=locale))
     console.print(_block_title("REPORT", "리포트", locale))
@@ -329,6 +332,23 @@ def _next_actions_text(result: ScanResult, output_label: Path | None, *, locale:
     return "\n".join(f"{index}. {action}" for index, action in enumerate(actions, start=1))
 
 
+def _profiles_text(result: ScanResult, *, locale: str) -> str:
+    lines = []
+    for key, profile in result.assessment.profiles.items():
+        label = profile_label(key, locale)
+        verdict = _verdict_badge(profile.verdict, locale)
+        if profile.priority_finding_ids:
+            priority = ", ".join(profile.priority_finding_ids)
+        else:
+            priority = "없음" if locale == "ko" else "none"
+        lines.append(
+            f"{kali_inline_kv(label, verdict)}  "
+            f"{muted(profile.summary)}\n"
+            f"  {kali_inline_kv('priority', priority)}"
+        )
+    return "\n".join(lines)
+
+
 def _finding_sort_key(finding: Finding) -> tuple[int, str]:
     severity_rank = {"high": 0, "medium": 1, "low": 2, "info": 3}
     return severity_rank.get(finding.severity.value, 9), finding.id
@@ -363,7 +383,10 @@ def _risk_badge(risk_label: str, locale: str) -> str:
 
 
 def _verdict(result: ScanResult, locale: str) -> str:
-    verdict = result.assessment.verdict
+    return _verdict_badge(result.assessment.verdict, locale)
+
+
+def _verdict_badge(verdict: str, locale: str) -> str:
     if verdict == "do_not_install_before_review":
         if locale == "ko":
             return badge("검토 전 설치 금지", style="red")

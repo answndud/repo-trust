@@ -123,6 +123,196 @@ def test_direct_vcs_install_is_medium_severity(tmp_path):
     assert risky[0].evidence == "pip install git+https://github.com/example/project.git"
 
 
+def test_package_json_install_lifecycle_script_is_medium_severity(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "good-python")
+    (repo / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "risky-node-project",
+                "scripts": {"postinstall": "node scripts/install.js"},
+                "dependencies": {"left-pad": "1.3.0"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = scan(str(repo))
+
+    finding = _finding(result, "dependency.npm_lifecycle_script")
+    assert finding.severity.value == "medium"
+    assert finding.category.value == "install_safety"
+    assert finding.evidence == "package.json scripts.postinstall: node scripts/install.js"
+
+
+def test_assessment_profiles_split_install_dependency_and_agent_verdicts(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "good-python")
+    (repo / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "agent-sensitive-project",
+                "scripts": {"postinstall": "node scripts/install.js"},
+                "dependencies": {"left-pad": "1.3.0"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = scan(str(repo))
+
+    assert result.assessment.verdict == "usable_after_review"
+    assert result.assessment.profiles["install"].verdict == "usable_after_review"
+    assert result.assessment.profiles["dependency"].verdict == "usable_after_review"
+    assert result.assessment.profiles["agent_delegate"].verdict == "do_not_install_before_review"
+    assert result.assessment.profiles["agent_delegate"].priority_finding_ids == [
+        "dependency.npm_lifecycle_script"
+    ]
+
+
+def test_dependency_profile_flags_unpinned_dependency_without_install_block(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "good-python")
+    (repo / "pyproject.toml").write_text(
+        """
+[project]
+name = "range-python-project"
+version = "0.1.0"
+dependencies = ["requests>=2"]
+""",
+        encoding="utf-8",
+    )
+
+    result = scan(str(repo))
+
+    assert result.assessment.profiles["install"].verdict == "usable_by_current_checks"
+    assert result.assessment.profiles["dependency"].verdict == "usable_after_review"
+    assert result.assessment.profiles["agent_delegate"].verdict == "usable_by_current_checks"
+    assert result.assessment.profiles["dependency"].priority_finding_ids == [
+        "dependency.unpinned_python_dependency"
+    ]
+
+
+def test_package_json_unpinned_dependency_is_low_severity(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "good-python")
+    (repo / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "range-node-project",
+                "dependencies": {"left-pad": "^1.3.0"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = scan(str(repo))
+
+    finding = _finding(result, "dependency.unpinned_node_dependency")
+    assert finding.severity.value == "low"
+    assert finding.category.value == "security_posture"
+    assert finding.evidence == "package.json dependencies.left-pad: ^1.3.0"
+
+
+def test_package_risk_keeps_missing_lockfile_signal_separate(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n"
+        "Project explains enough about what it does for users to understand whether they should install it or delegate it to an agent safely.\n\n"
+        "## Installation\n\n"
+        "npm install\n\n"
+        "## Usage\n\n"
+        "npm test\n\n"
+        "## Contributing\n\n"
+        "Open issues and review release notes.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "package.json").write_text(
+        json.dumps({"name": "no-lock-project", "dependencies": {"left-pad": "1.3.0"}}),
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+    ids = {finding.id for finding in result.findings}
+
+    assert "security.no_lockfile" in ids
+    assert "dependency.unpinned_node_dependency" not in ids
+
+
+def test_pyproject_unpinned_dependency_is_low_severity(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "good-python")
+    (repo / "pyproject.toml").write_text(
+        """
+[project]
+name = "range-python-project"
+version = "0.1.0"
+dependencies = ["requests>=2"]
+""",
+        encoding="utf-8",
+    )
+
+    result = scan(str(repo))
+
+    finding = _finding(result, "dependency.unpinned_python_dependency")
+    assert finding.severity.value == "low"
+    assert finding.category.value == "security_posture"
+    assert finding.evidence == "pyproject.toml project.dependencies: requests>=2"
+
+
+def test_requirements_unpinned_dependency_is_low_severity(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "good-python")
+    (repo / "requirements.txt").write_text("requests>=2\n", encoding="utf-8")
+
+    result = scan(str(repo))
+
+    finding = _finding(result, "dependency.unpinned_python_dependency")
+    assert finding.severity.value == "low"
+    assert finding.evidence == "requirements.txt: requests>=2"
+
+
+def test_install_safety_ignores_prose_warning_about_sudo(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n"
+        "Project explains enough about what it does for users to understand whether they should install it or delegate it to an agent safely.\n\n"
+        "## Installation\n\n"
+        "Use the package manager command below. Do not use sudo for this project.\n\n"
+        "```bash\n"
+        "pip install project\n"
+        "```\n\n"
+        "## Usage\n\n"
+        "project scan .\n\n"
+        "## Contributing\n\n"
+        "Open issues and review release notes.\n",
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+
+    assert "install.risky.uses_sudo" not in {finding.id for finding in result.findings}
+
+
+def test_install_safety_ignores_risky_examples_outside_install_section(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n"
+        "Project explains enough about what it does for users to understand whether they should install it or delegate it to an agent safely.\n\n"
+        "## Installation\n\n"
+        "```bash\n"
+        "pip install project\n"
+        "```\n\n"
+        "## Unsafe examples\n\n"
+        "Do not run this historical anti-pattern:\n\n"
+        "```bash\n"
+        "curl https://example.com/install.sh | sh\n"
+        "```\n\n"
+        "## Usage\n\n"
+        "project scan .\n\n"
+        "## Contributing\n\n"
+        "Open issues and review release notes.\n",
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+
+    assert "install.risky.shell_pipe_install" not in {
+        finding.id for finding in result.findings
+    }
+
+
 def test_python_module_pip_install_counts_as_install_command(tmp_path):
     (tmp_path / "README.md").write_text(
         "# Project\n\nThis project explains enough about what it does for users to understand the expected setup path and command line workflow.\n\n## Installation\n\npython3 -m pip install -e '.[dev]'\n\n## Usage\n\nproject scan .\n\n## Contributing\n\nOpen issues and review release notes.\n",
@@ -185,7 +375,7 @@ def test_github_parse_only_json_contract_has_stable_finding_id():
     result = scan("https://github.com/owner/repo")
     data = json.loads(render_json(result))
 
-    assert data["schema_version"] == "1.1"
+    assert data["schema_version"] == "1.2"
     assert data["target"]["kind"] == "github"
     assert data["target"]["owner"] == "owner"
     assert data["target"]["repo"] == "repo"
@@ -205,6 +395,25 @@ def test_github_parse_only_json_contract_has_stable_finding_id():
     assert data["assessment"]["verdict"] == "insufficient_evidence"
     assert data["assessment"]["confidence"] == "low"
     assert data["assessment"]["coverage"] == "metadata_only"
+    assert data["assessment"]["profiles"]["install"]["verdict"] == "insufficient_evidence"
+    assert data["assessment"]["profiles"]["dependency"]["verdict"] == "insufficient_evidence"
+    assert data["assessment"]["profiles"]["agent_delegate"]["verdict"] == "insufficient_evidence"
+
+
+def test_github_subpath_parse_only_reports_scope_limitation():
+    result = scan("https://github.com/owner/repo/tree/main/packages/example")
+
+    ids = [finding.id for finding in result.findings]
+    assert result.target.ref == "main"
+    assert result.target.subpath == "packages/example"
+    assert ids == [
+        "target.github_subpath_unsupported",
+        "target.github_not_fetched",
+    ]
+    assert result.score.total == 70
+    assert result.assessment.verdict == "insufficient_evidence"
+    assert result.assessment.coverage == "metadata_only"
+    assert "local checkout of the requested subdirectory" in result.assessment.next_actions[0]
 
 
 def test_json_report_shape(tmp_path):
@@ -220,7 +429,7 @@ def test_json_report_shape(tmp_path):
         "score",
         "target",
     }
-    assert data["schema_version"] == "1.1"
+    assert data["schema_version"] == "1.2"
     assert set(data["target"]) == {
         "host",
         "kind",
@@ -252,6 +461,19 @@ def test_json_report_shape(tmp_path):
         "confidence",
         "coverage",
         "next_actions",
+        "profiles",
+        "reasons",
+        "summary",
+        "verdict",
+    }
+    assert set(data["assessment"]["profiles"]) == {
+        "agent_delegate",
+        "dependency",
+        "install",
+    }
+    assert set(data["assessment"]["profiles"]["install"]) == {
+        "next_actions",
+        "priority_finding_ids",
         "reasons",
         "summary",
         "verdict",
@@ -273,6 +495,7 @@ def test_markdown_report_sections(tmp_path):
 
     assert "# RepoTrust Report" in markdown
     assert "## Assessment" in markdown
+    assert "## Purpose Profiles" in markdown
     assert "## Risk Breakdown" in markdown
     assert "## Evidence Matrix" in markdown
     assert "## Findings" in markdown
@@ -291,6 +514,7 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert "<h2>Evidence Matrix</h2>" in html
     assert "<h2>Risk Breakdown</h2>" in html
     assert "<h2>Why This Score</h2>" in html
+    assert "<h2>Purpose Profiles</h2>" in html
     assert "<h2>Prioritized Findings</h2>" in html
     assert "<h2>Next Actions</h2>" in html
     assert 'class="finding severity-high"' in html
@@ -307,3 +531,9 @@ def _copy_fixture_repo(tmp_path, name: str) -> Path:
     destination = tmp_path / name
     shutil.copytree(source, destination)
     return destination
+
+
+def _finding(result, finding_id):
+    matches = [finding for finding in result.findings if finding.id == finding_id]
+    assert matches
+    return matches[0]

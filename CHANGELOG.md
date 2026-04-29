@@ -4,14 +4,24 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
-Post-v1 hardening for explicit remote scan and report contracts.
+Post-v1 public readiness hardening for product CLI, remote scan, assessment profiles, and CI policy gates.
 
 ### Added
 
-- JSON report contract `schema_version: "1.1"` with top-level `assessment`.
-- Assessment verdict, confidence, coverage, reasons, and next actions in JSON, Markdown, HTML, and terminal dashboards.
-- Scan completeness score caps for parse-only, remote failure, partial scan, README content unavailable, and missing local path results.
-- Shared evidence matrix status mapping for `found`, `missing`, and `unknown` signals.
+- Product CLI commands `repo-trust html`, `repo-trust json`, `repo-trust check`, and `repo-trust gate`.
+- Korean product entrypoint `repo-trust-kr` with localized Console Mode, command help, dashboard labels, finding messages, and next actions.
+- JSON report contract `schema_version: "1.2"` with top-level `assessment.profiles` for install, dependency adoption, and AI agent delegation decisions.
+- Config v2 policy support for `[rules] disabled`, `[severity_overrides]`, `[policy.profiles]`, `policy.fail_under`, and category `weights`.
+- `repo-trust gate` for CI usage: it preserves JSON output and exits `1` when score or profile policy requirements fail.
+- Copyable CI policy examples in `examples/repotrust.toml` and `examples/github-actions-repotrust-gate.yml`.
+- Finding ID reference documentation for CI policy exceptions and severity overrides.
+- JSON report schema reference documentation for schema `1.2` parsers.
+- Package and dependency risk findings for npm install lifecycle scripts and unpinned direct Node/Python dependencies.
+- Remote `.github/SECURITY.md` parity with local scanning.
+- GitHub tree/blob subpath limitation finding and score cap so monorepo subdirectory URLs are not mistaken for subdirectory-only assessments.
+- Remote release/tag freshness finding for package-managed repositories when the latest release or tag date is known and stale.
+- Scan completeness score caps for parse-only, remote failure, partial scan, README content unavailable, unsupported GitHub subpaths, and missing local path results.
+- Shared evidence matrix status mapping for `found`, `missing`, and `unknown` signals in reports.
 - GitHub Actions `ci` workflow that installs the package and runs pytest.
 - Remote repository metadata quality findings:
   - `remote.github_archived` for `archived=true` as a medium Project Hygiene deduction.
@@ -23,16 +33,22 @@ Post-v1 hardening for explicit remote scan and report contracts.
 
 ### Changed
 
-- Remote metadata policy now explicitly keeps fork/private/default branch/stars/language/size/security analysis fields as deferred or evidence-only context until JSON evidence metadata is designed.
-- Release/tag freshness is documented as deferred until RepoTrust can distinguish release-managed installable projects from repositories where no GitHub Release practice is normal.
-- Config documentation now states that explicit file-based policy applies to local scans and explicit remote scans.
-- PRD now separates the v0.1.0 baseline from the current post-v1 remote scan implementation.
-- README now uses bilingual `Installation` and `Usage` headings for Korean community readability and RepoTrust dogfooding.
+- Product GitHub URL commands use GitHub API read-only remote scans by default, while legacy `repotrust scan <github-url>` remains parse-only unless `--remote` is provided.
+- README risky install matching now uses command-like evidence from Installation/Setup sections instead of scanning arbitrary prose.
+- Remote metadata policy keeps fork/private/default branch/stars/language/size/security analysis fields deferred or evidence-only until JSON evidence metadata is designed.
+- Release/tag freshness is conservative: absence of GitHub Releases, empty tags, or release/tag API failure is not treated as stale maintenance.
+- README is now a Korean-first user guide with Console Mode, Command Mode, config v2, gate, and current remote scan behavior.
+- Package metadata now includes license, author, keywords, classifiers, and project URLs for wheel metadata.
 
 ### Validation
 
-- `.venv/bin/python -m pytest -q` passed with 80 tests.
-- Clean venv editable install, CLI entry point, fixture JSON generation, JSON validation, and clean venv pytest passed.
+- `.venv/bin/python -m pip install -e '.[dev]'` passed.
+- `.venv/bin/python -m pytest -q` passed with 120 tests.
+- Finding and JSON report reference coverage tests passed.
+- Clean wheel install smoke passed for `repo-trust`, `repo-trust-kr`, and legacy `repotrust` entrypoints.
+- Clean wheel smoke generated product JSON, product gate JSON, product HTML, and legacy JSON sample reports; all JSON reports passed `json.tool`.
+- Example policy gate smoke passed for `good-python` and failed with preserved JSON for `risky-install`.
+- Local self-scan JSON passed `json.tool` with `schema_version: "1.2"`, grade `A`, high confidence, full coverage, and no medium/high findings.
 
 ## v0.1.0 - 2026-04-28
 

@@ -24,6 +24,7 @@ SCORE_CAPS_BY_FINDING_ID = {
     "remote.github_not_found": 60,
     "remote.github_api_error": 60,
     "target.github_not_fetched": 70,
+    "target.github_subpath_unsupported": 85,
     "remote.github_partial_scan": 85,
     "remote.readme_content_unavailable": 85,
 }

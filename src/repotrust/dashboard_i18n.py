@@ -9,6 +9,7 @@ TEXT = {
         "risk_breakdown_title": "Risk Breakdown",
         "evidence_title": "Evidence",
         "top_findings_title": "Top Findings",
+        "profiles_title": "Purpose Profiles",
         "next_actions_title": "Next Actions",
         "findings_title": "Findings",
         "area_column": "Area",
@@ -30,6 +31,7 @@ TEXT = {
         "risk_breakdown_title": "어디가 괜찮고 어디를 봐야 하나",
         "evidence_title": "확인한 근거",
         "top_findings_title": "먼저 볼 문제",
+        "profiles_title": "목적별 판단",
         "next_actions_title": "다음에 할 일",
         "findings_title": "발견 항목",
         "area_column": "영역",
@@ -70,6 +72,9 @@ RECOMMENDATION_KO = {
     "Confirm where maintainers accept bug reports, security questions, and support requests before adopting the project.": (
         "사용하기 전에 버그 신고, 보안 문의, 지원 요청을 어디로 해야 하는지 확인하세요."
     ),
+    "Review release notes, changelog, and maintenance status before adopting the repository.": (
+        "사용하기 전에 release notes, changelog, 유지보수 상태를 확인하세요."
+    ),
     "Retry later or verify repository permissions before treating missing remote signals as absent.": (
         "빠진 신호를 없다고 판단하기 전에 나중에 다시 시도하거나 저장소 권한을 확인하세요."
     ),
@@ -78,6 +83,9 @@ RECOMMENDATION_KO = {
     ),
     "Run repo-trust html/json/check without --parse-only, or scan a local checkout for file-level analysis.": (
         "--parse-only 없이 실행하거나 로컬 checkout을 검사해 파일 수준 근거를 확인하세요."
+    ),
+    "Scan a local checkout of that subdirectory, or pass the repository root URL if a root-level assessment is intended.": (
+        "해당 하위 폴더를 로컬로 checkout해서 검사하거나, 루트 저장소 평가가 목적이면 repository root URL을 입력하세요."
     ),
     "Pass a valid local repository path.": "올바른 로컬 저장소 경로를 입력하세요.",
     "Add a README with purpose, installation, usage, and support information.": (
@@ -106,6 +114,15 @@ RECOMMENDATION_KO = {
     ),
     "Prefer package-manager installs with pinned versions, checksums, or reviewed scripts.": (
         "버전 고정, checksum, 검토된 스크립트가 있는 패키지 관리자 설치를 우선하세요."
+    ),
+    "Review install lifecycle scripts before installing or delegating this repository to an agent.": (
+        "설치하거나 agent에게 맡기기 전에 install lifecycle script 내용을 직접 확인하세요."
+    ),
+    "Pin direct dependencies or commit a package lockfile and review dependency update policy.": (
+        "직접 dependency를 고정하거나 package lockfile을 커밋하고 업데이트 정책을 확인하세요."
+    ),
+    "Pin direct dependencies or rely on a committed lockfile and review dependency update policy.": (
+        "직접 dependency를 고정하거나 커밋된 lockfile과 업데이트 정책을 함께 확인하세요."
     ),
     "Add SECURITY.md with supported versions and vulnerability reporting instructions.": (
         "지원 버전과 취약점 신고 방법을 담은 SECURITY.md를 추가하세요."
@@ -141,6 +158,9 @@ MESSAGE_KO = {
     "GitHub API returned an unexpected error.": "GitHub API에서 예상하지 못한 오류가 났습니다.",
     "GitHub repository is archived.": "GitHub 저장소가 archived 상태입니다.",
     "GitHub issue tracking is disabled.": "GitHub issue 기능이 꺼져 있습니다.",
+    "Latest release or tag is older than the freshness threshold.": (
+        "최신 release 또는 tag가 freshness 기준보다 오래됐습니다."
+    ),
     "GitHub remote scan completed with partial metadata.": (
         "GitHub 원격 검사가 일부 정보만 확인한 상태로 끝났습니다."
     ),
@@ -149,6 +169,9 @@ MESSAGE_KO = {
     ),
     "GitHub URL was parsed without remote metadata collection.": (
         "GitHub URL 형식만 확인했고 원격 정보는 가져오지 않았습니다."
+    ),
+    "GitHub tree/blob subpath URLs are not scanned at subdirectory scope.": (
+        "GitHub tree/blob 하위 경로는 하위 폴더 단위로 검사하지 않습니다."
     ),
     "The target local path does not exist or is not a directory.": (
         "입력한 로컬 경로가 없거나 폴더가 아닙니다."
@@ -174,6 +197,15 @@ MESSAGE_KO = {
     ),
     "README does not expose recognizable install commands.": (
         "README에서 알아볼 수 있는 설치 명령을 찾지 못했습니다."
+    ),
+    "package.json defines an npm install lifecycle script.": (
+        "package.json에 npm 설치 lifecycle script가 있습니다."
+    ),
+    "Node dependency declaration is not pinned to an exact version.": (
+        "Node dependency가 exact version으로 고정되어 있지 않습니다."
+    ),
+    "Python dependency declaration is not pinned to an exact version.": (
+        "Python dependency가 exact version으로 고정되어 있지 않습니다."
     ),
     "No security policy file was found.": "보안 정책 파일을 찾지 못했습니다.",
     "No Dependabot configuration was found.": "Dependabot 설정을 찾지 못했습니다.",
@@ -289,6 +321,20 @@ def format_label(report_format: str, locale: str) -> str:
         "html": "HTML",
         "json": "JSON",
     }.get(report_format, report_format)
+
+
+def profile_label(profile: str, locale: str) -> str:
+    if locale != "ko":
+        return {
+            "install": "install",
+            "dependency": "dependency",
+            "agent_delegate": "agent delegate",
+        }.get(profile, profile)
+    return {
+        "install": "설치",
+        "dependency": "의존성",
+        "agent_delegate": "agent 위임",
+    }.get(profile, profile)
 
 
 def evidence_label(label: str, locale: str) -> str:

@@ -4,7 +4,7 @@ import html
 import json
 
 from .evidence import EvidenceRow, evidence_rows
-from .models import Finding, ScanResult
+from .models import JSON_SCHEMA_VERSION, AssessmentProfile, Finding, ScanResult
 
 
 CATEGORY_LABELS = {
@@ -72,12 +72,16 @@ FINDING_TITLES = {
     "install.risky.process_substitution_shell": "process substitution으로 원격 스크립트를 실행합니다.",
     "install.risky.python_inline_execution": "Python inline 실행 설치 명령이 있습니다.",
     "install.risky.vcs_direct_install": "Git 저장소에서 직접 설치하는 명령이 있습니다.",
+    "dependency.npm_lifecycle_script": "npm 설치 lifecycle script가 있습니다.",
+    "dependency.unpinned_node_dependency": "Node dependency가 exact version으로 고정되어 있지 않습니다.",
+    "dependency.unpinned_python_dependency": "Python dependency가 exact version으로 고정되어 있지 않습니다.",
     "security.no_policy": "보안 정책 파일이 없습니다.",
     "security.no_ci": "CI workflow를 찾지 못했습니다.",
     "security.no_dependabot": "Dependabot 설정을 찾지 못했습니다.",
     "security.no_lockfile": "Lockfile을 찾지 못했습니다.",
     "hygiene.no_license": "라이선스 파일이 없습니다.",
     "target.github_not_fetched": "GitHub URL을 원격 조회 없이 파싱만 했습니다.",
+    "target.github_subpath_unsupported": "GitHub subpath URL은 하위 폴더 단위로 검사하지 않습니다.",
     "remote.github_metadata_collected": "GitHub 원격 메타데이터를 수집했습니다.",
     "remote.github_rate_limited": "GitHub API rate limit에 걸렸습니다.",
     "remote.github_unauthorized": "GitHub API 인증 또는 권한 확인에 실패했습니다.",
@@ -86,6 +90,7 @@ FINDING_TITLES = {
     "remote.github_partial_scan": "GitHub 원격 조회가 일부만 완료됐습니다.",
     "remote.github_archived": "GitHub 저장소가 archived 상태입니다.",
     "remote.github_issues_disabled": "GitHub Issues가 비활성화되어 있습니다.",
+    "remote.release_or_tag_stale": "최신 release 또는 tag가 오래됐습니다.",
     "remote.readme_content_unavailable": "원격 README 내용 확인에 실패했습니다.",
     "target.local_path_missing": "로컬 경로를 찾을 수 없습니다.",
     "readme.too_short": "README가 너무 짧습니다.",
@@ -99,6 +104,7 @@ FINDING_TITLES = {
 FINDING_EXPLANATIONS = {
     "target.local_path_missing": "입력한 경로가 존재하지 않거나 디렉터리가 아닙니다. RepoTrust는 로컬 저장소 폴더를 기준으로 파일을 검사하므로 올바른 경로를 다시 지정해야 합니다.",
     "target.github_not_fetched": "GitHub URL을 원격 조회 없이 파싱만 한 실행입니다. 저장소를 clone하거나 GitHub API로 가져오지 않았으므로 README, LICENSE, CI 같은 실제 파일 기반 판단은 아직 제한적입니다.",
+    "target.github_subpath_unsupported": "GitHub tree/blob URL의 하위 경로는 파싱하지만, 현재 remote scan은 해당 하위 폴더만 따로 검사하지 않습니다. 리포트는 repository root 신호와 subpath 미지원 finding을 함께 보여줍니다.",
     "readme.missing": "README는 프로젝트 목적, 설치 방법, 사용 방법을 처음 확인하는 문서입니다. README가 없으면 사용자가 안전한 설치 경로를 판단하기 어렵습니다.",
     "readme.too_short": "README 길이가 너무 짧아 프로젝트 목적, 설치 방법, 사용 예시, 문제 해결 방법을 충분히 설명한다고 보기 어렵습니다.",
     "readme.no_project_purpose": "README 상단에서 이 프로젝트가 무엇을 하는지, 누가 쓰는지, 어떤 문제를 해결하는지 명확히 설명하지 않습니다.",
@@ -111,6 +117,9 @@ FINDING_EXPLANATIONS = {
     "install.risky.process_substitution_shell": "원격 스크립트를 process substitution으로 shell에 직접 실행합니다. 일반적인 파일 검토 단계를 건너뛰므로 설치 전 확인이 어렵습니다.",
     "install.risky.python_inline_execution": "README가 Python 한 줄 실행으로 설치나 설정을 처리합니다. 실행되는 코드가 길거나 복잡하면 사용자가 의미를 검토하기 어렵습니다.",
     "install.risky.vcs_direct_install": "패키지 레지스트리의 고정된 배포본이 아니라 Git 저장소에서 직접 설치합니다. branch나 commit이 고정되지 않으면 시간이 지나며 설치 결과가 달라질 수 있습니다.",
+    "dependency.npm_lifecycle_script": "npm install lifecycle script는 패키지 설치 중 자동 실행될 수 있습니다. 저장소를 설치하거나 AI agent에게 맡기기 전에 script 내용을 직접 검토해야 합니다.",
+    "dependency.unpinned_node_dependency": "Node dependency version range나 tag는 시간이 지나며 다른 버전을 설치할 수 있습니다. lockfile과 업데이트 정책을 함께 확인해야 합니다.",
+    "dependency.unpinned_python_dependency": "Python dependency version range나 미고정 선언은 시간이 지나며 다른 버전을 설치할 수 있습니다. lockfile과 업데이트 정책을 함께 확인해야 합니다.",
     "security.no_policy": "SECURITY.md가 없으면 취약점 신고 방법, 지원 버전, 보안 대응 절차를 알기 어렵습니다.",
     "security.no_dependabot": "Dependabot이나 유사한 dependency 업데이트 자동화 신호를 찾지 못했습니다. 오래된 dependency가 방치될 가능성을 별도로 확인해야 합니다.",
     "security.no_ci": "GitHub Actions workflow를 찾지 못했습니다. 변경 시 테스트나 lint가 자동으로 실행되는지 확인되지 않습니다.",
@@ -125,6 +134,7 @@ FINDING_EXPLANATIONS = {
     "remote.github_partial_scan": "GitHub API 일부 endpoint가 실패했거나 접근할 수 없어 리포트가 제한된 정보로 만들어졌습니다.",
     "remote.github_archived": "archived 저장소는 일반적으로 더 이상 유지보수되지 않는 읽기 전용 상태입니다. 새 dependency로 채택하기 전에 maintained fork나 대안을 확인하세요.",
     "remote.github_issues_disabled": "Issues가 꺼져 있으면 버그 제보, 사용 질문, 지원 경로가 GitHub에 없을 수 있습니다.",
+    "remote.release_or_tag_stale": "패키지로 배포될 가능성이 있는 저장소에서 최신 release나 tag의 기준 날짜가 freshness 기준보다 오래됐습니다. release가 없다는 사실만으로 감점하지 않고, 확인 가능한 release/tag 날짜가 오래된 경우에만 낮은 심각도로 표시합니다.",
     "remote.readme_content_unavailable": "README 파일은 발견했지만 내용을 가져오지 못해 README 품질과 설치 명령 안전성을 완전히 검사하지 못했습니다.",
 }
 
@@ -152,6 +162,18 @@ ASSESSMENT_LABELS = {
     "usable_after_review": "검토 후 사용 가능",
     "insufficient_evidence": "판단 근거 부족",
     "do_not_install_before_review": "설치 전 검토 필요",
+}
+
+PROFILE_LABELS = {
+    "install": "Install",
+    "dependency": "Dependency",
+    "agent_delegate": "Agent delegation",
+}
+
+PROFILE_LABELS_KO = {
+    "install": "설치",
+    "dependency": "의존성 채택",
+    "agent_delegate": "AI agent 위임",
 }
 
 CONFIDENCE_LABELS = {
@@ -213,6 +235,10 @@ def render_markdown(result: ScanResult) -> str:
     for action in assessment.next_actions:
         lines.append(f"- {action}")
 
+    lines.extend(["", "## Purpose Profiles", ""])
+    for key, profile in assessment.profiles.items():
+        lines.extend(_profile_markdown(key, profile))
+
     lines.extend([
         "",
         "## Risk Breakdown",
@@ -255,6 +281,9 @@ def render_html(result: ScanResult) -> str:
     findings = "\n".join(
         _finding_html(finding) for finding in sorted(result.findings, key=_finding_sort_key)
     )
+    profile_items = "\n".join(
+        _profile_html(key, profile) for key, profile in assessment.profiles.items()
+    )
     if not findings:
         findings = """        <article class="empty-state">
           <h3>현재 활성화된 검사에서 문제를 찾지 못했습니다.</h3>
@@ -289,6 +318,9 @@ def render_html(result: ScanResult) -> str:
     .verdict {{ font-weight: 800; color: {_verdict_color(assessment.verdict)}; }}
     .pill-row {{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }}
     .pill {{ display: inline-block; border: 1px solid var(--line); border-radius: 999px; background: #ffffff; padding: 4px 10px; font-size: 0.86rem; font-weight: 800; }}
+    .profile-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; padding-left: 0; list-style: none; }}
+    .profile-grid li {{ border: 1px solid #e3e8ef; border-radius: 8px; background: #ffffff; padding: 14px; }}
+    .profile-verdict {{ font-weight: 800; margin: 4px 0 8px; }}
     .meta {{ display: grid; grid-template-columns: 150px 1fr; gap: 8px 16px; margin: 18px 0 0; }}
     .meta dt, .finding dt {{ font-weight: 700; color: #374151; }}
     .meta dd, .finding dd {{ margin: 0; }}
@@ -380,6 +412,12 @@ def render_html(result: ScanResult) -> str:
         </ul>
       </section>
 
+      <h2>Purpose Profiles</h2>
+      <p>같은 finding을 설치, dependency 채택, AI agent 위임 목적별로 다시 읽은 판단입니다.</p>
+      <ul class="profile-grid">
+{profile_items}
+      </ul>
+
       <h2>Prioritized Findings</h2>
       <p>Finding은 심각도 순으로 정렬됩니다. 각 항목은 안정적인 ID, 실제 근거, 추천 조치를 포함합니다.</p>
 {findings}
@@ -396,9 +434,9 @@ def render_html(result: ScanResult) -> str:
         <li>
           <div class="item-head">
             <span class="label">JSON schema</span>
-            <span class="value">1.1</span>
+            <span class="value">{html.escape(JSON_SCHEMA_VERSION)}</span>
           </div>
-          <p class="description">이 리포트의 JSON 출력에는 machine-readable assessment가 포함됩니다.</p>
+          <p class="description">이 리포트의 JSON 출력에는 machine-readable assessment와 purpose profiles가 포함됩니다.</p>
         </li>
       </ul>
     </section>
@@ -406,6 +444,51 @@ def render_html(result: ScanResult) -> str:
 </body>
 </html>
 """
+
+
+def _profile_markdown(key: str, profile: AssessmentProfile) -> list[str]:
+    lines = [
+        f"### {PROFILE_LABELS.get(key, key)}",
+        "",
+        f"- Verdict: `{profile.verdict}`",
+        f"- Summary: {profile.summary}",
+        f"- Priority finding IDs: `{', '.join(profile.priority_finding_ids) or 'none'}`",
+        "",
+        "Reasons:",
+        "",
+    ]
+    for reason in profile.reasons:
+        lines.append(f"- {reason}")
+    lines.extend(["", "Next actions:", ""])
+    for action in profile.next_actions:
+        lines.append(f"- {action}")
+    lines.append("")
+    return lines
+
+
+def _profile_html(key: str, profile: AssessmentProfile) -> str:
+    reasons = "\n".join(
+        f"              <li>{html.escape(reason)}</li>" for reason in profile.reasons
+    )
+    actions = "\n".join(
+        f"              <li>{html.escape(action)}</li>" for action in profile.next_actions
+    )
+    priority = ", ".join(profile.priority_finding_ids) or "none"
+    return f"""        <li>
+          <h3>{html.escape(PROFILE_LABELS_KO.get(key, key))}</h3>
+          <p class="profile-verdict" style="color: {_verdict_color(profile.verdict)};">{html.escape(_assessment_label(profile.verdict))}</p>
+          <p class="description">{html.escape(profile.summary)}</p>
+          <p><strong>Priority findings:</strong> <code>{html.escape(priority)}</code></p>
+          <details>
+            <summary>판단 이유와 다음 조치</summary>
+            <ul>
+{reasons}
+            </ul>
+            <ul>
+{actions}
+            </ul>
+          </details>
+        </li>"""
 
 
 def _finding_markdown(finding: Finding) -> list[str]:

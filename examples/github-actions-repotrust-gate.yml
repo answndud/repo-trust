@@ -1,0 +1,30 @@
+name: RepoTrust Gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  repotrust:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install RepoTrust
+        run: python -m pip install repotrust
+
+      - name: Run RepoTrust gate
+        run: repo-trust gate . --config examples/repotrust.toml --output repotrust-report.json
+
+      - name: Upload RepoTrust report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repotrust-report
+          path: repotrust-report.json

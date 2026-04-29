@@ -7,6 +7,7 @@ from .remote_markers import (
     REMOTE_CONTENTS_ENDPOINT,
     REMOTE_DEPENDABOT_ENDPOINT,
     REMOTE_README_ENDPOINT,
+    REMOTE_SECURITY_POLICY_ENDPOINT,
     REMOTE_WORKFLOWS_ENDPOINT,
 )
 
@@ -87,6 +88,8 @@ def _unknown_evidence_keys(result: ScanResult) -> set[str]:
             )
         if REMOTE_README_ENDPOINT.lower() in evidence:
             unknown.add("readme")
+        if REMOTE_SECURITY_POLICY_ENDPOINT.lower() in evidence:
+            unknown.add("security")
         if REMOTE_WORKFLOWS_ENDPOINT.lower() in evidence:
             unknown.add("ci_workflows")
         if REMOTE_DEPENDABOT_ENDPOINT.lower() in evidence:

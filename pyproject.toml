@@ -8,6 +8,30 @@ version = "0.1.0"
 description = "CLI reports for evaluating whether an open source repository is safe to install or depend on."
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "answndud" },
+]
+keywords = [
+  "cli",
+  "repository",
+  "security",
+  "trust",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
 dependencies = [
   "rich>=13.7",
   "tomli>=2.0; python_version < '3.11'",
@@ -23,6 +47,10 @@ dev = [
 repo-trust = "repotrust.cli:direct_app"
 repo-trust-kr = "repotrust.cli:direct_kr_app"
 repotrust = "repotrust.cli:app"
+
+[project.urls]
+Changelog = "https://github.com/answndud/repo-trust/blob/main/CHANGELOG.md"
+Repository = "https://github.com/answndud/repo-trust"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

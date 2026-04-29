@@ -60,8 +60,10 @@ v0.1.0 이후 post-v1 작업으로 explicit remote scan이 추가됐다:
 - `repo-trust html/json/check <github-url>`은 GitHub REST API read-only metadata를 기본으로 조회한다.
 - `repo-trust html/json/check <github-url> --parse-only`는 네트워크 없이 URL만 파싱한다.
 - legacy `repotrust scan <github-url>`은 계속 parse-only로 유지하고, `--remote`를 명시했을 때만 remote scan을 실행한다.
-- Remote scan은 clone하지 않으며 repository metadata, root contents, README content, Dependabot config, GitHub Actions workflow metadata를 기존 `ScanResult`와 report contract에 연결한다.
-- Remote metadata scoring은 보수적으로 유지한다. Archived repository와 disabled issue tracking처럼 명확한 maintenance/support signal만 점수화하고, fork/private/stars/default branch/language/size 같은 context metadata와 release/tag freshness는 아직 점수화하지 않는다.
+- Remote scan은 clone하지 않으며 repository metadata, root contents, README content, Dependabot config, GitHub Actions workflow metadata, package-managed repository의 release/tag freshness를 기존 `ScanResult`와 report contract에 연결한다.
+- Remote metadata scoring은 보수적으로 유지한다. Archived repository, disabled issue tracking, 오래된 release/tag처럼 명확하고 낮은 강도의 maintenance/support signal만 점수화하고, fork/private/stars/default branch/language/size 같은 context metadata는 점수화하지 않는다.
+- `repotrust.toml`은 명시적 `--config`로만 로드되며 score threshold, profile gate, finding disable, severity override, category weight를 지원한다.
+- `repo-trust gate`는 CI에서 JSON report를 보존하면서 score/profile policy 실패를 exit code로 표현한다.
 
 ## 성공 기준
 
@@ -82,6 +84,6 @@ v0.1.0 이후 post-v1 작업으로 explicit remote scan이 추가됐다:
 
 - `repo-trust html/json/check` 기반의 product CLI UX 고도화.
 - dependency vulnerability source 연동.
-- 조직별 policy config.
-- release freshness와 maintainer activity 점수.
+- 중앙/상속형 조직 policy config.
+- maintainer activity 점수.
 - HTML 리포트 고도화 또는 웹 대시보드.

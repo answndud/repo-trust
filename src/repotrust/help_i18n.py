@@ -16,6 +16,7 @@ Commands:
   html   Write an HTML trust report.
   json   Write a JSON trust report.
   check  Inspect a target and print a terminal dashboard.
+  gate   Write JSON and fail when policy requirements are not met.
 
 Console Mode:
   repo-trust      Open the English workflow console.
@@ -33,6 +34,7 @@ Console Mode:
   html   HTML 신뢰 리포트를 저장합니다.
   json   JSON 신뢰 리포트를 저장합니다.
   check  파일 저장 없이 터미널 대시보드로 검사합니다.
+  gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
 
 콘솔 모드:
   repo-trust      영어 workflow 콘솔을 엽니다.
@@ -130,6 +132,36 @@ Options:
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 파싱합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
+  --help             영어 또는 한국어 도움말을 선택해 봅니다.
+""",
+    },
+    "gate": {
+        "en": """Usage: repo-trust gate [OPTIONS] TARGET
+
+Write JSON and fail when policy requirements are not met.
+
+Arguments:
+  TARGET  Local path or GitHub URL to inspect.
+
+Options:
+  -o, --output PATH  Write JSON report to this file. Defaults to stdout.
+  --config PATH      Load an explicit repotrust.toml policy file.
+  --parse-only       For GitHub URLs, parse the URL without calling the GitHub API.
+  --fail-under INT   Exit with code 1 if total score is below this value.
+  --help             Choose English or Korean help and exit.
+""",
+        "ko": """사용법: repo-trust gate [옵션] 대상
+
+JSON 리포트를 출력하고 정책 요구사항을 만족하지 못하면 실패합니다.
+
+인자:
+  대상  검사할 로컬 경로 또는 GitHub URL입니다.
+
+옵션:
+  -o, --output PATH  JSON 리포트를 저장할 경로입니다. 기본값은 stdout입니다.
+  --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
+  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 파싱합니다.
+  --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   --help             영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },

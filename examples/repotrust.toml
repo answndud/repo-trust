@@ -1,0 +1,28 @@
+# RepoTrust CI policy template.
+#
+# Copy this file to your repository root or pass it with:
+# repo-trust gate . --config examples/repotrust.toml --output repotrust-report.json
+
+[policy]
+fail_under = 85
+
+[policy.profiles]
+install = "usable_after_review"
+dependency = "usable_after_review"
+agent_delegate = "usable_after_review"
+
+[rules]
+# Example exception: allow projects that intentionally use an external issue tracker.
+# Remove this unless your team has accepted that support-path exception.
+disabled = ["remote.github_issues_disabled"]
+
+[severity_overrides]
+# Example exception: lower this only when your organization has an alternate
+# vulnerability reporting process documented outside the scanned repository.
+"security.no_policy" = "low"
+
+[weights]
+readme_quality = 0.25
+install_safety = 0.30
+security_posture = 0.25
+project_hygiene = 0.20

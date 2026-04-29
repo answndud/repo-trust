@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 from repotrust.config import ConfigError, load_config
 
@@ -28,6 +29,19 @@ project_hygiene = 0.10
         "security_posture": 0.10,
         "project_hygiene": 0.10,
     }
+
+
+def test_example_ci_policy_config_loads():
+    loaded = load_config(Path("examples/repotrust.toml"))
+
+    assert loaded.fail_under == 85
+    assert loaded.profile_min_verdicts == {
+        "install": "usable_after_review",
+        "dependency": "usable_after_review",
+        "agent_delegate": "usable_after_review",
+    }
+    assert loaded.disabled_findings == frozenset({"remote.github_issues_disabled"})
+    assert loaded.severity_overrides == {"security.no_policy": "low"}
 
 
 def test_load_config_rejects_unknown_section(tmp_path):
@@ -69,4 +83,3 @@ def test_load_config_rejects_invalid_fail_under(tmp_path):
 
     with pytest.raises(ConfigError, match="fail_under"):
         load_config(config)
-

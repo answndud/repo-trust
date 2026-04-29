@@ -13,7 +13,7 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 - `src/repotrust/terminal_theme.py`: shared Kali-style terminal prompt, section, badge, and table primitives for product terminal UI.
 - `src/repotrust/evidence.py`: shared evidence matrix status mapping for found, missing, and unknown signals.
 - `src/repotrust/remote_markers.py`: shared remote endpoint labels used by remote findings and evidence unknown mapping.
-- `src/repotrust/config.py`: explicit TOML config loading and validation.
+- `src/repotrust/config.py`: explicit TOML config loading, validation, finding policy adjustment, and profile gate thresholds.
 - `src/repotrust/scanner.py`: orchestration for local targets and GitHub URL targets.
 - `src/repotrust/targets.py`: target classification and GitHub URL parsing.
 - `src/repotrust/detection.py`: root-level repository file detection.
@@ -32,8 +32,10 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 4. Local paths are inspected with `detection.detect_files()`.
 5. Rule functions in `rules.py` emit `Finding` objects.
 6. `scoring.calculate_score()` converts findings into category scores, applies scan completeness caps, and returns total score.
-7. `ScanResult` attaches an `Assessment` with verdict, confidence, coverage, reasons, and next actions.
-8. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
+7. If config policy disables findings or overrides severity, `config.py` adjusts findings and recalculates score and assessment.
+8. `ScanResult` attaches an `Assessment` with verdict, confidence, coverage, reasons, and next actions.
+9. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
+10. `repo-trust gate` compares the adjusted score and profile verdicts with policy thresholds after the JSON report has been written.
 
 The product CLI treats GitHub URLs as remote scans by default for `repo-trust html/json/check`. Users can pass `--parse-only` to inspect the URL without GitHub API access. `repo-trust-kr` provides the same product commands and workflows with Korean Console Mode text, Korean status messages, and Korean terminal dashboard labels. Product `--help` prompts for English or Korean help before printing root or direct command help. Console Mode uses Rich alternate screen only for real terminals, so it opens like a pager without covering visible scrollback; non-TTY tests and pipes keep normal output. Console Mode Home is action-driven: four primary shortcuts `[G]`, `[L]`, `[C]`, `[J]`, a compact recent-report count, and a controls line for `[R]`, `[?]`, and `[Q]`. Selection prints an explicit `Selected:` state before the target input prompt; GitHub input includes an example URL; target input accepts `[B] Back` to return to Home without scanning. Legacy numeric input `1`-`6` and zero-padded values remain accepted for compatibility. Command Mode dashboards, help, and legacy summaries continue to use Kali-style prompt primitives such as `┌──(repotrust㉿...)-[...]` and `└─$`. Report rendering, JSON shape, and scan behavior are shared. The legacy `repotrust scan` command keeps its original explicit `--remote` opt-in behavior. Remote scans enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
 

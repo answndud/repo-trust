@@ -30,10 +30,28 @@ def _target():
     )
 
 
+def _subpath_target():
+    return Target(
+        raw="https://github.com/owner/repo/tree/main/packages/example",
+        kind="github",
+        host="github.com",
+        owner="owner",
+        repo="repo",
+        ref="main",
+        subpath="packages/example",
+    )
+
+
 def _scan(response, token=None):
     transport = FakeTransport(response)
     client = GitHubClient(token=token, transport=transport)
     return scan_remote_github(_target(), client=client), transport
+
+
+def _scan_subpath(response, token=None):
+    transport = FakeTransport(response)
+    client = GitHubClient(token=token, transport=transport)
+    return scan_remote_github(_subpath_target(), client=client), transport
 
 
 def _successful_responses():
@@ -89,6 +107,18 @@ Open issues for bugs, send pull requests for small fixes, and review the changel
         ),
         GitHubResponse(status_code=404),
     ]
+
+
+def _remove_root_security(contents_response):
+    return GitHubResponse(
+        status_code=contents_response.status_code,
+        data=[
+            item
+            for item in contents_response.data
+            if not (isinstance(item, dict) and item.get("path") == "SECURITY.md")
+        ],
+        headers=contents_response.headers,
+    )
 
 
 def test_remote_success_collects_repository_metadata_boundary():
@@ -189,25 +219,162 @@ def test_remote_success_detects_files_from_contents_and_workflows():
     assert result.score.total == 100
 
 
+def test_remote_stale_latest_release_adds_low_project_hygiene_finding():
+    responses = _successful_responses()
+    responses.append(
+        GitHubResponse(
+            status_code=200,
+            data={
+                "tag_name": "v1.0.0",
+                "published_at": "2020-01-01T00:00:00Z",
+            },
+        )
+    )
+
+    result, transport = _scan(responses)
+
+    finding = _finding(result, "remote.release_or_tag_stale")
+    assert finding.category.value == "project_hygiene"
+    assert finding.severity.value == "low"
+    assert "latest release v1.0.0 published_at=2020-01-01T00:00:00Z" in finding.evidence
+    assert result.score.categories["project_hygiene"] == 92
+    assert result.score.total == 98
+    assert transport.requests[6][1] == "https://api.github.com/repos/owner/repo/releases/latest"
+
+
+def test_remote_tags_only_stale_tag_adds_low_project_hygiene_finding():
+    responses = _successful_responses()
+    responses.extend(
+        [
+            GitHubResponse(status_code=404),
+            GitHubResponse(
+                status_code=200,
+                data=[
+                    {
+                        "name": "v0.9.0",
+                        "commit": {"sha": "abc123"},
+                    }
+                ],
+            ),
+            GitHubResponse(
+                status_code=200,
+                data={
+                    "commit": {
+                        "committer": {"date": "2020-02-03T04:05:06Z"},
+                    }
+                },
+            ),
+        ]
+    )
+
+    result, transport = _scan(responses)
+
+    finding = _finding(result, "remote.release_or_tag_stale")
+    assert "latest tag v0.9.0 commit_date=2020-02-03T04:05:06Z" in finding.evidence
+    assert transport.requests[6][1] == "https://api.github.com/repos/owner/repo/releases/latest"
+    assert transport.requests[7][1] == "https://api.github.com/repos/owner/repo/tags?per_page=1"
+    assert transport.requests[8][1] == "https://api.github.com/repos/owner/repo/commits/abc123"
+
+
+def test_remote_no_release_or_tag_practice_does_not_deduct():
+    responses = _successful_responses()
+    responses.extend(
+        [
+            GitHubResponse(status_code=404),
+            GitHubResponse(status_code=200, data=[]),
+        ]
+    )
+
+    result, _ = _scan(responses)
+
+    assert "remote.release_or_tag_stale" not in {finding.id for finding in result.findings}
+    assert result.score.total == 100
+
+
+def test_remote_release_api_failure_does_not_create_stale_or_partial_finding():
+    responses = _successful_responses()
+    responses.append(GitHubResponse(status_code=500))
+
+    result, _ = _scan(responses)
+
+    ids = [finding.id for finding in result.findings]
+    assert "remote.release_or_tag_stale" not in ids
+    assert "remote.github_partial_scan" not in ids
+    assert result.score.total == 100
+
+
+def test_remote_subpath_url_reports_root_scope_limitation():
+    result, _ = _scan_subpath(_successful_responses())
+
+    ids = [finding.id for finding in result.findings]
+    assert "target.github_subpath_unsupported" in ids
+    assert result.score.total == 85
+    assert result.assessment.verdict == "usable_after_review"
+    assert result.assessment.coverage == "partial"
+    assert "does not assess only the requested subdirectory" in result.assessment.reasons[0]
+
+
+def test_remote_detects_github_security_policy_without_root_security():
+    responses = _successful_responses()
+    responses[1] = _remove_root_security(responses[1])
+    responses.append(
+        GitHubResponse(
+            status_code=200,
+            data={"name": "SECURITY.md", "path": ".github/SECURITY.md"},
+        )
+    )
+
+    result, transport = _scan(responses)
+
+    ids = {finding.id for finding in result.findings}
+    assert result.detected_files.security == ".github/SECURITY.md"
+    assert "security.no_policy" not in ids
+    assert transport.requests[-1][1] == (
+        "https://api.github.com/repos/owner/repo/contents/.github/SECURITY.md"
+    )
+
+
+def test_remote_security_policy_partial_failure_does_not_deduct_as_missing_policy():
+    responses = _successful_responses()
+    responses[1] = _remove_root_security(responses[1])
+    responses.append(GitHubResponse(status_code=403))
+
+    result, _ = _scan(responses)
+
+    ids = [finding.id for finding in result.findings]
+    assert "remote.github_partial_scan" in ids
+    assert "security.no_policy" not in ids
+    assert result.detected_files.security is None
+    assert any(
+        "repository security policy endpoint returned HTTP 403." == finding.evidence
+        for finding in result.findings
+    )
+
+
 def test_remote_report_rendering_uses_existing_contract():
     result, _ = _scan(_successful_responses())
 
     json_report = json.loads(render_json(result))
     markdown_report = render_markdown(result)
 
-    assert json_report["schema_version"] == "1.1"
-    assert json_report["assessment"] == {
-        "verdict": "usable_by_current_checks",
-        "confidence": "high",
-        "coverage": "full",
-        "summary": "The enabled RepoTrust checks did not find blocking trust issues.",
-        "reasons": [
-            "Repository evidence was collected for all enabled checks.",
-        ],
-        "next_actions": [
-            "Confirm license and organization policy before adopting the repository.",
-            "Use the findings and evidence matrix rather than the score alone.",
-        ],
+    assert json_report["schema_version"] == "1.2"
+    assert json_report["assessment"]["verdict"] == "usable_by_current_checks"
+    assert json_report["assessment"]["confidence"] == "high"
+    assert json_report["assessment"]["coverage"] == "full"
+    assert json_report["assessment"]["summary"] == (
+        "The enabled RepoTrust checks did not find blocking trust issues."
+    )
+    assert json_report["assessment"]["reasons"] == [
+        "Repository evidence was collected for all enabled checks.",
+    ]
+    assert json_report["assessment"]["next_actions"] == [
+        "Confirm license and organization policy before adopting the repository.",
+        "Use the findings and evidence matrix rather than the score alone.",
+    ]
+    assert set(json_report["assessment"]["profiles"]) == {
+        "agent_delegate",
+        "dependency",
+        "install",
     }
     assert json_report["target"] == {
         "raw": "https://github.com/owner/repo",
@@ -246,7 +413,7 @@ def test_remote_partial_scan_json_contract_has_stable_findings():
 
     data = json.loads(render_json(result))
 
-    assert data["schema_version"] == "1.1"
+    assert data["schema_version"] == "1.2"
     assert data["target"]["kind"] == "github"
     assert data["detected_files"]["readme"] is None
     assert data["detected_files"]["ci_workflows"] == [".github/workflows/ci.yml"]
@@ -272,7 +439,7 @@ def test_remote_archived_json_contract_has_stable_finding_and_score():
 
     data = json.loads(render_json(result))
 
-    assert data["schema_version"] == "1.1"
+    assert data["schema_version"] == "1.2"
     assert [finding["id"] for finding in data["findings"][:2]] == [
         "remote.github_metadata_collected",
         "remote.github_archived",
@@ -448,3 +615,9 @@ def test_remote_api_error_finding():
 
     assert result.findings[0].id == "remote.github_api_error"
     assert "remote.github_archived" not in {finding.id for finding in result.findings}
+
+
+def _finding(result, finding_id):
+    matches = [finding for finding in result.findings if finding.id == finding_id]
+    assert matches
+    return matches[0]
