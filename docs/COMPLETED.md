@@ -789,3 +789,12 @@
 - 코드/문서: commit 대상은 product CLI/gate/config v2, remote scan hardening, assessment profiles, package risk rules, reference docs, CI examples, tests, release readiness docs 전체다.
 - 검증: commit 직전 `git status --short`로 대상 파일을 확인하고, `git diff --cached --stat`로 staged 범위를 확인했다. 직전 release candidate review에서 `.venv/bin/python -m pytest -q`, gate sample smoke, wheel clean install smoke, self JSON/HTML smoke, `git diff --check`가 모두 통과했다.
 - 결과: release candidate 변경 세트가 로컬 commit으로 고정됐다. 다음 작업은 `Release candidate 원격 반영 여부 결정`이다.
+
+## 086: Release candidate 원격 반영
+
+- 완료일: 2026-04-29
+- 배경: release candidate commit `e7c52b3 Prepare post-v1 release candidate`가 로컬 `main`에 생성됐고, 사용자가 다음 단계 진행을 요청했다.
+- 변경 내용: `main`이 `origin/main`보다 1커밋 앞선 상태임을 확인한 뒤 `git push origin main`으로 release candidate commit을 GitHub 원격에 반영했다.
+- 코드/문서: push 자체에는 기능 코드 변경이 없었다. push 완료 후 작업 상태 문서를 tag/release 결정 단계로 갱신했다.
+- 검증: `git status --short --branch`에서 push 전 `main...origin/main [ahead 1]` 상태를 확인했다. `git push origin main`은 `b084ae0..e7c52b3 main -> main`으로 성공했다.
+- 결과: post-v1 release candidate가 GitHub `main`에 반영됐다. 다음 작업은 `Release tag 생성 여부 결정`이다.
