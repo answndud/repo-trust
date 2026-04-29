@@ -852,3 +852,12 @@
 - 코드/문서: release publish 자체에는 repository 파일 변경이 없었다. 작업 상태 문서를 다음 PyPI 배포 여부와 post-release 검증 결정 단계로 갱신했다.
 - 검증: `gh release view v0.2.0 --repo answndud/repo-trust`는 `isDraft=false`, `isPrerelease=false`, `tagName=v0.2.0`, URL `https://github.com/answndud/repo-trust/releases/tag/v0.2.0`을 반환했다. `git ls-remote --tags origin 'refs/tags/v0.2.0*'`도 remote tag object와 dereferenced commit을 반환했다. `git status --short --branch`는 `main...origin/main` 상태였다.
 - 결과: RepoTrust v0.2.0 GitHub release가 publish됐다. 다음 작업은 `PyPI 배포 여부와 post-release 검증 결정`이다.
+
+## 093: PyPI 배포 여부와 post-release 검증 결정
+
+- 완료일: 2026-04-29
+- 배경: GitHub release `v0.2.0` publish 이후 production PyPI 배포를 바로 진행할 수 있는지 확인해야 했다.
+- 변경 내용: GitHub release 상태, PyPI package name availability, local build artifact, publish credential/toolchain 상태를 확인했다. `repotrust` 이름은 PyPI에서 published project/distribution으로 확인되지 않았지만, 현재 환경에는 `twine`/`build`, `.pypirc`, `TWINE_USERNAME`, `TWINE_PASSWORD`, `PYPI_TOKEN`, `PYPI_API_TOKEN`이 준비되어 있지 않았다.
+- 코드/문서: 기능 코드는 변경하지 않았다. `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 PyPI publish 보류 판단과 다음 setup/dry-run 작업에 맞게 갱신했다.
+- 검증: `gh release view v0.2.0 --repo answndud/repo-trust`로 published GitHub release를 확인했다. `pip wheel --no-deps .`는 `repotrust-0.2.0-py3-none-any.whl`을 생성했다. `pip index versions repotrust`는 matching distribution이 없다고 반환했다. PyPI project page/API도 현재 published project로 확인되지 않았다. publish credential/toolchain 존재 여부는 값 노출 없이 boolean으로만 확인했다.
+- 결과: PyPI production publish는 지금 실행하지 않는다. package name은 비어 있는 것으로 보이지만 credential/toolchain이 없으므로, 다음 작업은 `PyPI publish setup과 TestPyPI dry-run`이다.
