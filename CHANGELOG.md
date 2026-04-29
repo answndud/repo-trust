@@ -4,6 +4,10 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
+No changes yet.
+
+## v0.2.0 - 2026-04-29
+
 Post-v1 public readiness hardening for product CLI, remote scan, assessment profiles, and CI policy gates.
 
 ### Added

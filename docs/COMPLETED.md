@@ -798,3 +798,30 @@
 - 코드/문서: push 자체에는 기능 코드 변경이 없었다. push 완료 후 작업 상태 문서를 tag/release 결정 단계로 갱신했다.
 - 검증: `git status --short --branch`에서 push 전 `main...origin/main [ahead 1]` 상태를 확인했다. `git push origin main`은 `b084ae0..e7c52b3 main -> main`으로 성공했다.
 - 결과: post-v1 release candidate가 GitHub `main`에 반영됐다. 다음 작업은 `Release tag 생성 여부 결정`이다.
+
+## 087: Release tag 생성 여부 결정
+
+- 완료일: 2026-04-29
+- 배경: GitHub main에 post-v1 release candidate가 반영됐지만, tag/release는 package version과 changelog 의미가 맞을 때만 생성해야 한다.
+- 변경 내용: 현재 branch 상태, local/remote tag, package version, changelog heading을 확인했다. Local에는 `v0.1.0` tag가 있지만 remote tag 목록은 비어 있었다. Local `v0.1.0` tag는 `f0a3d70 Avoid remote deductions for unknown metadata` 커밋을 가리키며 현재 HEAD가 아니다. 현재 package version은 `pyproject.toml`과 `src/repotrust/__init__.py` 모두 `0.1.0`이고, post-v1 변경 사항은 `CHANGELOG.md`의 `Unreleased` 아래에 있다.
+- 코드/문서: 기능 코드는 변경하지 않았다. `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 tag 판단 결과와 다음 release metadata 작업에 맞게 갱신했다.
+- 검증: `git status --short --branch`에서 `main...origin/main` 상태를 확인했다. `git tag --list --sort=version:refname`은 local `v0.1.0`을 반환했다. `git ls-remote --tags origin`은 remote tag가 없음을 보여줬다. `pyproject.toml`, `src/repotrust/__init__.py`, `CHANGELOG.md`의 version/release 상태를 확인했다.
+- 결과: 지금 current HEAD에 tag/release를 만들지 않는다. post-v1 변경 범위는 patch보다 크고, 기존 `0.1.0`/`v0.1.0` 의미와 맞지 않으므로 먼저 `0.2.0` version bump와 `v0.2.0 - 2026-04-29` changelog 정리가 필요하다. 다음 작업은 `v0.2.0 release metadata 준비`다.
+
+## 088: v0.2.0 release metadata 준비
+
+- 완료일: 2026-04-29
+- 배경: post-v1 release candidate는 `0.1.0` patch로 보기에는 변경 범위가 크고, changelog도 `Unreleased` 상태였으므로 `v0.2.0` release metadata가 필요했다.
+- 변경 내용: `pyproject.toml`과 `src/repotrust/__init__.py` version을 `0.2.0`으로 올렸다. `CHANGELOG.md`에는 새 empty `Unreleased` 섹션을 만들고 기존 post-v1 release notes를 `v0.2.0 - 2026-04-29` 아래로 이동했다. README Console Mode 예시와 CLI version tests도 `0.2.0`으로 맞췄다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `CHANGELOG.md`, `README.md`, `tests/test_cli.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`에서 `120 passed`를 확인했다. `repo-trust`, `repo-trust-kr`, `repotrust` version command가 모두 `0.2.0`을 출력했다. self JSON은 schema `1.2`, score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었고 `json.tool` 검증을 통과했다. `pip wheel --no-deps .`는 `repotrust-0.2.0-py3-none-any.whl`을 생성했다. editable reinstall 후 `pip show repotrust`도 version `0.2.0`을 보여줬고, clean venv wheel install에서도 세 entrypoint가 모두 `0.2.0`을 출력했다. `git diff --check`도 통과했다.
+- 결과: v0.2.0 release metadata는 tag 생성 전 상태로 준비됐다. 다음 작업은 `v0.2.0 release metadata commit 생성`이다.
+
+## 089: v0.2.0 release metadata commit 생성
+
+- 완료일: 2026-04-29
+- 배경: v0.2.0 version bump와 changelog release heading이 검증됐으므로, tag 생성 전에 release metadata 변경을 commit으로 고정해야 했다.
+- 변경 내용: `CHANGELOG.md`, `README.md`, `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, 작업 상태 문서 변경을 `Prepare v0.2.0 release metadata` commit으로 저장했다.
+- 코드/문서: 기능 동작 변경은 없고 release metadata, 사용자 예시, version tests, 작업 상태 문서만 수정했다.
+- 검증: commit 직전 `.venv/bin/python -m pytest -q`에서 `120 passed`를 확인했고 `git diff --check`도 통과했다. `git diff --stat`으로 변경 범위가 release metadata와 문서/test에 한정됨을 확인했다.
+- 결과: v0.2.0 release metadata가 로컬 commit으로 고정됐다. 다음 작업은 `v0.2.0 release metadata 원격 반영 및 tag 준비`다.
