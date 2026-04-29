@@ -834,3 +834,12 @@
 - 코드/문서: push 자체에는 기능 코드 변경이 없었다. 작업 상태 문서를 다음 `v0.2.0` annotated tag 생성 단계로 갱신했다.
 - 검증: push 전 `main...origin/main [ahead 1]` 상태를 확인했고, push는 `3d9b3e2..77232d7 main -> main`으로 성공했다. push 후 `git status --short --branch`는 `main...origin/main` 상태였다. local tag는 기존 `v0.1.0`만 있었고, `git ls-remote --tags origin`은 remote tag가 아직 없음을 보여줬다. `git log --oneline --decorate -5`에서 `77232d7 (HEAD -> main, origin/main) Prepare v0.2.0 release metadata`를 확인했다.
 - 결과: v0.2.0 release metadata는 GitHub main에 반영됐고, `v0.2.0` remote tag는 아직 없다. 기존 local `v0.1.0` tag는 이동하지 않는다. 다음 작업은 `v0.2.0 annotated tag 생성 및 push`다.
+
+## 091: v0.2.0 annotated tag 생성 및 push
+
+- 완료일: 2026-04-29
+- 배경: v0.2.0 release metadata가 GitHub main에 반영됐고 remote에는 아직 release tag가 없었다.
+- 변경 내용: 현재 HEAD에 `v0.2.0` annotated tag를 `RepoTrust v0.2.0` 메시지로 생성하고 `git push origin v0.2.0`으로 원격에 반영했다. 기존 local `v0.1.0` tag는 이동하거나 재사용하지 않았다.
+- 코드/문서: tag 생성 자체에는 파일 변경이 없었다. 작업 상태 문서를 다음 GitHub release publish 준비 단계로 갱신했다.
+- 검증: `git status --short --branch`에서 `main...origin/main` 상태를 확인했다. `git tag --list --sort=version:refname -n`에서 `v0.1.0`과 `v0.2.0`을 확인했다. `git ls-remote --tags origin 'refs/tags/v0.2.0*'`에서 remote `v0.2.0` tag object와 dereferenced commit `0aa555a`를 확인했다. `git show --stat --oneline --decorate v0.2.0`에서 tag message `RepoTrust v0.2.0`과 target commit을 확인했다.
+- 결과: v0.2.0 annotated tag가 local과 GitHub remote에 생성됐다. 다음 작업은 `v0.2.0 GitHub release publish 준비`다.

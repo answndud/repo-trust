@@ -13,11 +13,11 @@
 
 ## 현재 목표
 
-RepoTrust v0.2.0 annotated tag를 생성하고 원격 반영할지 결정한다.
+RepoTrust v0.2.0 GitHub release publish 여부와 배포 후 검증 범위를 결정한다.
 
 ## 현재 우선순위
 
-1. v0.2.0 tag 생성 및 push 여부를 결정한다.
+1. v0.2.0 GitHub release publish를 준비한다.
 
 ## In Progress
 
@@ -25,24 +25,22 @@ RepoTrust v0.2.0 annotated tag를 생성하고 원격 반영할지 결정한다.
 
 ## Pending
 
-### v0.2.0 annotated tag 생성 및 push
+### v0.2.0 GitHub release publish 준비
 
 - Status: `Pending`
-- Goal: v0.2.0 release state에 annotated tag를 만들고 GitHub 원격에 반영한다.
-- Scope: tag 대상 commit 확인, `v0.2.0` annotated tag 생성, tag push, local/remote tag 검증.
-- Non-goals: GitHub release publish, PyPI 배포, 새 기능 추가.
+- Goal: pushed `v0.2.0` tag를 기준으로 GitHub release를 만들 수 있는지 확인하고 release note를 준비한다.
+- Scope: `CHANGELOG.md`의 `v0.2.0` section 추출, GitHub release 생성 가능 여부 확인, release publish command 정리.
+- Non-goals: PyPI 배포, 새 기능 추가.
 - Acceptance criteria:
-  - `v0.2.0` tag가 `0.2.0` package version과 changelog release heading을 포함한 commit을 가리킨다.
-  - remote tag 목록에서 `v0.2.0`이 확인된다.
-  - 기존 local `v0.1.0` tag는 재사용하거나 이동하지 않는다.
+  - GitHub release note에 들어갈 `v0.2.0` 변경 내용이 확인된다.
+  - GitHub release publish를 진행할 command와 검증 방법이 명확하다.
 - Verification commands:
   - `git status --short --branch`
-  - `git tag --list --sort=version:refname -n`
-  - `git push origin v0.2.0`
+  - `git tag --list 'v0.2.0' -n`
   - `git ls-remote --tags origin 'refs/tags/v0.2.0*'`
-- Next action: 사용자가 tag 생성을 원하면 `git tag -a v0.2.0 -m "RepoTrust v0.2.0"`을 실행한다.
+- Next action: `CHANGELOG.md`의 `v0.2.0` section을 release note 후보로 추출한다.
 
 ## 다음 실행 순서
 
-1. `v0.2.0 annotated tag 생성 및 push`를 `In Progress`로 승격한다.
-2. tag를 만들고 push한 뒤 remote tag를 확인한다.
+1. `v0.2.0 GitHub release publish 준비`를 `In Progress`로 승격한다.
+2. release note와 publish command를 준비한다.
