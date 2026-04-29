@@ -825,3 +825,12 @@
 - 코드/문서: 기능 동작 변경은 없고 release metadata, 사용자 예시, version tests, 작업 상태 문서만 수정했다.
 - 검증: commit 직전 `.venv/bin/python -m pytest -q`에서 `120 passed`를 확인했고 `git diff --check`도 통과했다. `git diff --stat`으로 변경 범위가 release metadata와 문서/test에 한정됨을 확인했다.
 - 결과: v0.2.0 release metadata가 로컬 commit으로 고정됐다. 다음 작업은 `v0.2.0 release metadata 원격 반영 및 tag 준비`다.
+
+## 090: v0.2.0 release metadata 원격 반영 및 tag 준비
+
+- 완료일: 2026-04-29
+- 배경: `77232d7 Prepare v0.2.0 release metadata` commit이 로컬 `main`에 생성됐고, release tag를 만들기 전에 원격 main과 tag 상태를 맞춰야 했다.
+- 변경 내용: `git push origin main`으로 release metadata commit을 GitHub `main`에 반영했다. 이후 local tag 목록과 remote tag 목록을 확인했다.
+- 코드/문서: push 자체에는 기능 코드 변경이 없었다. 작업 상태 문서를 다음 `v0.2.0` annotated tag 생성 단계로 갱신했다.
+- 검증: push 전 `main...origin/main [ahead 1]` 상태를 확인했고, push는 `3d9b3e2..77232d7 main -> main`으로 성공했다. push 후 `git status --short --branch`는 `main...origin/main` 상태였다. local tag는 기존 `v0.1.0`만 있었고, `git ls-remote --tags origin`은 remote tag가 아직 없음을 보여줬다. `git log --oneline --decorate -5`에서 `77232d7 (HEAD -> main, origin/main) Prepare v0.2.0 release metadata`를 확인했다.
+- 결과: v0.2.0 release metadata는 GitHub main에 반영됐고, `v0.2.0` remote tag는 아직 없다. 기존 local `v0.1.0` tag는 이동하지 않는다. 다음 작업은 `v0.2.0 annotated tag 생성 및 push`다.
