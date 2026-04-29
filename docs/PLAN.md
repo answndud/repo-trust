@@ -6,6 +6,7 @@
 
 - 새 기능, 우선순위 변경, 범위 변경은 구현 전에 이 문서에 먼저 반영한다.
 - 작업 항목은 `In Progress` 또는 `Pending` 중 하나에만 둔다.
+- credential, production publish, 보안/권한 결정처럼 진행 불가한 항목은 `In Progress` 아래에 두고 status를 `Blocked`로 표시한다.
 - `Pending`은 완성품까지의 순차 backlog로 유지한다. 새 작업을 시작할 때 맨 위 항목 하나만 `In Progress`로 승격한다.
 - 각 작업에는 status, goal, scope, non-goals, acceptance criteria, verification commands, next action을 적는다.
 - 완료된 작업은 `docs/COMPLETED.md`로 archive한 뒤 이 문서에서 삭제한다.
@@ -13,35 +14,40 @@
 
 ## 현재 목표
 
-RepoTrust v0.2.0 PyPI publish를 안전하게 준비한다.
+RepoTrust v0.2.0 PyPI publish를 완료한다.
 
 ## 현재 우선순위
 
-1. PyPI publish setup과 TestPyPI dry-run을 준비한다.
+1. PyPI/TestPyPI credential 또는 trusted publishing 설정 후 remote upload를 수행한다.
 
 ## In Progress
 
-현재 active 작업 없음
+### PyPI production publish
+
+- Status: `Blocked`
+- Goal: TestPyPI 검증 후 RepoTrust v0.2.0 artifact를 production PyPI에 publish한다.
+- Scope: TestPyPI 또는 trusted publishing credential 설정 확인, release artifact 재생성, `twine check`, TestPyPI upload/install smoke, production PyPI upload, post-publish install smoke.
+- Non-goals: 새 기능 추가, version bump, release note 재작성.
+- Acceptance criteria:
+  - TestPyPI 또는 trusted publishing 기반 remote upload가 성공한다.
+  - TestPyPI 설치 smoke가 통과한다.
+  - Production PyPI upload 후 isolated install smoke가 통과한다.
+- Verification commands:
+  - `.venv/bin/python -m build --outdir <tmp>/dist`
+  - `.venv/bin/python -m twine check <tmp>/dist/*`
+  - `.venv/bin/python -m twine upload --repository testpypi <tmp>/dist/*`
+  - `python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ repotrust==0.2.0`
+  - `.venv/bin/python -m twine upload <tmp>/dist/*`
+  - `python -m pip install repotrust==0.2.0`
+  - `git status --short --branch`
+- Next action: TestPyPI/PyPI API token을 제공하거나 GitHub trusted publishing을 설정한다.
 
 ## Pending
 
-### PyPI publish setup과 TestPyPI dry-run
-
-- Status: `Pending`
-- Goal: PyPI upload 전에 build/publish toolchain과 credential path를 안전하게 준비하고 TestPyPI dry-run으로 검증한다.
-- Scope: `build`/`twine` 사용 방식 결정, TestPyPI token 또는 trusted publishing 가능성 확인, `python -m build` artifact 생성, `twine check`, TestPyPI upload/install smoke 절차 문서화.
-- Non-goals: 실제 PyPI production publish, 새 기능 추가.
-- Acceptance criteria:
-  - production PyPI publish 전에 필요한 credential/toolchain blocker가 문서화된다.
-  - TestPyPI 또는 trusted publishing 중 하나의 검증 경로가 정해진다.
-  - build artifacts와 metadata check가 통과한다.
-- Verification commands:
-  - `.venv/bin/python -m pip wheel --no-deps . --wheel-dir <tmp>`
-  - `.venv/bin/python -m pip show repotrust`
-  - `git status --short --branch`
-- Next action: publish toolchain과 credential strategy를 정한다.
+현재 active 작업 없음
 
 ## 다음 실행 순서
 
-1. `PyPI publish setup과 TestPyPI dry-run`을 `In Progress`로 승격한다.
-2. production publish는 credential과 TestPyPI/trusted publishing 검증이 끝난 뒤 진행한다.
+1. TestPyPI/PyPI credential 또는 trusted publishing 설정을 완료한다.
+2. local artifact validation을 다시 실행한다.
+3. TestPyPI upload/install smoke 후 production PyPI upload를 진행한다.

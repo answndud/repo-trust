@@ -861,3 +861,12 @@
 - 코드/문서: 기능 코드는 변경하지 않았다. `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 PyPI publish 보류 판단과 다음 setup/dry-run 작업에 맞게 갱신했다.
 - 검증: `gh release view v0.2.0 --repo answndud/repo-trust`로 published GitHub release를 확인했다. `pip wheel --no-deps .`는 `repotrust-0.2.0-py3-none-any.whl`을 생성했다. `pip index versions repotrust`는 matching distribution이 없다고 반환했다. PyPI project page/API도 현재 published project로 확인되지 않았다. publish credential/toolchain 존재 여부는 값 노출 없이 boolean으로만 확인했다.
 - 결과: PyPI production publish는 지금 실행하지 않는다. package name은 비어 있는 것으로 보이지만 credential/toolchain이 없으므로, 다음 작업은 `PyPI publish setup과 TestPyPI dry-run`이다.
+
+## 094: PyPI publish setup과 TestPyPI dry-run
+
+- 완료일: 2026-04-29
+- 배경: v0.2.0 GitHub release 이후 PyPI production publish를 바로 실행하기에는 build/publish toolchain과 credential path가 준비되지 않았다. 실제 remote upload 전에 local artifact validation과 TestPyPI 절차를 명확히 해야 했다.
+- 변경 내용: `pyproject.toml` dev dependencies에 `build`와 `twine`을 추가하고 `pylock.toml`을 갱신했다. Testing guide에 `python -m build`, `twine check`, TestPyPI upload, TestPyPI install smoke, production upload 절차를 추가했다. Development workflow에도 release artifact check와 credential/trusted publishing 주의사항을 추가했다.
+- 코드/문서: `pyproject.toml`, `pylock.toml`, `docs/testing-and-validation.md`, `docs/development-workflow.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다. 기능 코드는 변경하지 않았다.
+- 검증: `.venv/bin/python -m pip install -e '.[dev]'`로 dev release toolchain 설치를 확인했다. `.venv/bin/python -m pip lock -e '.[dev]' -o pylock.toml`로 lockfile을 갱신했다. `.venv/bin/python -m build --outdir <tmp>/dist`는 `repotrust-0.2.0.tar.gz`와 `repotrust-0.2.0-py3-none-any.whl`을 생성했다. `.venv/bin/python -m twine check <tmp>/dist/*`는 wheel과 sdist 모두 `PASSED`였다. Clean venv wheel install smoke에서 `repo-trust`, `repo-trust-kr`, `repotrust`가 모두 `0.2.0`을 출력했고 fixture JSON은 `json.tool`을 통과했다. `.venv/bin/python -m pytest -q`는 `120 passed`였고 `git diff --check`도 통과했다.
+- 결과: PyPI/TestPyPI publish 준비용 local toolchain과 검증 절차는 준비됐다. 실제 TestPyPI/PyPI upload는 token 또는 GitHub trusted publishing 설정이 필요한 blocked 작업으로 남긴다.

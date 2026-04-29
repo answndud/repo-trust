@@ -13,6 +13,39 @@ url = "https://files.pythonhosted.org/packages/1e/d3/26bf1008eb3d2daa8ef4cacc7f3
 sha256 = "571ac1dc6991c450b25a9c2d84a3705e2ae7a53467b5d111c24fa8baabbed320"
 
 [[packages]]
+name = "build"
+version = "1.4.4"
+
+[[packages.wheels]]
+name = "build-1.4.4-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/fa/88/6764e7a109dd84294850741501145da90d13cdeac9d4e614929464a37420/build-1.4.4-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "8c3f48a6090b39edec1a273d2d57949aaf13723b01e02f9d518396887519f64d"
+
+[[packages]]
+name = "certifi"
+version = "2026.4.22"
+
+[[packages.wheels]]
+name = "certifi-2026.4.22-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/22/30/7cd8fdcdfbc5b869528b079bfb76dcdf6056b1a2097a662e5e8c04f42965/certifi-2026.4.22-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "3cb2210c8f88ba2318d29b0388d1023c8492ff72ecdde4ebdaddbb13a31b1c4a"
+
+[[packages]]
+name = "charset-normalizer"
+version = "3.4.7"
+
+[[packages.wheels]]
+name = "charset_normalizer-3.4.7-cp314-cp314-macosx_10_15_universal2.whl"
+url = "https://files.pythonhosted.org/packages/97/c8/c67cb8c70e19ef1960b97b22ed2a1567711de46c4ddf19799923adc836c2/charset_normalizer-3.4.7-cp314-cp314-macosx_10_15_universal2.whl"
+
+[packages.wheels.hashes]
+sha256 = "c36c333c39be2dbca264d7803333c896ab8fa7d4d6f0ab7edb7dfd7aea6e98c0"
+
+[[packages]]
 name = "click"
 version = "8.3.3"
 
@@ -24,6 +57,39 @@ url = "https://files.pythonhosted.org/packages/ae/44/c1221527f6a71a01ec6fbad7fa7
 sha256 = "a2bf429bb3033c89fa4936ffb35d5cb471e3719e1f3c8a7c3fff0b8314305613"
 
 [[packages]]
+name = "docutils"
+version = "0.22.4"
+
+[[packages.wheels]]
+name = "docutils-0.22.4-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/02/10/5da547df7a391dcde17f59520a231527b8571e6f46fc8efb02ccb370ab12/docutils-0.22.4-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "d0013f540772d1420576855455d050a2180186c91c15779301ac2ccb3eeb68de"
+
+[[packages]]
+name = "id"
+version = "1.6.1"
+
+[[packages.wheels]]
+name = "id-1.6.1-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/42/77/de194443bf38daed9452139e960c632b0ef9f9a5dd9ce605fdf18ca9f1b1/id-1.6.1-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "f5ec41ed2629a508f5d0988eda142e190c9c6da971100612c4de9ad9f9b237ca"
+
+[[packages]]
+name = "idna"
+version = "3.13"
+
+[[packages.wheels]]
+name = "idna-3.13-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/5d/13/ad7d7ca3808a898b4612b6fe93cde56b53f3034dcde235acb1f0e1df24c6/idna-3.13-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "892ea0cde124a99ce773decba204c5552b69c3c67ffd5f232eb7696135bc8bb3"
+
+[[packages]]
 name = "iniconfig"
 version = "2.3.0"
 
@@ -33,6 +99,50 @@ url = "https://files.pythonhosted.org/packages/cb/b1/3846dd7f199d53cb17f49cba7e6
 
 [packages.wheels.hashes]
 sha256 = "f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12"
+
+[[packages]]
+name = "jaraco-classes"
+version = "3.4.0"
+
+[[packages.wheels]]
+name = "jaraco.classes-3.4.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/7f/66/b15ce62552d84bbfcec9a4873ab79d993a1dd4edb922cbfccae192bd5b5f/jaraco.classes-3.4.0-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "f662826b6bed8cace05e7ff873ce0f9283b5c924470fe664fff1c2f00f581790"
+
+[[packages]]
+name = "jaraco-context"
+version = "6.1.2"
+
+[[packages.wheels]]
+name = "jaraco_context-6.1.2-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/f2/58/bc8954bda5fcda97bd7c19be11b85f91973d67a706ed4a3aec33e7de22db/jaraco_context-6.1.2-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "bf8150b79a2d5d91ae48629d8b427a8f7ba0e1097dd6202a9059f29a36379535"
+
+[[packages]]
+name = "jaraco-functools"
+version = "4.4.0"
+
+[[packages.wheels]]
+name = "jaraco_functools-4.4.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/fd/c4/813bb09f0985cb21e959f21f2464169eca882656849adf727ac7bb7e1767/jaraco_functools-4.4.0-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "9eec1e36f45c818d9bf307c8948eb03b2b56cd44087b3cdc989abca1f20b9176"
+
+[[packages]]
+name = "keyring"
+version = "25.7.0"
+
+[[packages.wheels]]
+name = "keyring-25.7.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/81/db/e655086b7f3a705df045bf0933bdd9c2f79bb3c97bfef1384598bb79a217/keyring-25.7.0-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "be4a0b195f149690c166e850609a477c532ddbfbaed96a404d4e43f8d5e2689f"
 
 [[packages]]
 name = "markdown-it-py"
@@ -55,6 +165,28 @@ url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d4633
 
 [packages.wheels.hashes]
 sha256 = "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"
+
+[[packages]]
+name = "more-itertools"
+version = "11.0.2"
+
+[[packages.wheels]]
+name = "more_itertools-11.0.2-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/cb/98/6af411189d9413534c3eb691182bff1f5c6d44ed2f93f2edfe52a1bbceb8/more_itertools-11.0.2-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "6e35b35f818b01f691643c6c611bc0902f2e92b46c18fffa77ae1e7c46e912e4"
+
+[[packages]]
+name = "nh3"
+version = "0.3.5"
+
+[[packages.wheels]]
+name = "nh3-0.3.5-cp38-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl"
+url = "https://files.pythonhosted.org/packages/85/30/d162e99746a2fb1d98bb0ef23af3e201b156cf09f7de867c7390c8fe1c06/nh3-0.3.5-cp38-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl"
+
+[packages.wheels.hashes]
+sha256 = "3bb854485c9b33e5bb143ff3e49e577073bc6bc320f0ff8fc316dd89c0d3c101"
 
 [[packages]]
 name = "packaging"
@@ -90,6 +222,17 @@ url = "https://files.pythonhosted.org/packages/f4/7e/a72dd26f3b0f4f2bf1dd8923c85
 sha256 = "81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176"
 
 [[packages]]
+name = "pyproject-hooks"
+version = "1.2.0"
+
+[[packages.wheels]]
+name = "pyproject_hooks-1.2.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/bd/24/12818598c362d7f300f18e74db45963dbcb85150324092410c8b49405e42/pyproject_hooks-1.2.0-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "9e5c6bfa8dcc30091c74b0cf803c81fdd29d94f01992a7707bc97babb1141913"
+
+[[packages]]
 name = "pytest"
 version = "9.0.3"
 
@@ -101,11 +244,55 @@ url = "https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e71120388129
 sha256 = "2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9"
 
 [[packages]]
+name = "readme-renderer"
+version = "44.0"
+
+[[packages.wheels]]
+name = "readme_renderer-44.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/e1/67/921ec3024056483db83953ae8e48079ad62b92db7880013ca77632921dd0/readme_renderer-44.0-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "2fbca89b81a08526aadf1357a8c2ae889ec05fb03f5da67f9769c9a592166151"
+
+[[packages]]
 name = "repotrust"
 
 [packages.directory]
 path = "."
 editable = true
+
+[[packages]]
+name = "requests"
+version = "2.33.1"
+
+[[packages.wheels]]
+name = "requests-2.33.1-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/d7/8e/7540e8a2036f79a125c1d2ebadf69ed7901608859186c856fa0388ef4197/requests-2.33.1-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "4e6d1ef462f3626a1f0a0a9c42dd93c63bad33f9f1c1937509b8c5c8718ab56a"
+
+[[packages]]
+name = "requests-toolbelt"
+version = "1.0.0"
+
+[[packages.wheels]]
+name = "requests_toolbelt-1.0.0-py2.py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/3f/51/d4db610ef29373b879047326cbf6fa98b6c1969d6f6dc423279de2b1be2c/requests_toolbelt-1.0.0-py2.py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06"
+
+[[packages]]
+name = "rfc3986"
+version = "2.0.0"
+
+[[packages.wheels]]
+name = "rfc3986-2.0.0-py2.py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/ff/9a/9afaade874b2fa6c752c36f1548f718b5b83af81ed9b76628329dab81c1b/rfc3986-2.0.0-py2.py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "50b1502b60e289cb37883f3dfd34532b8873c7de9f49bb546641ce9cbd256ebd"
 
 [[packages]]
 name = "rich"
@@ -130,6 +317,17 @@ url = "https://files.pythonhosted.org/packages/e0/f9/0595336914c5619e5f28a1fb793
 sha256 = "7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686"
 
 [[packages]]
+name = "twine"
+version = "6.2.0"
+
+[[packages.wheels]]
+name = "twine-6.2.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/3a/7a/882d99539b19b1490cac5d77c67338d126e4122c8276bf640e411650c830/twine-6.2.0-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "418ebf08ccda9a8caaebe414433b0ba5e25eb5e4a927667122fbe8f829f985d8"
+
+[[packages]]
 name = "typer"
 version = "0.25.0"
 
@@ -139,3 +337,14 @@ url = "https://files.pythonhosted.org/packages/9a/72/193d4e586ec5a4db834a36bbeb4
 
 [packages.wheels.hashes]
 sha256 = "ac01b48823d3db9a83c9e164338057eadbb1c9957a2a6b4eeb486669c560b5dc"
+
+[[packages]]
+name = "urllib3"
+version = "2.6.3"
+
+[[packages.wheels]]
+name = "urllib3-2.6.3-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl"
+
+[packages.wheels.hashes]
+sha256 = "bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4"

@@ -21,6 +21,16 @@ Refresh the dependency lockfile after dependency changes:
 .venv/bin/python -m pip lock -e '.[dev]' -o pylock.toml
 ```
 
+Release artifact checks use the same dev environment:
+
+```bash
+rm -rf /tmp/repotrust-release
+.venv/bin/python -m build --outdir /tmp/repotrust-release/dist
+.venv/bin/python -m twine check /tmp/repotrust-release/dist/*
+```
+
+Run TestPyPI/PyPI uploads only after credentials or trusted publishing are configured outside repository files.
+
 ## Change Workflow
 
 1. Read `AGENTS.md` and the relevant file under `docs/`.
