@@ -843,3 +843,12 @@
 - 코드/문서: tag 생성 자체에는 파일 변경이 없었다. 작업 상태 문서를 다음 GitHub release publish 준비 단계로 갱신했다.
 - 검증: `git status --short --branch`에서 `main...origin/main` 상태를 확인했다. `git tag --list --sort=version:refname -n`에서 `v0.1.0`과 `v0.2.0`을 확인했다. `git ls-remote --tags origin 'refs/tags/v0.2.0*'`에서 remote `v0.2.0` tag object와 dereferenced commit `0aa555a`를 확인했다. `git show --stat --oneline --decorate v0.2.0`에서 tag message `RepoTrust v0.2.0`과 target commit을 확인했다.
 - 결과: v0.2.0 annotated tag가 local과 GitHub remote에 생성됐다. 다음 작업은 `v0.2.0 GitHub release publish 준비`다.
+
+## 092: v0.2.0 GitHub release publish
+
+- 완료일: 2026-04-29
+- 배경: `v0.2.0` annotated tag가 GitHub 원격에 반영됐고, 사용자가 간단한 release 단계는 묻지 말고 진행하라고 지시했다.
+- 변경 내용: `CHANGELOG.md`의 `v0.2.0` section을 release notes로 추출해 `gh release create v0.2.0 --repo answndud/repo-trust --title "RepoTrust v0.2.0" --notes-file /tmp/repotrust-v0.2.0-notes.md --verify-tag`로 GitHub release를 생성했다.
+- 코드/문서: release publish 자체에는 repository 파일 변경이 없었다. 작업 상태 문서를 다음 PyPI 배포 여부와 post-release 검증 결정 단계로 갱신했다.
+- 검증: `gh release view v0.2.0 --repo answndud/repo-trust`는 `isDraft=false`, `isPrerelease=false`, `tagName=v0.2.0`, URL `https://github.com/answndud/repo-trust/releases/tag/v0.2.0`을 반환했다. `git ls-remote --tags origin 'refs/tags/v0.2.0*'`도 remote tag object와 dereferenced commit을 반환했다. `git status --short --branch`는 `main...origin/main` 상태였다.
+- 결과: RepoTrust v0.2.0 GitHub release가 publish됐다. 다음 작업은 `PyPI 배포 여부와 post-release 검증 결정`이다.
