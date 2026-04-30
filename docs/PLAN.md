@@ -14,15 +14,30 @@
 
 ## 현재 목표
 
-현재 active 작업 없음
+RepoTrust v0.2.1 GitHub-only release를 준비하고 publish한다.
 
 ## 현재 우선순위
 
-현재 active 작업 없음
+1. 검증된 v0.2.1 release metadata를 commit하고 원격에 반영한다.
+2. v0.2.1 annotated tag와 GitHub Release를 생성한다.
 
 ## In Progress
 
-현재 active 작업 없음
+### v0.2.1 release commit/tag/publish
+
+- Status: `In Progress`
+- Goal: 검증된 `v0.2.1` GitHub-only release를 commit, tag, GitHub Release로 publish한다.
+- Scope: release metadata commit, `main` push, annotated tag 생성/push, GitHub Release publish, post-release 상태 문서 정리.
+- Non-goals: PyPI/TestPyPI publish, 새 기능 추가.
+- Acceptance criteria:
+  - `main`과 `origin/main`이 release metadata commit으로 동기화된다.
+  - `v0.2.1` annotated tag가 local과 remote에 존재한다.
+  - GitHub Release `v0.2.1`이 publish된다.
+- Verification commands:
+  - `git status --short --branch`
+  - `git ls-remote --tags origin 'refs/tags/v0.2.1*'`
+  - `gh release view v0.2.1 --repo answndud/repo-trust`
+- Next action: release metadata 검증 후 commit/tag/release를 진행한다.
 
 ## Pending
 
@@ -30,4 +45,6 @@
 
 ## 다음 실행 순서
 
-현재 active 작업 없음
+1. release metadata commit을 생성하고 원격에 반영한다.
+2. `v0.2.1` annotated tag를 생성하고 push한다.
+3. `v0.2.1` GitHub Release를 publish한다.

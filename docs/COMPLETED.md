@@ -888,3 +888,12 @@
 - 코드/문서: `pyproject.toml`, `pylock.toml`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/development-workflow.md`, `docs/testing-and-validation.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pip install -e '.[dev]'`로 `twine` 없는 dev dependency set을 재설치했다. `.venv/bin/python -m pip lock -e '.[dev]' -o pylock.toml`로 lockfile을 갱신했다. `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release/dist`는 `repotrust-0.2.0.tar.gz`와 `repotrust-0.2.0-py3-none-any.whl`을 생성했다. `git diff --check`도 통과했다.
 - 결과: RepoTrust의 공식 배포 흐름은 GitHub Releases와 source/local artifact 검증 중심으로 유지한다. PyPI/TestPyPI publish는 현재 프로젝트 범위가 아니다.
+
+## 097: v0.2.1 release metadata 준비
+
+- 완료일: 2026-04-30
+- 배경: offline-first GitHub URL default와 PyPI/TestPyPI publish 제외 결정이 `main`에 반영됐지만, 최신 GitHub Release는 아직 `v0.2.0`이었다. GitHub-only 배포 흐름을 공식화하려면 patch release metadata가 필요했다.
+- 변경 내용: package version을 `0.2.1`로 올리고 CLI version tests와 README Console Mode 예시를 맞췄다. `CHANGELOG.md`의 Unreleased 내용을 `v0.2.1 - 2026-04-30` 아래로 이동하고 새 empty Unreleased 섹션을 만들었다. README quickstart는 PyPI 대신 GitHub Release source archive 설치를 안내하고, 개발자는 editable dev install을 사용하도록 설명했다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `59 passed`였다. `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release/dist`는 `repotrust-0.2.1.tar.gz`와 `repotrust-0.2.1-py3-none-any.whl`을 생성했다. `repo-trust`, `repo-trust-kr`, `repotrust` version command는 모두 `0.2.1`을 출력했다. Self-scan JSON은 score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었고 `json.tool` 검증을 통과했다. `git diff --check`도 통과했다.
+- 결과: v0.2.1 release metadata는 commit/tag/release 생성 단계로 넘길 수 있는 상태다.

@@ -52,21 +52,21 @@ def test_cli_version():
     result = runner.invoke(app, ["--version"])
 
     assert result.exit_code == 0
-    assert result.stdout.strip() == "repotrust 0.2.0"
+    assert result.stdout.strip() == "repotrust 0.2.1"
 
 
 def test_direct_cli_version():
     result = runner.invoke(direct_app, ["--version"], prog_name="repo-trust")
 
     assert result.exit_code == 0
-    assert result.stdout.strip() == "repo-trust 0.2.0"
+    assert result.stdout.strip() == "repo-trust 0.2.1"
 
 
 def test_direct_kr_cli_version():
     result = runner.invoke(direct_kr_app, ["--version"], prog_name="repo-trust-kr")
 
     assert result.exit_code == 0
-    assert result.stdout.strip() == "repo-trust-kr 0.2.0"
+    assert result.stdout.strip() == "repo-trust-kr 0.2.1"
 
 
 def test_cli_root_without_command_shows_help():
@@ -139,7 +139,7 @@ def test_direct_cli_root_starts_interactive_launcher():
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert "RepoTrust v0.2.0" in stderr
+    assert "RepoTrust v0.2.1" in stderr
     assert "Analyze repository trust before using it." in stderr
     assert "Select action:" in stderr
     assert "[G]  GitHub repo" in stderr
@@ -160,7 +160,7 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert "RepoTrust v0.2.0" in stderr
+    assert "RepoTrust v0.2.1" in stderr
     assert "사용 전 저장소 신뢰도를 분석합니다." in stderr
     assert "작업 선택:" in stderr
     assert "[G]  GitHub 저장소" in stderr
@@ -204,7 +204,7 @@ def test_console_mode_uses_alternate_screen_for_real_terminals():
     run_console_mode(
         console=FakeConsole(),
         help_text=lambda: "help",
-        version="0.2.0",
+        version="0.2.1",
         run_workflow=lambda workflow: None,
     )
 
@@ -242,7 +242,7 @@ def test_console_mode_pauses_before_restoring_after_workflow():
     run_console_mode(
         console=FakeConsole(),
         help_text=lambda: "help",
-        version="0.2.0",
+        version="0.2.1",
         run_workflow=lambda workflow: None,
     )
 
