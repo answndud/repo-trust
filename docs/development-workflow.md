@@ -26,10 +26,9 @@ Release artifact checks use the same dev environment:
 ```bash
 rm -rf /tmp/repotrust-release
 .venv/bin/python -m build --outdir /tmp/repotrust-release/dist
-.venv/bin/python -m twine check /tmp/repotrust-release/dist/*
 ```
 
-Run TestPyPI/PyPI uploads only after credentials or trusted publishing are configured outside repository files.
+PyPI/TestPyPI upload is intentionally out of scope for this project. Publish source code and release notes through GitHub Releases.
 
 ## Change Workflow
 

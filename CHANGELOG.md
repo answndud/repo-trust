@@ -7,6 +7,8 @@ All notable changes to RepoTrust are documented here.
 ### Changed
 
 - Product GitHub URL commands now default to parse-only, API-free scans. Use `--remote` on `repo-trust html/json/check/gate <github-url>` to opt into GitHub REST read-only metadata.
+- PyPI/TestPyPI publishing was removed from the active project scope; GitHub Releases remain the release channel.
+- Dev packaging validation now uses local `python -m build` artifacts without `twine` or upload credentials.
 
 ### Fixed
 

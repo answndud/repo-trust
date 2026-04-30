@@ -879,3 +879,12 @@
 - 코드/문서: `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/rules.py`, `src/repotrust/models.py`, `src/repotrust/dashboard_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/adr.md`, `docs/prd.md`, `docs/trd.md`, `docs/architecture.md`, `docs/domain-context.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `59 passed`였다. `.venv/bin/python -m pytest -q`는 `124 passed`였다. `repo-trust html --help` 한국어 도움말에서 `--remote`와 `--parse-only` 설명을 확인했다. `.venv/bin/repo-trust json https://github.com/openai/codex --output /tmp/repotrust-offline.json`는 `target.github_not_fetched`, `coverage=metadata_only`, `confidence=low` JSON을 생성했고 `json.tool` 검증을 통과했다.
 - 결과: RepoTrust runtime의 GitHub URL 기본 경로는 secret key나 API 연결 없이 동작한다. 원격 GitHub metadata는 `--remote`를 명시한 사용자만 사용한다. PyPI production publish는 여전히 credential 또는 trusted publishing 설정이 필요한 별도 blocked 작업이다.
+
+## 096: PyPI production publish 제외 결정
+
+- 완료일: 2026-04-30
+- 배경: 사용자는 secret key나 API 연결 없이 동작하는 프로젝트 원칙을 유지하고 싶어 했다. PyPI/TestPyPI upload는 remote write이며 token 또는 trusted publishing 설정이 필요하므로 현재 운영 방식과 맞지 않았다.
+- 변경 내용: `docs/PLAN.md`에서 PyPI production publish pending 항목을 제거하고 active 상태를 `현재 active 작업 없음`으로 정리했다. Packaging validation 문서는 PyPI/TestPyPI upload 절차 대신 local `python -m build` artifact 검증만 남겼다. `twine` dev dependency를 제거하고 lockfile 갱신 대상으로 돌렸다. Changelog에는 PyPI/TestPyPI publish를 active project scope에서 제외한다고 기록했다.
+- 코드/문서: `pyproject.toml`, `pylock.toml`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/development-workflow.md`, `docs/testing-and-validation.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pip install -e '.[dev]'`로 `twine` 없는 dev dependency set을 재설치했다. `.venv/bin/python -m pip lock -e '.[dev]' -o pylock.toml`로 lockfile을 갱신했다. `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release/dist`는 `repotrust-0.2.0.tar.gz`와 `repotrust-0.2.0-py3-none-any.whl`을 생성했다. `git diff --check`도 통과했다.
+- 결과: RepoTrust의 공식 배포 흐름은 GitHub Releases와 source/local artifact 검증 중심으로 유지한다. PyPI/TestPyPI publish는 현재 프로젝트 범위가 아니다.

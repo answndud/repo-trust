@@ -191,44 +191,17 @@ Then run the repository test suite from the development environment:
 .venv/bin/python -m pytest -q
 ```
 
-## PyPI/TestPyPI Release Validation
+## Package Artifact Validation
 
 Release artifact validation uses the dev release toolchain from `.[dev]`:
 
 ```bash
 rm -rf /tmp/repotrust-release
 .venv/bin/python -m build --outdir /tmp/repotrust-release/dist
-.venv/bin/python -m twine check /tmp/repotrust-release/dist/*
 ```
 
 Expected behavior:
 
 - `python -m build` creates both `repotrust-<version>.tar.gz` and `repotrust-<version>-py3-none-any.whl`.
-- `twine check` reports `PASSED` for every distribution artifact.
 - The version in artifact filenames matches `pyproject.toml` and `src/repotrust/__init__.py`.
-
-TestPyPI upload is a remote write and requires either a TestPyPI API token or trusted publishing configured for this repository. Do not place token values in repository files, shell history examples, or reports.
-
-```bash
-.venv/bin/python -m twine upload --repository testpypi /tmp/repotrust-release/dist/*
-```
-
-After TestPyPI upload, verify install behavior from an isolated environment. Use PyPI as an extra index because TestPyPI should only host the package under test, not necessarily all dependencies:
-
-```bash
-python3 -m venv /tmp/repotrust-testpypi/.venv
-/tmp/repotrust-testpypi/.venv/bin/python -m pip install --upgrade pip
-/tmp/repotrust-testpypi/.venv/bin/python -m pip install \
-  --index-url https://test.pypi.org/simple/ \
-  --extra-index-url https://pypi.org/simple/ \
-  repotrust==0.2.0
-/tmp/repotrust-testpypi/.venv/bin/repo-trust --version
-/tmp/repotrust-testpypi/.venv/bin/repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-testpypi/good.json
-/tmp/repotrust-testpypi/.venv/bin/python -m json.tool /tmp/repotrust-testpypi/good.json
-```
-
-Production PyPI upload should happen only after TestPyPI install smoke or trusted publishing validation succeeds:
-
-```bash
-.venv/bin/python -m twine upload /tmp/repotrust-release/dist/*
-```
+- Build artifacts can be attached to GitHub Releases if needed, but PyPI/TestPyPI upload is intentionally out of scope.
