@@ -969,3 +969,12 @@
 - 코드/문서: `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/repo-trust json/html tests/fixtures/repos/good-python`과 `.venv/bin/repo-trust json/html tests/fixtures/repos/risky-install` sample report smoke가 모두 성공했다. `/tmp/repotrust-good.json`과 `/tmp/repotrust-risky.json`은 `json.tool` 검증을 통과했다. `.venv/bin/python -m pytest -q`는 `124 passed`였고 `git diff --check`도 통과했다.
 - 결과: 사용자가 설치 직후 fixture sample reports로 좋은 결과와 위험 결과를 직접 비교할 수 있다. 현재 active 작업은 없다.
+
+## 106: README 영어 요약 보강
+
+- 완료일: 2026-04-30
+- 배경: README는 한국어 중심으로 설치와 사용 흐름을 설명하지만, GitHub에 처음 들어온 비한국어 사용자는 프로젝트 목적, 설치 채널, 기본 네트워크 정책, 한계를 빠르게 파악하기 어려웠다.
+- 변경 내용: README 상단에 짧은 English overview를 추가했다. RepoTrust가 설치, dependency 채택, AI coding agent 위임 판단을 돕는 Python CLI라는 점, local/offline-first와 GitHub URL parse-only 기본값, GitHub Releases-only 배포 정책, terminal/JSON/static HTML report, vulnerability scanner나 safety guarantee가 아니라는 한계를 명시했다. 기존 한국어 소개와 quickstart 흐름은 유지했다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/repo-trust json . --output /tmp/repotrust-readme-english.json`는 score `98`, grade `A`, high confidence self-scan JSON을 생성했고 `json.tool` 검증을 통과했다. `git diff --check`도 통과했다.
+- 결과: 비한국어 사용자도 README 첫 화면에서 RepoTrust의 목적과 운영 정책을 빠르게 이해할 수 있다. 현재 active 작업은 없다.

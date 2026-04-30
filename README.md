@@ -1,5 +1,12 @@
 # RepoTrust
 
+RepoTrust is a Python CLI that helps you decide whether an open source repository is ready to install, adopt as a dependency, or hand to an AI coding agent.
+
+- Offline-first by default: local scans use no network, and GitHub URL scans only parse the URL unless you explicitly pass `--remote`.
+- GitHub Releases are the official distribution channel; PyPI/TestPyPI publishing is intentionally out of scope.
+- Reports are available as terminal dashboards, JSON, and static HTML.
+- RepoTrust is not a vulnerability scanner or safety guarantee. It surfaces trust signals, missing evidence, and risky install patterns so humans can review them before running commands.
+
 RepoTrust는 GitHub 저장소나 로컬 프로젝트를 쓰기 전에 기본 신뢰 신호를 점검하는 Python CLI 도구입니다.
 
 README, 설치 안내, 라이선스, 보안 정책, CI, lockfile, Dependabot, 선택적 GitHub metadata처럼 확인 가능한 근거를 모아 “지금 설치해도 되는지”, “dependency로 넣어도 되는지”, “AI agent에게 맡겨도 되는지”를 리포트로 정리합니다. 취약점 스캐너나 안전 보증 도구가 아니라, 사람이 먼저 확인해야 할 신뢰 신호와 불확실성을 빠르게 보여주는 도구입니다.
