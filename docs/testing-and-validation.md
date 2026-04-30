@@ -117,6 +117,8 @@ Generate sample reports from fixtures:
 ```bash
 .venv/bin/repo-trust check tests/fixtures/repos/good-python
 .venv/bin/repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-good.json
+.venv/bin/repo-trust html tests/fixtures/repos/good-python --output /tmp/repotrust-good.html
+.venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
 .venv/bin/repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
 ```
 
@@ -124,7 +126,13 @@ Validate redirected JSON:
 
 ```bash
 .venv/bin/python -m json.tool /tmp/repotrust-good.json
+.venv/bin/python -m json.tool /tmp/repotrust-risky.json
 ```
+
+Expected sample behavior:
+
+- `good-python`: score `100/100`, grade `A`, high confidence, all core signals found, no findings.
+- `risky-install`: score around `51/100`, grade `F`, high confidence, `install_safety` at `0/100`, and high severity install findings such as shell pipe, process substitution, and Python inline execution.
 
 Assessment contract checks:
 

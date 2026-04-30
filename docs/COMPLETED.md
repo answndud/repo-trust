@@ -960,3 +960,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `59 passed`, `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.2/dist`는 wheel과 sdist를 생성했다. Self-scan JSON은 score `98`, grade `A`, high confidence였고 `json.tool`을 통과했다. Local wheel clean venv smoke와 GitHub Release asset URL clean venv smoke 모두 `repo-trust`, `repo-trust-kr`, `repotrust`가 `0.2.2`를 출력했고, `repo-trust-kr` 첫 화면은 README 예시와 일치했다. GitHub URL check/html/json smoke와 JSON `json.tool` 검증도 통과했다. `gh release view v0.2.2`로 release와 asset 2개를 확인했다.
 - 결과: README quickstart, GitHub Release asset, 설치된 CLI 첫 화면이 `v0.2.2` 기준으로 일치한다. 현재 active 작업은 없다.
+
+## 105: 샘플 리포트 UX 보강
+
+- 완료일: 2026-04-30
+- 배경: 설치와 첫 실행 경로가 정리됐지만, 새 사용자가 좋은 저장소와 위험 설치 저장소의 리포트 차이를 바로 비교해 보는 안내가 부족했다.
+- 변경 내용: README에 `good-python`과 `risky-install` fixture로 JSON/HTML sample report를 만드는 연습 섹션을 추가했다. `good-python`은 `100/100`, grade `A`, high confidence, finding 없음으로 기대하고, `risky-install`은 `51/100`, grade `F`, Install Safety `0/100`, high severity risky install finding을 먼저 봐야 한다고 설명했다. Testing guide의 fixture sample report 명령도 good/risky JSON/HTML과 expected behavior를 모두 포함하도록 보강했다.
+- 코드/문서: `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/repo-trust json/html tests/fixtures/repos/good-python`과 `.venv/bin/repo-trust json/html tests/fixtures/repos/risky-install` sample report smoke가 모두 성공했다. `/tmp/repotrust-good.json`과 `/tmp/repotrust-risky.json`은 `json.tool` 검증을 통과했다. `.venv/bin/python -m pytest -q`는 `124 passed`였고 `git diff --check`도 통과했다.
+- 결과: 사용자가 설치 직후 fixture sample reports로 좋은 결과와 위험 결과를 직접 비교할 수 있다. 현재 active 작업은 없다.

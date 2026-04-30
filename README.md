@@ -269,6 +269,26 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 
 `high`나 `medium` finding이 있거나 confidence가 `low`이면 README의 설치 명령을 바로 실행하지 말고, 리포트의 근거와 추천 조치를 먼저 확인하세요. `unknown` evidence는 파일이 없다는 뜻이 아니라 이번 실행에서 확인하지 못했다는 뜻입니다.
 
+## 샘플 리포트로 연습
+
+저장소를 직접 판단하기 전에 fixture로 좋은 결과와 위험 결과를 비교해 볼 수 있습니다.
+
+```bash
+repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-good.json
+repo-trust html tests/fixtures/repos/good-python --output /tmp/repotrust-good.html
+repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
+repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
+python -m json.tool /tmp/repotrust-good.json
+python -m json.tool /tmp/repotrust-risky.json
+```
+
+| Fixture | 기대 결과 | 먼저 볼 항목 |
+| --- | --- | --- |
+| `good-python` | `100/100`, grade `A`, high confidence | 모든 신호가 found이고 finding이 없어야 합니다. |
+| `risky-install` | `51/100`, grade `F`, high confidence | Install Safety가 `0/100`이고 risky install finding을 먼저 확인합니다. |
+
+`risky-install`은 일부러 위험한 설치 명령을 담은 연습용 fixture입니다. 실제 저장소에서 비슷한 high finding이 나오면 명령을 바로 실행하지 말고, HTML 리포트의 evidence와 recommendation을 먼저 확인하세요.
+
 ## 실패 기준 설정
 
 점수가 기준보다 낮을 때 명령을 실패시키려면 `--fail-under`를 사용합니다.
