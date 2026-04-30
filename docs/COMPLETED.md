@@ -951,3 +951,12 @@
 - 코드/문서: `.github/workflows/ci.yml`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`는 `124 passed`였다. `git diff --check`도 통과했다. 공식 GitHub action release 정보에서 `actions/checkout` v6 계열과 `actions/setup-python` v6 계열이 Node 24 runtime으로 업데이트된 것을 확인했다. Push 후 GitHub Actions run `25152879649`는 success였고 이전 Node.js 20 deprecation annotation은 출력되지 않았다.
 - 결과: CI workflow는 Node 24 대응 action major를 사용하며 main CI가 경고 없이 통과했다. 현재 active 작업은 없다.
+
+## 104: v0.2.2 README smoke release 정합화
+
+- 완료일: 2026-04-30
+- 배경: README 최종 사용자 smoke 중 README/main의 최신 첫 화면 문구와 README가 설치시키는 `v0.2.1` wheel의 실제 첫 화면 문구가 다르다는 문제가 발견됐다. README를 과거 문구로 되돌리기보다 이미 main에 반영된 설치 UX, release notes, CI Node 24 대응을 포함한 patch release로 정합성을 맞추기로 했다.
+- 변경 내용: package version을 `0.2.2`로 올리고 README GitHub Release 설치 URL, README Console Mode 예시, CLI version tests, changelog를 `v0.2.2`에 맞췄다. `Prepare v0.2.2 release` commit을 main에 push하고 CI 통과 후 `v0.2.2` annotated tag와 GitHub Release를 publish했다. Release asset으로 `repotrust-0.2.2-py3-none-any.whl`과 `repotrust-0.2.2.tar.gz`를 업로드했다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `59 passed`, `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.2/dist`는 wheel과 sdist를 생성했다. Self-scan JSON은 score `98`, grade `A`, high confidence였고 `json.tool`을 통과했다. Local wheel clean venv smoke와 GitHub Release asset URL clean venv smoke 모두 `repo-trust`, `repo-trust-kr`, `repotrust`가 `0.2.2`를 출력했고, `repo-trust-kr` 첫 화면은 README 예시와 일치했다. GitHub URL check/html/json smoke와 JSON `json.tool` 검증도 통과했다. `gh release view v0.2.2`로 release와 asset 2개를 확인했다.
+- 결과: README quickstart, GitHub Release asset, 설치된 CLI 첫 화면이 `v0.2.2` 기준으로 일치한다. 현재 active 작업은 없다.

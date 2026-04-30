@@ -14,39 +14,15 @@
 
 ## 현재 목표
 
-README만 따라 하는 신규 사용자 경로가 GitHub-only 배포와 현재 CLI 동작에 맞도록 `v0.2.2` patch release를 준비한다.
+현재 active 작업 없음
 
 ## 현재 우선순위
 
-1. README smoke에서 발견한 `v0.2.1` 배포본과 main 문구 불일치를 해소한다.
-2. `v0.2.2` version metadata, README, changelog를 준비한다.
-3. 새 release asset 설치 smoke로 README 경로를 재검증한다.
+현재 active 작업 없음
 
 ## In Progress
 
-### v0.2.2 README smoke release 정합화
-
-- Status: `In Progress`
-- Goal: README가 안내하는 GitHub Release 설치 경로와 실제 설치되는 CLI 첫 화면/명령 동작을 일치시킨다.
-- Scope: `0.2.2` version bump, changelog, README install URLs/version 예시, build artifact 검증, GitHub-only release publish, clean venv install smoke.
-- Non-goals: PyPI/TestPyPI publish, 기능 변경, remote API 기본값 변경.
-- Acceptance criteria:
-  - README quickstart가 `v0.2.2` GitHub Release asset URL을 안내한다.
-  - `repo-trust`, `repo-trust-kr`, `repotrust` version command가 `0.2.2`를 출력한다.
-  - Clean venv에 `v0.2.2` wheel을 설치했을 때 `repo-trust-kr` 첫 화면이 README 예시와 핵심 문구가 일치한다.
-  - README의 `check`, `html`, `json` 예시가 `v0.2.2` 설치 환경에서 성공한다.
-  - JSON output은 `json.tool`로 검증된다.
-  - GitHub Release `v0.2.2`가 wheel/source archive asset을 포함한다.
-- Verification commands:
-  - `.venv/bin/python -m pytest -q`
-  - `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.2/dist`
-  - `gh release view v0.2.2 --repo answndud/repo-trust --json name,tagName,body,url,assets`
-  - `printf 'q\n' | <tmp>/.venv/bin/repo-trust-kr`
-  - `<tmp>/.venv/bin/repo-trust-kr check https://github.com/openai/codex`
-  - `<tmp>/.venv/bin/repo-trust html https://github.com/openai/codex --output <tmp>/codex.html`
-  - `<tmp>/.venv/bin/repo-trust json https://github.com/openai/codex --output <tmp>/codex.json`
-  - `<tmp>/.venv/bin/python -m json.tool <tmp>/codex.json`
-- Next action: version metadata와 README/CHANGELOG를 `v0.2.2`로 갱신한다.
+현재 active 작업 없음
 
 ## Pending
 
@@ -54,4 +30,4 @@ README만 따라 하는 신규 사용자 경로가 GitHub-only 배포와 현재 
 
 ## 다음 실행 순서
 
-1. v0.2.2 README smoke release 정합화를 완료한다.
+현재 active 작업 없음
