@@ -933,3 +933,12 @@
 - 코드/문서: `src/repotrust/console_i18n.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `59 passed`였다. `printf 'q\n' | .venv/bin/repo-trust`와 `printf 'q\n' | .venv/bin/repo-trust-kr`는 새 첫 화면 문구를 출력했다. `.venv/bin/repo-trust check https://github.com/openai/codex`는 `GitHub parse-only`, score `70`, confidence `LOW`, `--remote` 또는 local checkout 안내를 출력했다. `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/repo-trust json . --output /tmp/repotrust-final-plan.json`과 `json.tool` 검증도 통과했다. `git diff --check`와 diff review를 완료했다.
 - 결과: v0.2.1 GitHub-only 배포 이후 설치와 첫 실행 경험 정리 작업이 모두 완료됐다. 현재 active 작업은 없다.
+
+## 102: v0.2.1 release notes 보강
+
+- 완료일: 2026-04-30
+- 배경: README에는 검증된 GitHub Release wheel/source archive 설치 명령이 반영됐지만, GitHub Release 페이지 본문에는 사용자가 바로 복사할 설치 명령이 없었다.
+- 변경 내용: GitHub Release `v0.2.1` 본문 상단에 `Install from GitHub Releases` 섹션을 추가했다. PyPI/TestPyPI는 프로젝트 범위가 아니고 GitHub Releases가 공식 배포 채널이라는 안내, venv 생성 후 wheel URL 설치와 `repo-trust-kr` 실행 명령, source archive 설치 대안을 포함했다.
+- 코드/문서: GitHub Release 본문을 원격에서 갱신했다. Repository 문서는 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `gh release view v0.2.1 --repo answndud/repo-trust --json name,tagName,body,url,assets`로 release title, tag, 갱신된 설치 섹션, wheel/sdist asset 2개를 확인했다. `git diff --check`도 통과했다.
+- 결과: GitHub Release 페이지에서도 README와 같은 GitHub-only 설치 경로를 바로 확인할 수 있다. 현재 active 작업은 없다.
