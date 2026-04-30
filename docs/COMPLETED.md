@@ -897,3 +897,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `59 passed`였다. `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release/dist`는 `repotrust-0.2.1.tar.gz`와 `repotrust-0.2.1-py3-none-any.whl`을 생성했다. `repo-trust`, `repo-trust-kr`, `repotrust` version command는 모두 `0.2.1`을 출력했다. Self-scan JSON은 score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었고 `json.tool` 검증을 통과했다. `git diff --check`도 통과했다.
 - 결과: v0.2.1 release metadata는 commit/tag/release 생성 단계로 넘길 수 있는 상태다.
+
+## 098: v0.2.1 GitHub-only release publish
+
+- 완료일: 2026-04-30
+- 배경: v0.2.1 release metadata가 검증됐으므로, PyPI 없이 GitHub Releases를 공식 배포 채널로 사용해 patch release를 publish해야 했다.
+- 변경 내용: `Prepare v0.2.1 release metadata` commit을 생성하고 `main`에 push했다. `v0.2.1` annotated tag를 만들고 원격에 push했다. `CHANGELOG.md`의 `v0.2.1` section을 release notes로 추출해 GitHub Release `RepoTrust v0.2.1`을 publish했다. Release asset으로 `repotrust-0.2.1-py3-none-any.whl`과 `repotrust-0.2.1.tar.gz`를 업로드했다.
+- 코드/문서: release publish 자체에는 기능 코드 변경이 없었다. `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 post-release 상태로 정리했다.
+- 검증: `git push origin main`은 `7794d25..63a09e1 main -> main`으로 성공했다. `git push origin v0.2.1`은 새 tag를 원격에 생성했다. `gh release view v0.2.1 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`는 `tagName=v0.2.1`, `isDraft=false`, `isPrerelease=false`, URL `https://github.com/answndud/repo-trust/releases/tag/v0.2.1`, asset 2개 업로드 상태를 반환했다.
+- 결과: RepoTrust v0.2.1 GitHub-only release가 publish됐다. PyPI/TestPyPI publish는 프로젝트 범위가 아니며 active 작업은 없다.
