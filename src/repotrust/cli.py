@@ -212,7 +212,14 @@ def html_report(
         bool,
         typer.Option(
             "--parse-only",
-            help="For GitHub URLs, parse the URL without calling the GitHub API.",
+            help="For GitHub URLs, force URL-only mode without calling the GitHub API.",
+        ),
+    ] = False,
+    remote: Annotated[
+        bool,
+        typer.Option(
+            "--remote",
+            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
         ),
     ] = False,
     fail_under: Annotated[
@@ -231,6 +238,7 @@ def html_report(
         output=output,
         config=config,
         parse_only=parse_only,
+        remote=remote,
         fail_under=fail_under,
         verbose=verbose,
         locale=_product_locale(ctx),
@@ -267,7 +275,14 @@ def json_report(
         bool,
         typer.Option(
             "--parse-only",
-            help="For GitHub URLs, parse the URL without calling the GitHub API.",
+            help="For GitHub URLs, force URL-only mode without calling the GitHub API.",
+        ),
+    ] = False,
+    remote: Annotated[
+        bool,
+        typer.Option(
+            "--remote",
+            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
         ),
     ] = False,
     fail_under: Annotated[
@@ -286,6 +301,7 @@ def json_report(
         output=output,
         config=config,
         parse_only=parse_only,
+        remote=remote,
         fail_under=fail_under,
         verbose=verbose,
         locale=_product_locale(ctx),
@@ -314,7 +330,14 @@ def check(
         bool,
         typer.Option(
             "--parse-only",
-            help="For GitHub URLs, parse the URL without calling the GitHub API.",
+            help="For GitHub URLs, force URL-only mode without calling the GitHub API.",
+        ),
+    ] = False,
+    remote: Annotated[
+        bool,
+        typer.Option(
+            "--remote",
+            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
         ),
     ] = False,
     fail_under: Annotated[
@@ -333,6 +356,7 @@ def check(
         output=None,
         config=config,
         parse_only=parse_only,
+        remote=remote,
         fail_under=fail_under,
         verbose=verbose,
         terminal_only=True,
@@ -366,7 +390,14 @@ def gate(
         bool,
         typer.Option(
             "--parse-only",
-            help="For GitHub URLs, parse the URL without calling the GitHub API.",
+            help="For GitHub URLs, force URL-only mode without calling the GitHub API.",
+        ),
+    ] = False,
+    remote: Annotated[
+        bool,
+        typer.Option(
+            "--remote",
+            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
         ),
     ] = False,
     fail_under: Annotated[
@@ -376,18 +407,18 @@ def gate(
 ) -> None:
     """Write JSON and fail when the configured policy gate fails."""
     parsed_target = parse_target(target)
-    if parse_only and parsed_target.kind != "github":
-        raise typer.BadParameter(
-            "--parse-only can only be used with GitHub URL targets.",
-            param_hint="--parse-only",
-        )
+    remote_scan = _resolve_product_remote(
+        parsed_target_kind=parsed_target.kind,
+        parse_only=parse_only,
+        remote=remote,
+    )
 
     _run_scan(
         target=target,
         report_format=ReportFormat.JSON,
         output=output,
         config=config,
-        remote=parsed_target.kind == "github" and not parse_only,
+        remote=remote_scan,
         fail_under=fail_under,
         verbose=False,
         dashboard=False,
@@ -402,20 +433,20 @@ def _run_product_scan(
     output: Path | None,
     config: Path | None,
     parse_only: bool,
+    remote: bool,
     fail_under: int | None,
     verbose: bool,
     terminal_only: bool = False,
     locale: str = "en",
 ) -> None:
     parsed_target = parse_target(target)
-    if parse_only and parsed_target.kind != "github":
-        raise typer.BadParameter(
-            "--parse-only can only be used with GitHub URL targets.",
-            param_hint="--parse-only",
-        )
+    remote_scan = _resolve_product_remote(
+        parsed_target_kind=parsed_target.kind,
+        parse_only=parse_only,
+        remote=remote,
+    )
 
-    remote = parsed_target.kind == "github" and not parse_only
-    mode = _scan_mode(parsed_target.kind, remote)
+    mode = _scan_mode(parsed_target.kind, remote_scan)
     output_path = None if terminal_only else output or _default_output_path(target, report_format)
 
     _run_scan(
@@ -423,7 +454,7 @@ def _run_product_scan(
         report_format=report_format,
         output=output_path,
         config=config,
-        remote=remote,
+        remote=remote_scan,
         fail_under=fail_under,
         verbose=verbose,
         dashboard=True,
@@ -449,6 +480,7 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
         output=None,
         config=None,
         parse_only=workflow.parse_only,
+        remote=workflow.remote,
         fail_under=None,
         verbose=workflow.verbose,
         terminal_only=workflow.terminal_only,
@@ -561,6 +593,30 @@ def _scan_mode(kind: str, remote: bool) -> str:
     if kind == "github":
         return "GitHub parse-only"
     return "local"
+
+
+def _resolve_product_remote(
+    *,
+    parsed_target_kind: str,
+    parse_only: bool,
+    remote: bool,
+) -> bool:
+    if parse_only and remote:
+        raise typer.BadParameter(
+            "--parse-only cannot be combined with --remote.",
+            param_hint="--parse-only",
+        )
+    if parse_only and parsed_target_kind != "github":
+        raise typer.BadParameter(
+            "--parse-only can only be used with GitHub URL targets.",
+            param_hint="--parse-only",
+        )
+    if remote and parsed_target_kind != "github":
+        raise typer.BadParameter(
+            "--remote can only be used with GitHub URL targets.",
+            param_hint="--remote",
+        )
+    return parsed_target_kind == "github" and remote
 
 
 def _load_cli_config(config_path: Path | None) -> RepoTrustConfig:

@@ -41,7 +41,8 @@ printf 'q\n' | .venv/bin/repo-trust-kr
 .venv/bin/repo-trust html . --output /tmp/repotrust-report.html
 .venv/bin/repo-trust-kr html . --output /tmp/repotrust-kr-report.html
 .venv/bin/repo-trust json https://github.com/answndud/repo-trust
-.venv/bin/repo-trust check https://github.com/openai/codex --parse-only
+.venv/bin/repo-trust check https://github.com/openai/codex
+.venv/bin/repo-trust check https://github.com/openai/codex --remote
 .venv/bin/repotrust scan https://github.com/openai/codex --format json
 ```
 
@@ -66,12 +67,13 @@ Expected behavior:
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.
 - `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance with the shared Kali-style terminal theme.
-- Product CLI GitHub URL commands use GitHub API read-only metadata by default and never clone repositories.
-- `--parse-only` parses a GitHub URL without GitHub API access.
+- Product CLI GitHub URL commands default to parse-only without GitHub API access and never clone repositories.
+- Product `--remote` opts into GitHub API read-only metadata.
+- `--parse-only` parses a GitHub URL without GitHub API access and is equivalent to the product default for GitHub URL targets.
 - Legacy `repotrust scan` keeps parse-only GitHub URL behavior unless `--remote` is provided.
 - `GITHUB_TOKEN` may be set for private repository access or higher rate limits, but token values must not appear in output.
 - `--fail-under` exits with code `1` when the score is below the threshold.
-- `--config` applies explicit file-based policy to local scans, product remote scans, and explicit legacy remote scans when the file exists and is valid.
+- `--config` applies explicit file-based policy to local scans, product parse-only/remote scans, and explicit legacy remote scans when the file exists and is valid.
 - `repo-trust gate` writes JSON first and exits `1` when `policy.fail_under` or `[policy.profiles]` requirements fail.
 - `rules.disabled` removes matching finding IDs before scoring and reporting.
 - `severity_overrides` changes finding severity before score and assessment recalculation.
@@ -88,11 +90,12 @@ Expected behavior:
 | --- | ---: | --- | --- |
 | `repo-trust` without subcommand | 0 | selected workflow result | Console Mode shell on stderr |
 | `repo-trust --help` | 0 | help text | no launcher |
-| `repo-trust html/json` with GitHub URL | 0 unless `--fail-under` fails | dated file in `result/` unless `--output` is set | stderr RESULT dashboard with report path at bottom |
-| `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | terminal report only | stderr RESULT dashboard |
+| `repo-trust html/json` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched`; dated file in `result/` unless `--output` is set | stderr RESULT dashboard with report path at bottom |
+| `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched`; terminal report only | stderr RESULT dashboard |
 | `repo-trust gate` with passing policy | 0 | JSON stdout or `--output` file | stderr summary |
 | `repo-trust gate` with failing score/profile policy | 1 | JSON still emitted first | stderr summary and policy failure |
 | `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr RESULT dashboard |
+| `repo-trust ... --remote` with GitHub URL and API/auth/rate-limit failure finding | 0 unless `--fail-under` fails | remote finding in report | stderr RESULT dashboard or summary |
 | Existing local path with default threshold | 0 | stdout unless `--output` is set | stderr summary |
 | Missing local path | 0 | finding `target.local_path_missing` | stderr summary |
 | Local path with `--remote` | 2 | no report | usage error on stderr |

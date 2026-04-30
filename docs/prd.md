@@ -57,8 +57,9 @@ v0.1.0 이후 post-v1 작업으로 explicit remote scan이 추가됐다:
 
 - 공식 사용자 CLI는 `repo-trust html/json/check <target>` command group이다.
 - `repo-trust`만 실행하면 interactive launcher가 열려 로컬 검사, GitHub URL 검사, HTML/JSON 저장, 빠른 터미널 확인을 선택할 수 있다.
-- `repo-trust html/json/check <github-url>`은 GitHub REST API read-only metadata를 기본으로 조회한다.
-- `repo-trust html/json/check <github-url> --parse-only`는 네트워크 없이 URL만 파싱한다.
+- `repo-trust html/json/check/gate <github-url>`은 기본적으로 네트워크 없이 URL만 파싱한다.
+- `repo-trust html/json/check/gate <github-url> --remote`는 GitHub REST API read-only metadata를 조회한다.
+- `repo-trust html/json/check/gate <github-url> --parse-only`는 호환성 옵션이며 기본값과 같은 URL-only 동작을 강제한다.
 - legacy `repotrust scan <github-url>`은 계속 parse-only로 유지하고, `--remote`를 명시했을 때만 remote scan을 실행한다.
 - Remote scan은 clone하지 않으며 repository metadata, root contents, README content, Dependabot config, GitHub Actions workflow metadata, package-managed repository의 release/tag freshness를 기존 `ScanResult`와 report contract에 연결한다.
 - Remote metadata scoring은 보수적으로 유지한다. Archived repository, disabled issue tracking, 오래된 release/tag처럼 명확하고 낮은 강도의 maintenance/support signal만 점수화하고, fork/private/stars/default branch/language/size 같은 context metadata는 점수화하지 않는다.

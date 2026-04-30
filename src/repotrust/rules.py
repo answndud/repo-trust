@@ -98,7 +98,7 @@ def github_not_fetched_finding() -> Finding:
         severity=Severity.INFO,
         message="GitHub URL was parsed without remote metadata collection.",
         evidence="The scanner did not clone the repository or call the GitHub API for this run.",
-        recommendation="Run repo-trust html/json/check without --parse-only, or scan a local checkout for file-level analysis.",
+        recommendation="Run repo-trust html/json/check/gate with --remote, or scan a local checkout for file-level analysis.",
     )
 
 

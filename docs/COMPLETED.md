@@ -870,3 +870,12 @@
 - 코드/문서: `pyproject.toml`, `pylock.toml`, `docs/testing-and-validation.md`, `docs/development-workflow.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다. 기능 코드는 변경하지 않았다.
 - 검증: `.venv/bin/python -m pip install -e '.[dev]'`로 dev release toolchain 설치를 확인했다. `.venv/bin/python -m pip lock -e '.[dev]' -o pylock.toml`로 lockfile을 갱신했다. `.venv/bin/python -m build --outdir <tmp>/dist`는 `repotrust-0.2.0.tar.gz`와 `repotrust-0.2.0-py3-none-any.whl`을 생성했다. `.venv/bin/python -m twine check <tmp>/dist/*`는 wheel과 sdist 모두 `PASSED`였다. Clean venv wheel install smoke에서 `repo-trust`, `repo-trust-kr`, `repotrust`가 모두 `0.2.0`을 출력했고 fixture JSON은 `json.tool`을 통과했다. `.venv/bin/python -m pytest -q`는 `120 passed`였고 `git diff --check`도 통과했다.
 - 결과: PyPI/TestPyPI publish 준비용 local toolchain과 검증 절차는 준비됐다. 실제 TestPyPI/PyPI upload는 token 또는 GitHub trusted publishing 설정이 필요한 blocked 작업으로 남긴다.
+
+## 095: Offline-first GitHub URL default
+
+- 완료일: 2026-04-30
+- 배경: 사용자는 secret key나 API 연결 없이 RepoTrust가 기본 동작하기를 원했다. Legacy `repotrust scan <github-url>`은 이미 parse-only 기본값이었지만 product CLI와 Console Mode GitHub workflow는 GitHub API remote scan을 기본 사용하고 있었다.
+- 변경 내용: `repo-trust html/json/check/gate <github-url>`의 기본 동작을 parse-only로 바꿨고, GitHub API read-only metadata 조회는 `--remote`를 명시했을 때만 실행되도록 했다. `--parse-only`는 URL-only 동작을 강제하는 호환성 옵션으로 유지했다. Local path + `--remote`, `--remote` + `--parse-only` usage error 테스트를 추가했다. `target.github_not_fetched` 추천 조치와 dashboard next action을 explicit `--remote` 또는 local checkout scan 안내로 바꿨다.
+- 코드/문서: `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/rules.py`, `src/repotrust/models.py`, `src/repotrust/dashboard_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/adr.md`, `docs/prd.md`, `docs/trd.md`, `docs/architecture.md`, `docs/domain-context.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `59 passed`였다. `.venv/bin/python -m pytest -q`는 `124 passed`였다. `repo-trust html --help` 한국어 도움말에서 `--remote`와 `--parse-only` 설명을 확인했다. `.venv/bin/repo-trust json https://github.com/openai/codex --output /tmp/repotrust-offline.json`는 `target.github_not_fetched`, `coverage=metadata_only`, `confidence=low` JSON을 생성했고 `json.tool` 검증을 통과했다.
+- 결과: RepoTrust runtime의 GitHub URL 기본 경로는 secret key나 API 연결 없이 동작한다. 원격 GitHub metadata는 `--remote`를 명시한 사용자만 사용한다. PyPI production publish는 여전히 credential 또는 trusted publishing 설정이 필요한 별도 blocked 작업이다.

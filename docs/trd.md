@@ -168,7 +168,7 @@ CLI behavior:
 
 - Default scan remains config-free.
 - `--config <path>` loads an explicit TOML config file.
-- Loaded policy applies consistently to local scans, product remote scans, and explicit legacy remote scans.
+- Loaded policy applies consistently to local scans, product parse-only/remote scans, and explicit legacy remote scans.
 - `repo-trust gate` always renders JSON first, then exits `1` when a configured score/profile policy fails.
 - Auto-discovery may later look for `repotrust.toml` at the scanned repository root, but current versions do not auto-load it.
 - CLI flags override config values when both are provided.
@@ -226,23 +226,25 @@ Implementation note: Python 3.11+ includes `tomllib`; Python 3.10 uses the condi
 ## v1 기술 제약
 
 - Legacy `repotrust scan <github-url>`는 기본적으로 파싱만 한다.
-- Product CLI GitHub URL scan과 legacy `--remote`는 GitHub API read-only metadata를 조회하지만 clone/fetch는 하지 않는다.
+- Product CLI와 legacy CLI의 GitHub URL 기본 scan은 네트워크 없이 URL만 파싱한다.
+- Product CLI `--remote`와 legacy `--remote`는 GitHub API read-only metadata를 조회하지만 clone/fetch는 하지 않는다.
 - dependency manifest는 package-level local signal만 읽으며 실제 vulnerability lookup은 하지 않는다.
 - README command parsing은 Installation/Setup 섹션의 command-like line을 대상으로 하는 regex heuristic이다.
 - Python dependency lockfile은 `pylock.toml`을 사용한다. dependency 변경 시 `pip lock -e '.[dev]' -o pylock.toml`로 갱신한다.
 
 ## Remote GitHub Scan Design
 
-Remote GitHub scan은 legacy `repotrust scan`에서는 명시적 opt-in으로 유지하고, product CLI인 `repo-trust html/json/check`에서는 GitHub URL 리포트 생성을 위한 기본 동작으로 제공한다.
+Remote GitHub scan은 product CLI와 legacy `repotrust scan` 모두에서 명시적 `--remote` opt-in으로 유지한다. 기본 GitHub URL scan은 secret key나 API 연결 없이 URL parse-only로 실행한다.
 
 Current implementation boundary:
 
 - Legacy `--remote` CLI option exists on `repotrust scan`.
 - Legacy `--remote` is rejected for local path targets.
 - Legacy GitHub URL without `--remote` remains parse-only.
-- Product `repo-trust html/json/check <github-url>` defaults to remote scan.
+- Product `repo-trust html/json/check/gate <github-url>` defaults to parse-only.
+- Product `--remote` is rejected for local path targets.
 - Product `repo-trust` without a subcommand opens an interactive launcher that routes to the same `html/json/check` execution path.
-- Product `--parse-only` keeps URL-only behavior without GitHub API access.
+- Product `--parse-only` keeps URL-only behavior without GitHub API access and is equivalent to the default for GitHub URLs.
 - GitHub URL remote scans enter `remote.py`, request repository metadata, and convert repository metadata API failures into findings.
 - Remote root contents and workflow metadata are converted into `DetectedFiles`.
 - README content and Dependabot config are fetched through read-only contents endpoints.
@@ -250,9 +252,10 @@ Current implementation boundary:
 
 Interface:
 
-- `repo-trust html/json/check <github-url>` 기본 동작은 GitHub API remote scan이다.
+- `repo-trust html/json/check/gate <github-url>` 기본 동작은 URL parse-only scan이다.
 - `repo-trust` 무인자 실행은 interactive launcher를 열고 선택한 workflow를 같은 scan/report path로 전달한다.
-- `repo-trust html/json/check <github-url> --parse-only`는 URL parse-only로 유지한다.
+- `repo-trust html/json/check/gate <github-url> --remote`는 GitHub API remote scan을 실행한다.
+- `repo-trust html/json/check/gate <github-url> --parse-only`는 URL parse-only로 유지한다.
 - GitHub `tree`/`blob` subpath URL은 repository root 기준 scan에 `target.github_subpath_unsupported` finding을 추가한다. 하위 폴더 단위 신뢰 평가는 local checkout scan으로 안내한다.
 - `repotrust scan <github-url>` 기본 동작은 legacy compatibility를 위해 URL parse-only로 유지한다.
 - `repotrust scan <github-url> --remote`는 legacy path에서 GitHub API remote scan을 실행한다.

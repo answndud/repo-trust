@@ -147,7 +147,7 @@ Score change rules:
 
 ## Remote GitHub Scan Findings
 
-Product CLI GitHub URL scans use GitHub REST API read-only metadata by default and keep clone-free behavior. `--parse-only` keeps a URL-only scan. Legacy `repotrust scan` remains parse-only unless `--remote` is provided.
+Product CLI GitHub URL scans use parse-only by default and do not require secret keys, API tokens, or GitHub API access. `--remote` opts into GitHub REST API read-only metadata and keeps clone-free behavior. `--parse-only` keeps a URL-only scan for compatibility. Legacy `repotrust scan` remains parse-only unless `--remote` is provided.
 
 Remote finding interpretation:
 
@@ -184,7 +184,8 @@ Supported:
 
 - Local repository path scanning.
 - GitHub URL parsing.
-- Product GitHub API remote scanning with `repo-trust html/json/check <github-url>`.
+- Product GitHub URL parse-only scanning with `repo-trust html/json/check/gate <github-url>`.
+- Product explicit GitHub API remote scanning with `repo-trust html/json/check/gate <github-url> --remote`.
 - Legacy explicit GitHub API remote scanning with `repotrust scan <github-url> --remote`.
 - Markdown, JSON, and static HTML reports.
 - Offline file and README checks.

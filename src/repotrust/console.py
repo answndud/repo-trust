@@ -18,6 +18,7 @@ class ConsoleWorkflow:
     report_format: str
     terminal_only: bool = False
     parse_only: bool = False
+    remote: bool = False
     verbose: bool = False
     locale: ConsoleLocale = "en"
 

@@ -2,7 +2,7 @@
 
 RepoTrust는 GitHub 저장소나 로컬 프로젝트를 쓰기 전에 기본 신뢰 신호를 점검하는 Python CLI 도구입니다.
 
-README, 설치 안내, 라이선스, 보안 정책, CI, lockfile, Dependabot, GitHub metadata처럼 확인 가능한 근거를 모아 “지금 설치해도 되는지”, “dependency로 넣어도 되는지”, “AI agent에게 맡겨도 되는지”를 리포트로 정리합니다. 취약점 스캐너나 안전 보증 도구가 아니라, 사람이 먼저 확인해야 할 신뢰 신호와 불확실성을 빠르게 보여주는 도구입니다.
+README, 설치 안내, 라이선스, 보안 정책, CI, lockfile, Dependabot, 선택적 GitHub metadata처럼 확인 가능한 근거를 모아 “지금 설치해도 되는지”, “dependency로 넣어도 되는지”, “AI agent에게 맡겨도 되는지”를 리포트로 정리합니다. 취약점 스캐너나 안전 보증 도구가 아니라, 사람이 먼저 확인해야 할 신뢰 신호와 불확실성을 빠르게 보여주는 도구입니다.
 
 ## Installation Quickstart / 설치 빠른 시작
 
@@ -70,7 +70,7 @@ Command Mode는 명령을 한 줄로 직접 입력하는 방식입니다. 자동
 
 ### GitHub URL을 HTML로 저장
 
-브라우저에서 읽을 리포트를 만들 때 사용합니다. GitHub URL은 기본적으로 GitHub REST API의 read-only metadata를 조회합니다. 저장소를 clone하지 않습니다.
+브라우저에서 읽을 리포트를 만들 때 사용합니다. GitHub URL은 기본적으로 API를 호출하지 않고 URL 형식만 확인합니다. 저장소 파일까지 검사하려면 로컬로 checkout한 폴더를 검사하고, GitHub read-only metadata가 필요할 때만 `--remote`를 명시합니다.
 
 **입력할 명령**
 
@@ -134,32 +134,33 @@ repo-trust-kr check https://github.com/openai/codex
 
 **화면 예시**
 
-아래는 출력 형태를 보여주는 예시입니다. 실제 값은 GitHub API 응답, rate limit, 인증 상태, 저장소의 최신 상태에 따라 달라집니다.
+아래는 출력 형태를 보여주는 예시입니다. 기본 GitHub URL 검사는 API를 호출하지 않으므로 파일 수준 근거가 부족하다는 판단이 나올 수 있습니다.
 
 ```text
 ────────────────────────────────────
-RESULT: 현재 기준 통과
+RESULT: 판단 근거 부족
 ────────────────────────────────────
-Risk: 위험 낮음
-Score: 92/100  Grade: A
-Confidence: 높음 (확인 가능한 근거를 충분히 검사함)
+Risk: 주의 필요
+Score: 70/100  Grade: C
+Confidence: 낮음 (분석이 완전하지 않음)
 Target: https://github.com/openai/codex
-Mode: GitHub 원격 검사
+Mode: GitHub URL만 확인
 
 ────────────────────────────────────
 이유
-현재 규칙에서 차단할 문제를 찾지 못했습니다.
+- GitHub URL 형식만 확인했고 원격 정보는 가져오지 않았습니다.
+  → --remote로 원격 조회를 명시하거나 로컬 checkout을 검사해 파일 수준 근거를 확인하세요.
 
 ────────────────────────────────────
 목적별 판단
-설치: 현재 검사 기준으로 사용 가능
-의존성: 현재 검사 기준으로 사용 가능
-agent 위임: 현재 검사 기준으로 사용 가능
+설치: 근거 부족
+의존성: 근거 부족
+agent 위임: 근거 부족
 
 ────────────────────────────────────
 다음 행동
-1. 점수와 근거가 기대와 맞는지 확인하세요.
-2. 중요한 프로젝트에 쓰기 전에는 HTML 리포트를 저장해 보관하세요.
+1. 근거가 부족하므로 HTML 리포트를 저장해 빠진 항목을 확인하세요.
+2. 중요한 프로젝트에 쓰기 전에는 로컬 checkout을 검사하세요.
 ```
 
 `check` 명령은 HTML/JSON 파일을 저장하지 않습니다. 공유하거나 나중에 다시 볼 리포트가 필요하면 `html` 또는 `json` 명령을 사용하세요.
@@ -205,24 +206,25 @@ repo-trust --help
 
 `1`을 입력하면 영어 도움말이 나오고, `2`를 입력하면 한국어 도움말이 나옵니다. `repo-trust-kr --help`, `repo-trust html --help`, `repo-trust json --help`, `repo-trust check --help`도 같은 방식으로 동작합니다.
 
-## 네트워크 없이 GitHub URL만 확인
+## GitHub 원격 검사
 
-GitHub API를 호출하지 않고 URL 형식만 확인하고 싶으면 `--parse-only`를 사용합니다.
+GitHub URL은 기본적으로 GitHub API를 호출하지 않고 URL 형식만 확인합니다. 이 기본 실행은 secret key, API token, 네트워크 metadata 조회가 필요 없습니다.
 
 **입력할 명령**
 
 ```bash
-repo-trust-kr check https://github.com/openai/codex --parse-only
+repo-trust-kr check https://github.com/openai/codex
 ```
 
 이 경우 README, LICENSE, CI 같은 원격 파일은 확인하지 않습니다. 결과에는 `근거 부족`, `기본 정보만 확인`, `확인 못함` 같은 표시가 나올 수 있습니다.
 
-Private repository를 검사하거나 GitHub rate limit을 줄이고 싶으면 `GITHUB_TOKEN`을 환경 변수로 설정한 뒤 실행합니다.
+GitHub API read-only metadata까지 확인하고 싶을 때만 `--remote`를 명시합니다. Public repository는 token 없이 시도할 수 있지만 rate limit이나 private repository 접근이 필요하면 `GITHUB_TOKEN`을 환경 변수로 설정합니다.
 
 **입력할 명령**
 
 ```bash
-GITHUB_TOKEN=ghp_example repo-trust html https://github.com/owner/private-repo
+repo-trust html https://github.com/openai/codex --remote
+GITHUB_TOKEN=ghp_example repo-trust html https://github.com/owner/private-repo --remote
 ```
 
 Token 값은 리포트나 터미널 출력에 남기지 않습니다.
@@ -347,7 +349,7 @@ CLI 옵션이 config보다 우선합니다. `policy.profiles`는 `install`, `dep
 | Security Posture | SECURITY.md, CI, Dependabot, lockfile, dependency pinning 신호가 있는지 |
 | Project Hygiene | LICENSE, dependency manifest 같은 기본 관리 신호가 있는지 |
 
-`package.json`의 install lifecycle script와 exact version이 아닌 Node/Python direct dependency도 보수적인 finding으로 표시합니다. GitHub 원격 검사에서는 package manifest가 있는 저장소에 한해 오래된 최신 release/tag도 낮은 심각도로 알려줍니다. 이 검사는 취약점 여부를 판단하지 않고, 설치 중 자동 실행되거나 시간이 지나며 다른 dependency가 설치될 수 있는 신호를 알려줍니다.
+`package.json`의 install lifecycle script와 exact version이 아닌 Node/Python direct dependency도 보수적인 finding으로 표시합니다. `--remote`를 명시한 GitHub 원격 검사에서는 package manifest가 있는 저장소에 한해 오래된 최신 release/tag도 낮은 심각도로 알려줍니다. 이 검사는 취약점 여부를 판단하지 않고, 설치 중 자동 실행되거나 시간이 지나며 다른 dependency가 설치될 수 있는 신호를 알려줍니다.
 
 아직 아래 항목은 점수화하지 않습니다.
 
@@ -362,7 +364,7 @@ CLI 옵션이 config보다 우선합니다. `policy.profiles`는 `install`, `dep
 
 ## 릴리즈 노트
 
-현재 변경 사항과 공개 전 검증 목록은 `CHANGELOG.md`에 정리합니다. 배포 전에 JSON schema, `repo-trust gate`, GitHub remote scan 동작, sample report 생성 절차가 README와 changelog에서 같은 의미로 설명되는지 확인하세요.
+현재 변경 사항과 공개 전 검증 목록은 `CHANGELOG.md`에 정리합니다. 배포 전에 JSON schema, `repo-trust gate`, offline-first GitHub URL 동작, sample report 생성 절차가 README와 changelog에서 같은 의미로 설명되는지 확인하세요.
 
 ## 개발자 검증
 

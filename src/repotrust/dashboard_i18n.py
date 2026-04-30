@@ -81,8 +81,8 @@ RECOMMENDATION_KO = {
     "Retry remote scan later or scan a local checkout for full README and install safety analysis.": (
         "나중에 원격 검사를 다시 하거나 로컬로 clone해서 README와 설치 안전을 자세히 확인하세요."
     ),
-    "Run repo-trust html/json/check without --parse-only, or scan a local checkout for file-level analysis.": (
-        "--parse-only 없이 실행하거나 로컬 checkout을 검사해 파일 수준 근거를 확인하세요."
+    "Run repo-trust html/json/check/gate with --remote, or scan a local checkout for file-level analysis.": (
+        "--remote로 원격 조회를 명시하거나 로컬 checkout을 검사해 파일 수준 근거를 확인하세요."
     ),
     "Scan a local checkout of that subdirectory, or pass the repository root URL if a root-level assessment is intended.": (
         "해당 하위 폴더를 로컬로 checkout해서 검사하거나, 루트 저장소 평가가 목적이면 repository root URL을 입력하세요."
@@ -246,7 +246,7 @@ def localized_actions(result: ScanResult, locale: str) -> list[str]:
     if result.assessment.verdict == "insufficient_evidence":
         return [
             "근거가 부족하므로 HTML 리포트를 저장해 빠진 항목을 확인하세요.",
-            "GitHub URL이라면 네트워크나 API 제한 때문에 확인하지 못한 항목이 있는지 보세요.",
+            "GitHub URL이라면 --remote를 명시하거나 로컬 checkout을 검사해 파일 수준 근거를 확인하세요.",
         ]
     if result.assessment.verdict == "usable_after_review":
         return [

@@ -419,7 +419,7 @@ def _insufficient_profile(
             priority_findings,
         ),
         next_actions=[
-            "Run a remote scan or scan a local checkout before relying on this profile.",
+            "Run with --remote or scan a local checkout before relying on this profile.",
             "Do not treat missing evidence as an all-clear signal.",
         ],
         findings=priority_findings,
@@ -536,7 +536,7 @@ def _assessment_next_actions(
             "Scan a local checkout of the requested subdirectory, or pass the repository root URL if root-level assessment is intended."
         ]
         if coverage == "metadata_only":
-            actions.append("Run a remote scan or scan a local checkout for file-level evidence.")
+            actions.append("Run with --remote or scan a local checkout for file-level evidence.")
     elif verdict == "do_not_install_before_review":
         if any(finding.id == "target.local_path_missing" for finding in result.findings):
             actions = ["Pass a valid local repository path before relying on this assessment."]
@@ -545,7 +545,7 @@ def _assessment_next_actions(
     elif coverage == "failed":
         actions = ["Retry the remote scan later or set GITHUB_TOKEN before relying on the result."]
     elif coverage == "metadata_only":
-        actions = ["Run a remote scan or scan a local checkout for file-level evidence."]
+        actions = ["Run with --remote or scan a local checkout for file-level evidence."]
     elif coverage == "partial":
         actions = ["Retry the scan or use a local checkout to resolve unknown evidence."]
     elif verdict == "usable_after_review":
@@ -555,7 +555,7 @@ def _assessment_next_actions(
 
     actions.append("Use the findings and evidence matrix rather than the score alone.")
     if result.target.kind == "github" and coverage != "full":
-        actions.append("Do not treat missing remote evidence as proof that files are absent.")
+        actions.append("Do not treat uncollected repository evidence as proof that files are absent.")
     return actions
 
 

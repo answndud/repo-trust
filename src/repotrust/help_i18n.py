@@ -52,7 +52,8 @@ Arguments:
 Options:
   -o, --output PATH  Custom output path. Defaults to result/<target>-YYYY-MM-DD.html.
   --config PATH      Load an explicit repotrust.toml policy file.
-  --parse-only       For GitHub URLs, parse the URL without calling the GitHub API.
+  --remote           For GitHub URLs, call the GitHub API for read-only metadata.
+  --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
   -v, --verbose      Print findings in the terminal dashboard.
   --help             Choose English or Korean help and exit.
@@ -67,7 +68,8 @@ HTML 신뢰 리포트를 저장합니다.
 옵션:
   -o, --output PATH  저장 경로를 직접 지정합니다. 기본값은 result/<대상>-YYYY-MM-DD.html입니다.
   --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
-  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 파싱합니다.
+  --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
+  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
   --help             영어 또는 한국어 도움말을 선택해 봅니다.
@@ -84,7 +86,8 @@ Arguments:
 Options:
   -o, --output PATH  Custom output path. Defaults to result/<target>-YYYY-MM-DD.json.
   --config PATH      Load an explicit repotrust.toml policy file.
-  --parse-only       For GitHub URLs, parse the URL without calling the GitHub API.
+  --remote           For GitHub URLs, call the GitHub API for read-only metadata.
+  --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
   -v, --verbose      Print findings in the terminal dashboard.
   --help             Choose English or Korean help and exit.
@@ -99,7 +102,8 @@ JSON 신뢰 리포트를 저장합니다.
 옵션:
   -o, --output PATH  저장 경로를 직접 지정합니다. 기본값은 result/<대상>-YYYY-MM-DD.json입니다.
   --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
-  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 파싱합니다.
+  --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
+  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
   --help             영어 또는 한국어 도움말을 선택해 봅니다.
@@ -115,7 +119,8 @@ Arguments:
 
 Options:
   --config PATH      Load an explicit repotrust.toml policy file.
-  --parse-only       For GitHub URLs, parse the URL without calling the GitHub API.
+  --remote           For GitHub URLs, call the GitHub API for read-only metadata.
+  --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
   -v, --verbose      Print findings in the terminal dashboard.
   --help             Choose English or Korean help and exit.
@@ -129,7 +134,8 @@ Options:
 
 옵션:
   --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
-  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 파싱합니다.
+  --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
+  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
   --help             영어 또는 한국어 도움말을 선택해 봅니다.
@@ -146,7 +152,8 @@ Arguments:
 Options:
   -o, --output PATH  Write JSON report to this file. Defaults to stdout.
   --config PATH      Load an explicit repotrust.toml policy file.
-  --parse-only       For GitHub URLs, parse the URL without calling the GitHub API.
+  --remote           For GitHub URLs, call the GitHub API for read-only metadata.
+  --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
   --help             Choose English or Korean help and exit.
 """,
@@ -160,7 +167,8 @@ JSON 리포트를 출력하고 정책 요구사항을 만족하지 못하면 실
 옵션:
   -o, --output PATH  JSON 리포트를 저장할 경로입니다. 기본값은 stdout입니다.
   --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
-  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 파싱합니다.
+  --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
+  --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   --help             영어 또는 한국어 도움말을 선택해 봅니다.
 """,

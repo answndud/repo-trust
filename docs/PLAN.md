@@ -14,13 +14,17 @@
 
 ## 현재 목표
 
-RepoTrust v0.2.0 PyPI publish를 완료한다.
+RepoTrust runtime은 secret key나 API 연결 없이 기본 동작한다. PyPI production publish는 credential/trusted publishing 설정 전까지 보류한다.
 
 ## 현재 우선순위
 
 1. PyPI/TestPyPI credential 또는 trusted publishing 설정 후 remote upload를 수행한다.
 
 ## In Progress
+
+현재 active 작업 없음
+
+## Pending
 
 ### PyPI production publish
 
@@ -41,10 +45,6 @@ RepoTrust v0.2.0 PyPI publish를 완료한다.
   - `python -m pip install repotrust==0.2.0`
   - `git status --short --branch`
 - Next action: TestPyPI/PyPI API token을 제공하거나 GitHub trusted publishing을 설정한다.
-
-## Pending
-
-현재 active 작업 없음
 
 ## 다음 실행 순서
 

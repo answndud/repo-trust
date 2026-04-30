@@ -4,7 +4,13 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
-No changes yet.
+### Changed
+
+- Product GitHub URL commands now default to parse-only, API-free scans. Use `--remote` on `repo-trust html/json/check/gate <github-url>` to opt into GitHub REST read-only metadata.
+
+### Fixed
+
+- `target.github_not_fetched` guidance now recommends explicit `--remote` or local checkout scanning instead of implying API access is the default.
 
 ## v0.2.0 - 2026-04-29
 
