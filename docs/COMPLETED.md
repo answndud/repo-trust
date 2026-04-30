@@ -906,3 +906,30 @@
 - 코드/문서: release publish 자체에는 기능 코드 변경이 없었다. `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 post-release 상태로 정리했다.
 - 검증: `git push origin main`은 `7794d25..63a09e1 main -> main`으로 성공했다. `git push origin v0.2.1`은 새 tag를 원격에 생성했다. `gh release view v0.2.1 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`는 `tagName=v0.2.1`, `isDraft=false`, `isPrerelease=false`, URL `https://github.com/answndud/repo-trust/releases/tag/v0.2.1`, asset 2개 업로드 상태를 반환했다.
 - 결과: RepoTrust v0.2.1 GitHub-only release가 publish됐다. PyPI/TestPyPI publish는 프로젝트 범위가 아니며 active 작업은 없다.
+
+## 099: GitHub Release 설치 smoke
+
+- 완료일: 2026-04-30
+- 배경: v0.2.1 GitHub-only release가 publish됐으므로, PyPI 없이 GitHub Release asset만으로 사용자가 설치하고 기본 명령을 실행할 수 있는지 clean venv에서 확인해야 했다.
+- 변경 내용: GitHub Release의 wheel asset과 source archive asset을 각각 새 venv에 설치해 세 CLI entrypoint와 기본 check/json 동작을 검증했다. README quickstart가 검증한 release asset URL과 어긋나지 않도록 wheel 설치를 기본 경로로 조정하고 source archive 설치를 대안으로 분리했다.
+- 코드/문서: 기능 코드는 변경하지 않았다. `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: Clean venv wheel install에서 `repo-trust`, `repo-trust-kr`, `repotrust`가 모두 `0.2.1`을 출력했고, `repo-trust check .`, fixture JSON 생성, `json.tool` 검증이 성공했다. Clean venv source archive install에서도 동일한 entrypoint version, local check, fixture JSON, `json.tool` 검증이 성공했다. `.venv/bin/python -m pytest -q`는 `124 passed`였다.
+- 결과: v0.2.1은 PyPI 없이 GitHub Release wheel 또는 source archive로 설치해 바로 사용할 수 있다. 다음 작업은 `설치 UX 보강`이다.
+
+## 100: 설치 UX 보강
+
+- 완료일: 2026-04-30
+- 배경: PyPI를 사용하지 않는 배포 정책에서는 사용자가 README에서 사용자 설치, source archive 대안, 개발자 editable install을 혼동하지 않아야 했다.
+- 변경 내용: README의 Installation Quickstart를 GitHub Release wheel 설치 중심으로 정리하고, source archive 설치와 clone 후 개발자 설치를 별도 블록으로 분리했다. PyPI를 사용하지 않고 GitHub Releases가 공식 배포 채널이라는 설명을 quickstart 맨 앞에 배치했다. 관련 docs는 PyPI/TestPyPI 제외와 GitHub Releases 중심 배포 설명을 이미 유지하고 있어 의미가 일치함을 확인했다.
+- 코드/문서: 기능 코드는 변경하지 않았다. `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/repo-trust json . --output /tmp/repotrust-install-docs.json`은 self-scan JSON을 생성했고 score `98`, grade `A`, high confidence를 반환했다. `.venv/bin/python -m json.tool /tmp/repotrust-install-docs.json`는 통과했다. 첫 병렬 실행의 `json.tool`은 파일 생성 전에 실행되어 `FileNotFoundError`가 났고, JSON 생성 후 순차 재실행으로 통과했다.
+- 결과: README는 검증된 GitHub Release asset 설치 경로와 개발자 설치 경로를 구분한다. 다음 작업은 `첫 실행 경험 개선`이다.
+
+## 101: 첫 실행 경험 개선
+
+- 완료일: 2026-04-30
+- 배경: GitHub Release로 설치한 사용자가 처음 `repo-trust-kr` 또는 `repo-trust`를 실행했을 때 GitHub URL 기본 검사가 API 없이 parse-only로 동작한다는 점과 로컬 checkout scan의 차이를 바로 이해해야 했다.
+- 변경 내용: Console Mode 첫 화면 tagline과 GitHub/Local workflow 설명을 한국어/영어 모두 수정했다. README Console Mode 화면 예시를 실제 문구와 맞췄고, `remote.github_metadata_collected` 상세 설명이 예전 remote-default 동작을 말하지 않도록 `--remote` 명시 실행으로 보정했다. CLI launcher 테스트는 새 문구를 검증하도록 갱신했다.
+- 코드/문서: `src/repotrust/console_i18n.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -q`는 `59 passed`였다. `printf 'q\n' | .venv/bin/repo-trust`와 `printf 'q\n' | .venv/bin/repo-trust-kr`는 새 첫 화면 문구를 출력했다. `.venv/bin/repo-trust check https://github.com/openai/codex`는 `GitHub parse-only`, score `70`, confidence `LOW`, `--remote` 또는 local checkout 안내를 출력했다. `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/repo-trust json . --output /tmp/repotrust-final-plan.json`과 `json.tool` 검증도 통과했다. `git diff --check`와 diff review를 완료했다.
+- 결과: v0.2.1 GitHub-only 배포 이후 설치와 첫 실행 경험 정리 작업이 모두 완료됐다. 현재 active 작업은 없다.

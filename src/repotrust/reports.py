@@ -126,7 +126,7 @@ FINDING_EXPLANATIONS = {
     "security.no_lockfile": "Dependency manifest는 있지만 lockfile이 없습니다. 같은 설치 명령을 나중에 실행했을 때 다른 하위 dependency가 설치될 수 있습니다.",
     "hygiene.no_license": "라이선스 파일이 없으면 재사용, 배포, 회사 프로젝트 dependency 사용 가능 여부를 판단하기 어렵습니다.",
     "hygiene.no_manifest": "표준 dependency manifest를 찾지 못했습니다. 이 저장소가 어떤 패키지 생태계와 설치 방식을 쓰는지 확인하기 어렵습니다.",
-    "remote.github_metadata_collected": "GitHub API에서 읽기 전용 메타데이터를 가져왔다는 정보성 항목입니다. 새 `repo-trust html/json/check` 명령은 GitHub URL에서 이 remote 조회를 기본으로 사용합니다.",
+    "remote.github_metadata_collected": "GitHub API에서 읽기 전용 메타데이터를 가져왔다는 정보성 항목입니다. 이 remote 조회는 `--remote`를 명시했을 때만 실행됩니다.",
     "remote.github_rate_limited": "GitHub API 호출 한도를 초과해 원격 조회를 완료하지 못했습니다. 잠시 후 다시 실행하거나 GITHUB_TOKEN을 설정해야 합니다.",
     "remote.github_unauthorized": "private 저장소이거나 token 권한이 부족해 GitHub API가 정보를 제공하지 않았습니다.",
     "remote.github_not_found": "owner/repo URL이 잘못됐거나, 저장소가 private이라 현재 인증 정보로 볼 수 없습니다.",

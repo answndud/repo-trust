@@ -140,10 +140,12 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "RepoTrust v0.2.1" in stderr
-    assert "Analyze repository trust before using it." in stderr
+    assert "Offline-first trust checks before installing a repository." in stderr
     assert "Select action:" in stderr
     assert "[G]  GitHub repo" in stderr
+    assert "URL check without API by default" in stderr
     assert "[L]  Local repo" in stderr
+    assert "Full file-level local scan" in stderr
     assert "[C]  Quick check" in stderr
     assert "[J]  Export JSON" in stderr
     assert "Recent:" in stderr
@@ -161,10 +163,12 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "RepoTrust v0.2.1" in stderr
-    assert "사용 전 저장소 신뢰도를 분석합니다." in stderr
+    assert "설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다." in stderr
     assert "작업 선택:" in stderr
     assert "[G]  GitHub 저장소" in stderr
+    assert "기본은 API 없이 URL 확인" in stderr
     assert "[L]  로컬 저장소" in stderr
+    assert "파일 근거까지 로컬 검사" in stderr
     assert "[C]  빠른 점검" in stderr
     assert "[J]  JSON 내보내기" in stderr
     assert "최근 리포트:" in stderr

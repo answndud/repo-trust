@@ -7,7 +7,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
     "en": {
         "brand_title": "REPO-TRUST",
         "console_title": "RepoTrust",
-        "tagline": "Analyze repository trust before using it.",
+        "tagline": "Offline-first trust checks before installing a repository.",
         "mission_label": "Mission",
         "mission": (
             "Decide whether a repository is safe enough to install, depend on, "
@@ -23,8 +23,8 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         "use_when_column": "Use When",
         "output_column": "Output",
         "workflows": [
-            ("G", "GitHub repo", "Analyze GitHub repository", ""),
-            ("L", "Local repo", "Analyze local repository", ""),
+            ("G", "GitHub repo", "URL check without API by default", ""),
+            ("L", "Local repo", "Full file-level local scan", ""),
             ("C", "Quick check", "Instant trust summary", ""),
             ("J", "Export JSON", "Save machine-readable report", ""),
         ],
@@ -58,7 +58,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
     "ko": {
         "brand_title": "REPO-TRUST",
         "console_title": "RepoTrust",
-        "tagline": "사용 전 저장소 신뢰도를 분석합니다.",
+        "tagline": "설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다.",
         "mission_label": "목적",
         "mission": (
             "저장소를 설치하거나 의존성으로 추가하거나 AI agent에게 맡겨도 되는지 "
@@ -74,8 +74,8 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         "use_when_column": "언제 쓰나",
         "output_column": "결과",
         "workflows": [
-            ("G", "GitHub 저장소", "GitHub 저장소 분석", ""),
-            ("L", "로컬 저장소", "로컬 저장소 분석", ""),
+            ("G", "GitHub 저장소", "기본은 API 없이 URL 확인", ""),
+            ("L", "로컬 저장소", "파일 근거까지 로컬 검사", ""),
             ("C", "빠른 점검", "즉시 요약 보기", ""),
             ("J", "JSON 내보내기", "기계가 읽는 리포트 저장", ""),
         ],
