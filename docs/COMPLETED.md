@@ -942,3 +942,12 @@
 - 코드/문서: GitHub Release 본문을 원격에서 갱신했다. Repository 문서는 `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `gh release view v0.2.1 --repo answndud/repo-trust --json name,tagName,body,url,assets`로 release title, tag, 갱신된 설치 섹션, wheel/sdist asset 2개를 확인했다. `git diff --check`도 통과했다.
 - 결과: GitHub Release 페이지에서도 README와 같은 GitHub-only 설치 경로를 바로 확인할 수 있다. 현재 active 작업은 없다.
+
+## 103: GitHub Actions Node 24 대응
+
+- 완료일: 2026-04-30
+- 배경: main CI는 성공했지만 GitHub Actions가 `actions/checkout@v4`, `actions/setup-python@v5`를 Node.js 20 기반 action으로 경고했다. GitHub hosted runner의 Node 20 action deprecation에 대비해 Node 24 runtime을 사용하는 최신 major로 갱신해야 했다.
+- 변경 내용: `.github/workflows/ci.yml`에서 `actions/checkout@v4`를 `actions/checkout@v6`으로, `actions/setup-python@v5`를 `actions/setup-python@v6`으로 갱신했다. 작업 상태 문서에는 Node 24 대응 story를 기록했다.
+- 코드/문서: `.github/workflows/ci.yml`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `124 passed`였다. `git diff --check`도 통과했다. 공식 GitHub action release 정보에서 `actions/checkout` v6 계열과 `actions/setup-python` v6 계열이 Node 24 runtime으로 업데이트된 것을 확인했다.
+- 결과: CI workflow는 Node 24 대응 action major를 사용한다. push 후 GitHub Actions run에서 경고 해소 여부를 확인한다.
