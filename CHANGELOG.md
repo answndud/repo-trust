@@ -6,6 +6,19 @@ All notable changes to RepoTrust are documented here.
 
 No changes yet.
 
+## v0.2.2 - 2026-04-30
+
+### Changed
+
+- GitHub Release install guidance now points at `v0.2.2` wheel and source archive assets.
+- Console Mode first screen now says GitHub URL checks are API-free by default and local scans provide file-level evidence.
+- CI workflow uses Node 24-compatible `actions/checkout@v6` and `actions/setup-python@v6`.
+
+### Fixed
+
+- README smoke found that `v0.2.1` assets did not include the newer first-run console copy shown on `main`; `v0.2.2` aligns the README quickstart, release asset version, and installed CLI output.
+- `remote.github_metadata_collected` explanation now states that remote metadata collection only runs when `--remote` is explicit.
+
 ## v0.2.1 - 2026-04-30
 
 ### Changed
