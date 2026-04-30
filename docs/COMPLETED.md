@@ -949,5 +949,5 @@
 - 배경: main CI는 성공했지만 GitHub Actions가 `actions/checkout@v4`, `actions/setup-python@v5`를 Node.js 20 기반 action으로 경고했다. GitHub hosted runner의 Node 20 action deprecation에 대비해 Node 24 runtime을 사용하는 최신 major로 갱신해야 했다.
 - 변경 내용: `.github/workflows/ci.yml`에서 `actions/checkout@v4`를 `actions/checkout@v6`으로, `actions/setup-python@v5`를 `actions/setup-python@v6`으로 갱신했다. 작업 상태 문서에는 Node 24 대응 story를 기록했다.
 - 코드/문서: `.github/workflows/ci.yml`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
-- 검증: `.venv/bin/python -m pytest -q`는 `124 passed`였다. `git diff --check`도 통과했다. 공식 GitHub action release 정보에서 `actions/checkout` v6 계열과 `actions/setup-python` v6 계열이 Node 24 runtime으로 업데이트된 것을 확인했다.
-- 결과: CI workflow는 Node 24 대응 action major를 사용한다. push 후 GitHub Actions run에서 경고 해소 여부를 확인한다.
+- 검증: `.venv/bin/python -m pytest -q`는 `124 passed`였다. `git diff --check`도 통과했다. 공식 GitHub action release 정보에서 `actions/checkout` v6 계열과 `actions/setup-python` v6 계열이 Node 24 runtime으로 업데이트된 것을 확인했다. Push 후 GitHub Actions run `25152879649`는 success였고 이전 Node.js 20 deprecation annotation은 출력되지 않았다.
+- 결과: CI workflow는 Node 24 대응 action major를 사용하며 main CI가 경고 없이 통과했다. 현재 active 작업은 없다.
