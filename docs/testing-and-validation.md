@@ -54,6 +54,7 @@ For config smoke checks, use the committed CI policy template:
 .venv/bin/repo-trust html . --config examples/repotrust.toml
 .venv/bin/repo-trust gate tests/fixtures/repos/good-python --config examples/repotrust.toml --output /tmp/repotrust-gate-good.json
 .venv/bin/repo-trust gate tests/fixtures/repos/risky-install --config examples/repotrust.toml --output /tmp/repotrust-gate-fail.json || test $? -eq 1
+.venv/bin/repo-trust compare /tmp/repotrust-gate-fail.json /tmp/repotrust-gate-good.json
 .venv/bin/python -m json.tool /tmp/repotrust-gate-good.json
 .venv/bin/python -m json.tool /tmp/repotrust-gate-fail.json
 ```
@@ -72,6 +73,8 @@ Expected behavior:
 - `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance with the shared Kali-style terminal theme.
 - `repo-trust explain <finding-id>` prints a known finding's category, default severity, meaning, and recommended action without scanning a target.
 - `repo-trust explain <unknown-id>` exits with code `1` and suggests known finding IDs.
+- `repo-trust compare <old.json> <new.json>` compares saved JSON reports without scanning and shows score, grade, verdict, added findings, resolved findings, severity changes, and persisting finding count.
+- `repo-trust compare` exits with code `1` for invalid JSON or files that do not look like RepoTrust JSON reports.
 - Static HTML reports should include severity/category finding filters and expand/collapse controls while still rendering finding details without JavaScript.
 - Product CLI GitHub URL commands default to parse-only without GitHub API access and never clone repositories.
 - Product `--remote` opts into GitHub API read-only metadata.
@@ -100,6 +103,8 @@ Expected behavior:
 | `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched`; terminal report only | stderr RESULT dashboard |
 | `repo-trust gate` with passing policy | 0 | JSON stdout or `--output` file | stderr summary |
 | `repo-trust gate` with failing score/profile policy | 1 | JSON still emitted first | stderr summary and policy failure |
+| `repo-trust compare` with two valid JSON reports | 0 | terminal comparison summary | no scan |
+| `repo-trust compare` with invalid or non-RepoTrust JSON | 1 | no comparison | error on stderr |
 | `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr RESULT dashboard |
 | `repo-trust ... --remote` with GitHub URL and API/auth/rate-limit failure finding | 0 unless `--fail-under` fails | remote finding in report | stderr RESULT dashboard or summary |
 | Existing local path with default threshold | 0 | stdout unless `--output` is set | stderr summary |
@@ -127,6 +132,7 @@ Generate sample reports from fixtures:
 .venv/bin/repo-trust check tests/fixtures/repos/risky-install
 .venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
 .venv/bin/repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
+.venv/bin/repo-trust compare /tmp/repotrust-risky.json /tmp/repotrust-good.json
 ```
 
 Validate redirected JSON:
@@ -142,6 +148,7 @@ Expected sample behavior:
 - `risky-install`: score around `51/100`, grade `F`, high confidence, `install_safety` at `0/100`, and 12 total findings in the current fixture.
 - `risky-install` terminal `WHY` should state that it is showing the top 3 findings; HTML/Markdown/JSON reports should expose the full findings list.
 - High severity `risky-install` findings should include shell pipe, process substitution, Python inline execution, and sudo install usage. Medium risky install findings should include global package install, direct VCS install, and `chmod +x`.
+- Comparing risky -> good fixture JSON should show a positive score delta and resolved risky install findings.
 
 Assessment contract checks:
 

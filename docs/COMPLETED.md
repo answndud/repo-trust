@@ -1014,3 +1014,12 @@
 - 코드/문서: `src/repotrust/finding_catalog.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `tests/test_docs.py`, `README.md`, `docs/finding-reference.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `repo-trust explain install.risky.uses_sudo`와 `repo-trust-kr explain security.no_policy` smoke가 title/category/severity/meaning/action을 출력했다. unknown finding ID는 exit code `1`과 대표 ID 예시를 반환했다. HTML fixture smoke에서 filter buttons, expand/collapse controls, `data-severity`, `data-category` 속성을 확인했다. `.venv/bin/python -m pytest -q`는 `136 passed`였다.
 - 결과: 사용자가 finding을 CLI에서 바로 해석하고, HTML 리포트에서 finding을 필터링/접기 탐색할 수 있다. 현재 active 작업은 없다.
+
+## 111: JSON report compare command
+
+- 완료일: 2026-05-06
+- 배경: RepoTrust가 단발성 검사 도구에서 개선 추적 도구로 확장되려면 사용자가 저장된 JSON 리포트 두 개를 비교해 점수와 finding 변화를 바로 확인할 수 있어야 했다.
+- 변경 내용: `repo-trust compare <old.json> <new.json>` / `repo-trust-kr compare <old.json> <new.json>` 명령을 추가했다. 두 RepoTrust JSON 리포트를 읽어 score delta, grade 변화, verdict 변화, added/resolved/severity-changed/persisting finding 요약을 출력한다. invalid JSON이나 RepoTrust JSON shape이 아닌 파일은 exit code `1`과 명확한 오류를 반환한다. README, testing guide, localized help, CLI 테스트를 갱신했다.
+- 코드/문서: `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: risky fixture JSON과 good fixture JSON을 생성한 뒤 `repo-trust compare` smoke에서 score `51 -> 100 (+49)`, grade `F -> A`, resolved findings `12`를 확인했다. `repo-trust-kr compare`도 같은 비교를 한국어 label로 출력했다. `.venv/bin/python -m pytest -q`는 `139 passed`였다.
+- 결과: 사용자가 개선 전/후 RepoTrust JSON 리포트를 비교해 해결된 finding과 새로 생긴 finding을 바로 파악할 수 있다. 현재 active 작업은 없다.

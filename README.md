@@ -49,7 +49,7 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 | 방식 | 명령 | 추천 상황 | 결과 |
 | --- | --- | --- | --- |
 | Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 터미널 workflow 선택 |
-| Command Mode | `repo-trust html/json/check/explain <대상 또는 finding ID>` | 반복 실행, 자동화, 문서화할 때 | HTML/JSON 파일, 터미널 대시보드, finding 설명 |
+| Command Mode | `repo-trust html/json/check/explain/compare <대상, finding ID, 리포트>` | 반복 실행, 자동화, 문서화할 때 | HTML/JSON 파일, 터미널 대시보드, finding 설명, 리포트 비교 |
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
@@ -139,6 +139,19 @@ repo-trust-kr explain security.no_policy
 ```
 
 `explain`은 저장소를 다시 검사하지 않고 finding ID의 영역, 기본 심각도, 의미, 추천 조치를 보여줍니다. HTML 리포트에서 ID를 발견한 뒤 터미널에서 자세히 확인할 때 유용합니다.
+
+### JSON 리포트 비교
+
+개선 전/후 JSON 리포트를 비교해 점수와 finding 변화를 확인할 수 있습니다.
+
+**입력할 명령**
+
+```bash
+repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json
+repo-trust-kr compare /tmp/repotrust-before.json /tmp/repotrust-after.json
+```
+
+`compare`는 저장소를 다시 검사하지 않습니다. 이미 저장된 두 JSON 리포트를 읽어 score delta, grade/verdict 변화, 새 finding, 해결된 finding, severity 변경 finding을 보여줍니다.
 
 ### 로컬 폴더를 HTML로 저장
 
@@ -301,6 +314,7 @@ repo-trust html tests/fixtures/repos/good-python --output /tmp/repotrust-good.ht
 repo-trust check tests/fixtures/repos/risky-install
 repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
 repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
+repo-trust compare /tmp/repotrust-risky.json /tmp/repotrust-good.json
 python -m json.tool /tmp/repotrust-good.json
 python -m json.tool /tmp/repotrust-risky.json
 ```

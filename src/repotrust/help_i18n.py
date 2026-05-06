@@ -18,6 +18,7 @@ Commands:
   check  Inspect a target and print a terminal dashboard.
   gate   Write JSON and fail when policy requirements are not met.
   explain Explain a finding ID.
+  compare Compare two JSON reports.
 
 Console Mode:
   repo-trust      Open the English workflow console.
@@ -37,6 +38,7 @@ Console Mode:
   check  파일 저장 없이 터미널 대시보드로 검사합니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
   explain finding ID의 의미와 추천 조치를 설명합니다.
+  compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
 
 콘솔 모드:
   repo-trust      영어 workflow 콘솔을 엽니다.
@@ -192,6 +194,30 @@ RepoTrust finding ID의 의미와 추천 조치를 설명합니다.
 
 인자:
   FINDING_ID  install.risky.uses_sudo 같은 finding ID입니다.
+
+옵션:
+  --help  영어 또는 한국어 도움말을 선택해 봅니다.
+""",
+    },
+    "compare": {
+        "en": """Usage: repo-trust compare [OPTIONS] OLD_JSON NEW_JSON
+
+Compare two RepoTrust JSON reports.
+
+Arguments:
+  OLD_JSON  Older RepoTrust JSON report.
+  NEW_JSON  Newer RepoTrust JSON report.
+
+Options:
+  --help  Choose English or Korean help and exit.
+""",
+        "ko": """사용법: repo-trust compare [옵션] OLD_JSON NEW_JSON
+
+두 RepoTrust JSON 리포트의 점수와 finding 변화를 비교합니다.
+
+인자:
+  OLD_JSON  이전 RepoTrust JSON 리포트입니다.
+  NEW_JSON  최신 RepoTrust JSON 리포트입니다.
 
 옵션:
   --help  영어 또는 한국어 도움말을 선택해 봅니다.

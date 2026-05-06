@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import date
 from enum import Enum
 from pathlib import Path
@@ -475,6 +476,34 @@ def explain(
     typer.echo(f"Recommended action: {reference.action}")
 
 
+@direct_app.command("compare", add_help_option=False)
+@direct_kr_app.command("compare", add_help_option=False)
+def compare(
+    ctx: typer.Context,
+    old_report: Annotated[Path, typer.Argument(help="Older RepoTrust JSON report.")],
+    new_report: Annotated[Path, typer.Argument(help="Newer RepoTrust JSON report.")],
+    help_requested: Annotated[
+        bool,
+        typer.Option(
+            "--help",
+            callback=_help_callback("compare"),
+            help=HELP_OPTION_HELP,
+            is_eager=True,
+        ),
+    ] = False,
+) -> None:
+    """Compare two RepoTrust JSON reports."""
+    locale = _product_locale(ctx)
+    try:
+        old_data = _load_report_json(old_report)
+        new_data = _load_report_json(new_report)
+    except ValueError as exc:
+        status_console.print(str(exc))
+        raise typer.Exit(code=1) from exc
+
+    typer.echo(_compare_reports_text(old_data, new_data, locale=locale))
+
+
 def _run_product_scan(
     *,
     target: str,
@@ -704,3 +733,96 @@ def _is_remote_result(result: ScanResult) -> bool:
 
 def _product_locale(ctx: typer.Context) -> str:
     return "ko" if ctx.command_path.split()[0].endswith("-kr") else "en"
+
+
+def _load_report_json(path: Path) -> dict:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise ValueError(f"Could not read report: {path}") from exc
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON report: {path}") from exc
+
+    required = {"schema_version", "score", "assessment", "findings"}
+    if not isinstance(data, dict) or not required <= data.keys():
+        raise ValueError(f"Not a RepoTrust JSON report: {path}")
+    if not isinstance(data.get("score"), dict) or not isinstance(data.get("assessment"), dict):
+        raise ValueError(f"Invalid RepoTrust JSON report shape: {path}")
+    if not isinstance(data.get("findings"), list):
+        raise ValueError(f"Invalid RepoTrust findings list: {path}")
+    return data
+
+
+def _compare_reports_text(old_data: dict, new_data: dict, *, locale: str) -> str:
+    old_findings = _finding_map(old_data)
+    new_findings = _finding_map(new_data)
+    old_ids = set(old_findings)
+    new_ids = set(new_findings)
+    added = sorted(new_ids - old_ids)
+    resolved = sorted(old_ids - new_ids)
+    persisting = sorted(old_ids & new_ids)
+    changed = [
+        finding_id
+        for finding_id in persisting
+        if old_findings[finding_id].get("severity") != new_findings[finding_id].get("severity")
+    ]
+
+    old_score = _score_total(old_data)
+    new_score = _score_total(new_data)
+    delta = new_score - old_score
+    old_grade = old_data["score"].get("grade", "?")
+    new_grade = new_data["score"].get("grade", "?")
+    old_verdict = old_data["assessment"].get("verdict", "?")
+    new_verdict = new_data["assessment"].get("verdict", "?")
+
+    if locale == "ko":
+        lines = [
+            "RepoTrust Report Compare",
+            f"점수: {old_score} -> {new_score} ({delta:+d})",
+            f"등급: {old_grade} -> {new_grade}",
+            f"판단: {old_verdict} -> {new_verdict}",
+            "",
+            f"새 finding: {len(added)}",
+        ]
+        lines.extend(f"+ {finding_id}" for finding_id in added)
+        lines.append(f"해결된 finding: {len(resolved)}")
+        lines.extend(f"- {finding_id}" for finding_id in resolved)
+        lines.append(f"심각도 변경: {len(changed)}")
+        lines.extend(
+            f"* {finding_id}: {old_findings[finding_id].get('severity')} -> {new_findings[finding_id].get('severity')}"
+            for finding_id in changed
+        )
+        lines.append(f"유지된 finding: {len(persisting)}")
+        return "\n".join(lines)
+
+    lines = [
+        "RepoTrust Report Compare",
+        f"Score: {old_score} -> {new_score} ({delta:+d})",
+        f"Grade: {old_grade} -> {new_grade}",
+        f"Verdict: {old_verdict} -> {new_verdict}",
+        "",
+        f"Added findings: {len(added)}",
+    ]
+    lines.extend(f"+ {finding_id}" for finding_id in added)
+    lines.append(f"Resolved findings: {len(resolved)}")
+    lines.extend(f"- {finding_id}" for finding_id in resolved)
+    lines.append(f"Severity changes: {len(changed)}")
+    lines.extend(
+        f"* {finding_id}: {old_findings[finding_id].get('severity')} -> {new_findings[finding_id].get('severity')}"
+        for finding_id in changed
+    )
+    lines.append(f"Persisting findings: {len(persisting)}")
+    return "\n".join(lines)
+
+
+def _finding_map(report: dict) -> dict[str, dict]:
+    findings = {}
+    for finding in report.get("findings", []):
+        if isinstance(finding, dict) and isinstance(finding.get("id"), str):
+            findings[finding["id"]] = finding
+    return findings
+
+
+def _score_total(report: dict) -> int:
+    value = report["score"].get("total", 0)
+    return value if isinstance(value, int) else 0

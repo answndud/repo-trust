@@ -268,6 +268,7 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "check" in stdout
     assert "gate" in stdout
     assert "explain" in stdout
+    assert "compare" in stdout
     assert "RepoTrust Console" not in stdout
 
 
@@ -283,6 +284,7 @@ def test_direct_cli_help_can_show_korean_product_commands():
     assert "파일 저장 없이 터미널 대시보드로 검사합니다." in stdout
     assert "JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다." in stdout
     assert "finding ID의 의미와 추천 조치를 설명합니다." in stdout
+    assert "두 JSON 리포트의 점수와 finding 변화를 비교합니다." in stdout
 
 
 def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
@@ -295,6 +297,7 @@ def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
     assert "json" in stdout
     assert "check" in stdout
     assert "explain" in stdout
+    assert "compare" in stdout
     assert "RepoTrust 한국어 콘솔" not in stdout
 
 
@@ -365,6 +368,97 @@ def test_direct_cli_explain_unknown_finding_exits_with_suggestions():
     assert result.exit_code == 1
     assert "Unknown finding ID: unknown.finding" in stderr
     assert "install.risky.uses_sudo" in stderr
+
+
+def test_direct_cli_compare_reports(tmp_path):
+    old_report = tmp_path / "old.json"
+    new_report = tmp_path / "new.json"
+
+    old_result = runner.invoke(
+        direct_app,
+        ["json", "tests/fixtures/repos/risky-install", "--output", str(old_report)],
+        prog_name="repo-trust",
+    )
+    new_result = runner.invoke(
+        direct_app,
+        ["json", "tests/fixtures/repos/good-python", "--output", str(new_report)],
+        prog_name="repo-trust",
+    )
+    assert old_result.exit_code == 0
+    assert new_result.exit_code == 0
+
+    result = runner.invoke(
+        direct_app,
+        ["compare", str(old_report), str(new_report)],
+        prog_name="repo-trust",
+    )
+    stdout = plain_output(result.stdout)
+
+    assert result.exit_code == 0
+    assert "RepoTrust Report Compare" in stdout
+    assert "Score: 51 -> 100 (+49)" in stdout
+    assert "Grade: F -> A" in stdout
+    assert "Resolved findings: 12" in stdout
+    assert "- install.risky.uses_sudo" in stdout
+    assert "Added findings: 0" in stdout
+
+
+def test_direct_kr_cli_compare_reports(tmp_path):
+    old_report = tmp_path / "old.json"
+    new_report = tmp_path / "new.json"
+    old_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2",
+                "score": {"total": 80, "grade": "B"},
+                "assessment": {"verdict": "usable_after_review"},
+                "findings": [
+                    {"id": "security.no_policy", "severity": "medium"},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    new_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2",
+                "score": {"total": 92, "grade": "A"},
+                "assessment": {"verdict": "usable_by_current_checks"},
+                "findings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        direct_kr_app,
+        ["compare", str(old_report), str(new_report)],
+        prog_name="repo-trust-kr",
+    )
+    stdout = plain_output(result.stdout)
+
+    assert result.exit_code == 0
+    assert "점수: 80 -> 92 (+12)" in stdout
+    assert "해결된 finding: 1" in stdout
+    assert "- security.no_policy" in stdout
+
+
+def test_direct_cli_compare_invalid_report_exits_cleanly(tmp_path):
+    old_report = tmp_path / "old.json"
+    new_report = tmp_path / "new.json"
+    old_report.write_text("{}", encoding="utf-8")
+    new_report.write_text("not json", encoding="utf-8")
+
+    result = runner.invoke(
+        direct_app,
+        ["compare", str(old_report), str(new_report)],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 1
+    assert "Not a RepoTrust JSON report" in stderr
 
 
 def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
