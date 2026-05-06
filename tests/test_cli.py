@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from datetime import date
 from pathlib import Path
@@ -689,6 +690,60 @@ def test_direct_cli_interactive_compare_json_workflow_writes_html(tmp_path, monk
     assert "Wrote html comparison report" in stderr
     assert len(compare_reports) == 1
     html = compare_reports[0].read_text(encoding="utf-8")
+    assert "Improved" in html
+    assert "Improvements: 1" in html
+    assert "security.no_policy" in html
+
+
+def test_direct_cli_interactive_compare_json_workflow_accepts_recent_numbers(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    result_dir = tmp_path / "result"
+    result_dir.mkdir()
+    old_report = result_dir / "before.json"
+    new_report = result_dir / "after.json"
+    old_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2",
+                "score": {"total": 50, "grade": "F"},
+                "assessment": {"verdict": "do_not_install_before_review"},
+                "target": {"raw": "before"},
+                "findings": [{"id": "security.no_policy", "severity": "medium"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    new_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2",
+                "score": {"total": 100, "grade": "A"},
+                "assessment": {"verdict": "usable_by_current_checks"},
+                "target": {"raw": "after"},
+                "findings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    os.utime(old_report, (100, 100))
+    os.utime(new_report, (200, 200))
+
+    result = runner.invoke(
+        direct_app,
+        [],
+        input="m\n2\n1\ncompare.html\n",
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+    output = tmp_path / "result" / f"compare-{date.today().isoformat()}.html"
+
+    assert result.exit_code == 0
+    assert "recent json reports" in stderr
+    assert "Enter a number from the list, or type a path." in stderr
+    assert "before.json" in stderr
+    assert "after.json" in stderr
+    assert output.exists()
+    html = output.read_text(encoding="utf-8")
     assert "Improved" in html
     assert "Improvements: 1" in html
     assert "security.no_policy" in html

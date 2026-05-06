@@ -1077,3 +1077,12 @@
 - 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: Console Mode smoke에서 `m`, old/new JSON path, 기본 output 입력으로 `result/repotrust-compare-2026-05-06.html`이 생성됐고 HTML에 `Improved`, `Improvements: 12`, `Copy explain`이 포함됐다. `.venv/bin/python -m pytest -q`는 `142 passed`였다.
 - 결과: 사용자는 `repo-trust` 또는 `repo-trust-kr` 메뉴에서 두 JSON 리포트를 입력해 브라우저용 비교 HTML을 만들 수 있다. 현재 active 작업은 없다.
+
+## 118: Console compare recent JSON picker
+
+- 완료일: 2026-05-06
+- 배경: Console Mode에서 compare HTML을 만들 수 있게 됐지만, 이전/최신 JSON 경로를 직접 복사해 입력해야 했다. 초보 사용자가 최근 리포트 목록에서 번호로 선택할 수 있게 해야 했다.
+- 변경 내용: `[M] Compare JSON` workflow에 최근 JSON 리포트 목록을 추가했다. `result/` 안의 최근 `.json` 파일만 번호, 경로, 수정 시간과 함께 보여주고, 이전/최신 prompt는 목록 번호 또는 직접 경로를 모두 허용한다. JSON 리포트가 없으면 직접 경로 입력 workflow를 그대로 유지한다. README Console compare 예시와 testing guide 기대 동작을 번호 선택 기준으로 갱신했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: Console Mode smoke에서 최근 JSON 목록의 `2`, `1` 번호를 입력해 `result/repotrust-compare-2026-05-06.html`을 생성했고 HTML에 `Improved`, `Improvements: 12`, `security.no_policy`가 포함됐다. `.venv/bin/python -m pytest -q`는 `143 passed`였다. `git diff --check`도 통과했다.
+- 결과: Console Mode 사용자는 JSON 파일 경로를 직접 복사하지 않고 최근 리포트 번호만으로 before/after HTML 비교 리포트를 만들 수 있다. 현재 active 작업은 없다.

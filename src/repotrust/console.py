@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Final
 
@@ -94,6 +95,7 @@ def _run_console_mode_body(
             console=console,
             text=text,
             locale=locale,
+            result_dir=result_dir,
         )
         if workflow is None:
             console.print(muted(text["back_message"]))
@@ -172,6 +174,27 @@ def _print_recent_reports(
     console.print(table)
 
 
+def _print_recent_json_reports(
+    *,
+    console: Console,
+    result_dir: Path,
+    text: ConsoleText,
+) -> list[Path]:
+    reports = _recent_json_reports(result_dir, limit=10)
+    console.print(kali_section(str(text["recent_json_reports_title"]).lower()))
+    table = kali_table()
+    table.add_column(str(text["number_column"]), justify="right", style="blue")
+    table.add_column(str(text["path_column"]))
+    table.add_column(str(text["modified_column"]))
+    if reports:
+        for index, path in enumerate(reports, start=1):
+            table.add_row(str(index), str(path), _mtime_label(path))
+    else:
+        table.add_row("-", str(text["no_json_reports_found"]), "-")
+    console.print(table)
+    return reports
+
+
 def _recent_reports(result_dir: Path, limit: int) -> list[Path]:
     if not result_dir.exists():
         return []
@@ -184,12 +207,19 @@ def _recent_reports(result_dir: Path, limit: int) -> list[Path]:
     return reports[:limit]
 
 
+def _recent_json_reports(result_dir: Path, limit: int) -> list[Path]:
+    return [path for path in _recent_reports(result_dir, limit=10_000) if path.suffix.lower() == ".json"][
+        :limit
+    ]
+
+
 def _prompt_workflow(
     choice: str,
     *,
     console: Console,
     text: ConsoleText,
     locale: ConsoleLocale,
+    result_dir: Path,
 ) -> ConsoleWorkflow | None:
     if choice == "l":
         _print_selected(console=console, label=str(text["selected_local"]))
@@ -240,16 +270,25 @@ def _prompt_workflow(
         )
     if choice == "m":
         _print_selected(console=console, label=str(text["selected_compare"]))
-        old_report = _ask_value(
+        recent_json_reports = _print_recent_json_reports(
+            console=console,
+            result_dir=result_dir,
+            text=text,
+        )
+        old_report = _ask_report_path(
             console=console,
             prompt=str(text["old_json_prompt"]),
+            reports=recent_json_reports,
+            number_hint=str(text["report_number_hint"]),
             controls=str(text["input_controls"]),
         )
         if old_report == BACK:
             return None
-        new_report = _ask_value(
+        new_report = _ask_report_path(
             console=console,
             prompt=str(text["new_json_prompt"]),
+            reports=recent_json_reports,
+            number_hint=str(text["report_number_hint"]),
             controls=str(text["input_controls"]),
         )
         if new_report == BACK:
@@ -266,8 +305,8 @@ def _prompt_workflow(
         return ConsoleWorkflow(
             workflow_kind="compare",
             locale=locale,
-            old_report=Path(old_report),
-            new_report=Path(new_report),
+            old_report=old_report,
+            new_report=new_report,
             output=Path(output),
         )
     _print_selected(console=console, label=str(text["selected_check"]))
@@ -322,6 +361,29 @@ def _ask_value(
     return value
 
 
+def _ask_report_path(
+    *,
+    console: Console,
+    prompt: str,
+    reports: list[Path],
+    number_hint: str,
+    controls: str | None = None,
+) -> Path | str:
+    value = _ask_value(
+        console=console,
+        prompt=prompt,
+        example=number_hint if reports else None,
+        controls=controls,
+    )
+    if value == BACK:
+        return BACK
+    if value.isdigit():
+        index = int(value)
+        if 1 <= index <= len(reports):
+            return reports[index - 1]
+    return Path(value)
+
+
 def _print_selected(*, console: Console, label: str) -> None:
     console.print()
     console.print(f"[green]{label}[/]")
@@ -337,8 +399,13 @@ def _normalize_menu_choice(value: str) -> str:
             "4": "c",
             "5": "r",
             "6": "?",
+            "7": "m",
         }.get(str(int(normalized)), normalized)
     return normalized
+
+
+def _mtime_label(path: Path) -> str:
+    return datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
 
 
 def _pad_cells(value: str, width: int) -> str:

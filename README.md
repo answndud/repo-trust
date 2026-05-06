@@ -90,15 +90,19 @@ M  JSON 비교      개선 전/후 HTML 만들기
 
 ### Console Mode에서 JSON 비교 HTML 만들기
 
-명령어 옵션을 외우기 어렵다면 `repo-trust-kr`에서 `[M] JSON 비교`를 선택하세요. 이전 JSON 리포트 경로, 최신 JSON 리포트 경로, 저장할 HTML 파일 이름을 차례대로 입력하면 브라우저에서 열 수 있는 비교 리포트를 만듭니다.
+명령어 옵션을 외우기 어렵다면 `repo-trust-kr`에서 `[M] JSON 비교`를 선택하세요. `result/`에 저장된 최근 JSON 리포트가 있으면 목록이 먼저 보이고, 번호를 입력해 이전/최신 리포트를 고를 수 있습니다. 목록에 없는 파일은 경로를 직접 입력해도 됩니다.
 
 ```text
 → 키를 누르세요
 m
+최근 JSON 리포트
+번호  경로                                      수정 시간
+1     result/repotrust-after-2026-05-06.json   2026-05-06 13:20
+2     result/repotrust-before-2026-05-06.json  2026-05-06 13:10
 이전 JSON 리포트 경로 입력:
-> /tmp/repotrust-before.json
+> 2
 최신 JSON 리포트 경로 입력:
-> /tmp/repotrust-after.json
+> 1
 비교 HTML 저장 경로 입력: (기본값 repotrust-compare.html)
 >
 ```
