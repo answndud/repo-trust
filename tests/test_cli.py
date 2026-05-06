@@ -403,6 +403,110 @@ def test_direct_cli_compare_reports(tmp_path):
     assert "Added findings: 0" in stdout
 
 
+def test_direct_cli_compare_writes_markdown_report(tmp_path):
+    old_report = tmp_path / "old.json"
+    new_report = tmp_path / "new.json"
+    output = tmp_path / "compare.md"
+
+    old_result = runner.invoke(
+        direct_app,
+        ["json", "tests/fixtures/repos/risky-install", "--output", str(old_report)],
+        prog_name="repo-trust",
+    )
+    new_result = runner.invoke(
+        direct_app,
+        ["json", "tests/fixtures/repos/good-python", "--output", str(new_report)],
+        prog_name="repo-trust",
+    )
+    assert old_result.exit_code == 0
+    assert new_result.exit_code == 0
+
+    result = runner.invoke(
+        direct_app,
+        [
+            "compare",
+            str(old_report),
+            str(new_report),
+            "--format",
+            "markdown",
+            "--output",
+            str(output),
+        ],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+    markdown = output.read_text(encoding="utf-8")
+
+    assert result.exit_code == 0
+    assert "Wrote markdown comparison report" in stderr
+    assert "# RepoTrust Compare Report" in markdown
+    assert "- Score: **51 -> 100 (+49)**" in markdown
+    assert "## Resolved findings: 12" in markdown
+    assert "- `- install.risky.uses_sudo`" in markdown
+
+
+def test_direct_cli_compare_writes_html_report(tmp_path):
+    old_report = tmp_path / "old.json"
+    new_report = tmp_path / "new.json"
+    output = tmp_path / "compare.html"
+    old_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2",
+                "score": {"total": 80, "grade": "B"},
+                "assessment": {"verdict": "usable_after_review"},
+                "target": {"raw": "before"},
+                "findings": [
+                    {"id": "security.no_policy", "severity": "medium"},
+                    {"id": "security.no_ci", "severity": "low"},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    new_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2",
+                "score": {"total": 70, "grade": "C"},
+                "assessment": {"verdict": "do_not_install_before_review"},
+                "target": {"raw": "after"},
+                "findings": [
+                    {"id": "security.no_ci", "severity": "medium"},
+                    {"id": "install.risky.uses_sudo", "severity": "high"},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        direct_app,
+        [
+            "compare",
+            str(old_report),
+            str(new_report),
+            "--format",
+            "html",
+            "--output",
+            str(output),
+        ],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+    html = output.read_text(encoding="utf-8")
+
+    assert result.exit_code == 0
+    assert "Wrote html comparison report" in stderr
+    assert "<!doctype html>" in html
+    assert "RepoTrust Compare Report" in html
+    assert "80 -&gt; 70 (-10)" in html
+    assert "install.risky.uses_sudo" in html
+    assert "security.no_policy" in html
+    assert "security.no_ci" in html
+    assert "low -> medium" in html
+
+
 def test_direct_kr_cli_compare_reports(tmp_path):
     old_report = tmp_path / "old.json"
     new_report = tmp_path / "new.json"

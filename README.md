@@ -4,7 +4,7 @@ RepoTrust is a Python CLI that helps you decide whether an open source repositor
 
 - Offline-first by default: local scans use no network, and GitHub URL scans only parse the URL unless you explicitly pass `--remote`.
 - GitHub Releases are the official distribution channel; PyPI/TestPyPI publishing is intentionally out of scope.
-- Reports are available as terminal dashboards, JSON, and static HTML.
+- Reports are available as terminal dashboards, JSON, static HTML, and saved comparison reports.
 - RepoTrust is not a vulnerability scanner or safety guarantee. It surfaces trust signals, missing evidence, and risky install patterns so humans can review them before running commands.
 
 RepoTrust는 GitHub 저장소나 로컬 프로젝트를 쓰기 전에 기본 신뢰 신호를 점검하는 Python CLI 도구입니다.
@@ -152,6 +152,51 @@ repo-trust-kr compare /tmp/repotrust-before.json /tmp/repotrust-after.json
 ```
 
 `compare`는 저장소를 다시 검사하지 않습니다. 이미 저장된 두 JSON 리포트를 읽어 score delta, grade/verdict 변화, 새 finding, 해결된 finding, severity 변경 finding을 보여줍니다.
+
+비교 결과를 파일로 보관하거나 다른 사람에게 공유하려면 Markdown 또는 HTML로 저장합니다.
+
+```bash
+repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format markdown --output /tmp/repotrust-compare.md
+repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format html --output /tmp/repotrust-compare.html
+```
+
+HTML 파일은 브라우저에서 열어 읽을 수 있고, Markdown 파일은 GitHub issue, PR 설명, 문서에 붙여 넣기 쉽습니다.
+
+### 초보자용: 개선 전/후 비교 파일 만들기
+
+코드를 잘 몰라도 아래 순서대로 실행하면 “수정 전에는 무엇이 문제였고, 수정 후에는 무엇이 좋아졌는지”를 파일로 남길 수 있습니다. 이 예시는 RepoTrust 안에 들어 있는 연습용 저장소를 사용합니다.
+
+**1. 위험한 예시를 JSON으로 저장**
+
+```bash
+repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-before.json
+```
+
+**2. 좋은 예시를 JSON으로 저장**
+
+```bash
+repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-after.json
+```
+
+**3. 비교 결과를 브라우저용 HTML로 저장**
+
+```bash
+repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format html --output /tmp/repotrust-compare.html
+```
+
+**4. 비교 결과를 문서용 Markdown으로 저장**
+
+```bash
+repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format markdown --output /tmp/repotrust-compare.md
+```
+
+**결과를 읽는 법**
+
+- `Score`가 올라가면 전반적인 신뢰 신호가 개선된 것입니다.
+- `Resolved findings`는 사라진 문제입니다. 숫자가 많을수록 개선된 항목이 많습니다.
+- `Added findings`는 새로 생긴 문제입니다. 0이어야 가장 좋습니다.
+- `Severity changes`는 같은 finding의 심각도가 바뀐 경우입니다.
+- `Persisting findings`는 아직 남아 있는 문제입니다. HTML/JSON 리포트에서 해당 finding ID를 다시 확인하세요.
 
 ### 로컬 폴더를 HTML로 저장
 
@@ -315,6 +360,8 @@ repo-trust check tests/fixtures/repos/risky-install
 repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
 repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
 repo-trust compare /tmp/repotrust-risky.json /tmp/repotrust-good.json
+repo-trust compare /tmp/repotrust-risky.json /tmp/repotrust-good.json --format html --output /tmp/repotrust-compare.html
+repo-trust compare /tmp/repotrust-risky.json /tmp/repotrust-good.json --format markdown --output /tmp/repotrust-compare.md
 python -m json.tool /tmp/repotrust-good.json
 python -m json.tool /tmp/repotrust-risky.json
 ```

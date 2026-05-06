@@ -55,6 +55,8 @@ For config smoke checks, use the committed CI policy template:
 .venv/bin/repo-trust gate tests/fixtures/repos/good-python --config examples/repotrust.toml --output /tmp/repotrust-gate-good.json
 .venv/bin/repo-trust gate tests/fixtures/repos/risky-install --config examples/repotrust.toml --output /tmp/repotrust-gate-fail.json || test $? -eq 1
 .venv/bin/repo-trust compare /tmp/repotrust-gate-fail.json /tmp/repotrust-gate-good.json
+.venv/bin/repo-trust compare /tmp/repotrust-gate-fail.json /tmp/repotrust-gate-good.json --format html --output /tmp/repotrust-gate-compare.html
+.venv/bin/repo-trust compare /tmp/repotrust-gate-fail.json /tmp/repotrust-gate-good.json --format markdown --output /tmp/repotrust-gate-compare.md
 .venv/bin/python -m json.tool /tmp/repotrust-gate-good.json
 .venv/bin/python -m json.tool /tmp/repotrust-gate-fail.json
 ```
@@ -74,6 +76,7 @@ Expected behavior:
 - `repo-trust explain <finding-id>` prints a known finding's category, default severity, meaning, and recommended action without scanning a target.
 - `repo-trust explain <unknown-id>` exits with code `1` and suggests known finding IDs.
 - `repo-trust compare <old.json> <new.json>` compares saved JSON reports without scanning and shows score, grade, verdict, added findings, resolved findings, severity changes, and persisting finding count.
+- `repo-trust compare <old.json> <new.json> --format html/markdown --output <path>` writes a shareable comparison file and prints the saved path on stderr.
 - `repo-trust compare` exits with code `1` for invalid JSON or files that do not look like RepoTrust JSON reports.
 - Static HTML reports should include severity/category finding filters, expand/collapse controls, and copy buttons for finding ID / `repo-trust explain <id>` while still rendering finding details without JavaScript.
 - Product CLI GitHub URL commands default to parse-only without GitHub API access and never clone repositories.
@@ -103,7 +106,7 @@ Expected behavior:
 | `repo-trust check` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched`; terminal report only | stderr RESULT dashboard |
 | `repo-trust gate` with passing policy | 0 | JSON stdout or `--output` file | stderr summary |
 | `repo-trust gate` with failing score/profile policy | 1 | JSON still emitted first | stderr summary and policy failure |
-| `repo-trust compare` with two valid JSON reports | 0 | terminal comparison summary | no scan |
+| `repo-trust compare` with two valid JSON reports | 0 | terminal comparison summary, or comparison file with `--output` | no scan |
 | `repo-trust compare` with invalid or non-RepoTrust JSON | 1 | no comparison | error on stderr |
 | `repo-trust ... --parse-only` with GitHub URL | 0 unless `--fail-under` fails | parse-only finding `target.github_not_fetched` | stderr RESULT dashboard |
 | `repo-trust ... --remote` with GitHub URL and API/auth/rate-limit failure finding | 0 unless `--fail-under` fails | remote finding in report | stderr RESULT dashboard or summary |
@@ -133,6 +136,8 @@ Generate sample reports from fixtures:
 .venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
 .venv/bin/repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
 .venv/bin/repo-trust compare /tmp/repotrust-risky.json /tmp/repotrust-good.json
+.venv/bin/repo-trust compare /tmp/repotrust-risky.json /tmp/repotrust-good.json --format html --output /tmp/repotrust-compare.html
+.venv/bin/repo-trust compare /tmp/repotrust-risky.json /tmp/repotrust-good.json --format markdown --output /tmp/repotrust-compare.md
 ```
 
 Validate redirected JSON:

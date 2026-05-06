@@ -1050,3 +1050,12 @@
 - 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `gh run watch 25416142099 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.3 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.3`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 `repo-trust --version`은 `0.2.3`을 출력했고, `explain`, fixture JSON generation, risky-to-good `compare`, JSON `json.tool` 검증이 성공했다.
 - 결과: v0.2.3은 https://github.com/answndud/repo-trust/releases/tag/v0.2.3 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
+
+## 115: Compare report export
+
+- 완료일: 2026-05-06
+- 배경: `repo-trust compare`는 개선 전/후 JSON 리포트 차이를 터미널에만 보여줬다. 초보 사용자도 결과를 브라우저로 열거나 문서에 붙여 공유할 수 있도록 파일 출력이 필요했다.
+- 변경 내용: compare summary 계산과 text/Markdown/HTML 렌더링을 `src/repotrust/compare_reports.py`로 분리했다. `repo-trust compare`와 `repo-trust-kr compare`에 `--format text|markdown|html`과 `--output` 옵션을 추가했고, 기존 terminal text 출력은 기본값으로 유지했다. Markdown/HTML output 테스트를 추가하고 localized help를 갱신했다. README에 초보자용 “JSON 저장 -> 비교 HTML 저장 -> 비교 Markdown 저장 -> 결과 읽는 법” 가이드를 추가했으며 testing guide의 smoke command와 exit-code matrix를 갱신했다.
+- 코드/문서: `src/repotrust/compare_reports.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `tests/test_cli.py -k compare`는 `5 passed`였다. `.venv/bin/python -m pytest -q`는 `141 passed`였다. `repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format html --output /tmp/repotrust-compare.html`와 `--format markdown --output /tmp/repotrust-compare.md` smoke가 성공했고, 두 파일 모두 score `51 -> 100 (+49)`와 `install.risky.uses_sudo` resolved finding을 포함했다. `git diff --check`도 통과했다.
+- 결과: 사용자는 저장된 두 JSON 리포트의 차이를 터미널, Markdown, HTML 중 원하는 형식으로 확인하고 공유할 수 있다. 현재 active 작업은 없다.
