@@ -1032,3 +1032,12 @@
 - 코드/문서: `src/repotrust/reports.py`, `tests/test_scanner.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: focused HTML renderer test는 통과했다. risky fixture HTML smoke에서 `ID 복사`, `explain 명령 복사`, `data-copy-value="repo-trust explain install.risky.uses_sudo"`, Clipboard API, fallback copy script를 확인했다. `.venv/bin/python -m pytest -q`는 `139 passed`였다.
 - 결과: HTML 리포트에서 finding ID와 explain 명령을 바로 복사해 CLI 설명 workflow로 이어갈 수 있다. 현재 active 작업은 없다.
+
+## 113: v0.2.3 release preparation
+
+- 완료일: 2026-05-06
+- 배경: `explain`, HTML finding filters/copy actions, `compare` 기능이 사용자에게 직접 가치가 있는 기능 묶음이므로 patch release 후보로 준비해야 했다.
+- 변경 내용: package version을 `0.2.3`으로 올리고 README GitHub Release install URL, Console Mode 예시, CLI version tests를 `0.2.3`에 맞췄다. CHANGELOG에 v0.2.3 section을 추가해 `explain`, HTML finding UX, `compare`, risky install coverage, Console JSON prompt, Markdown sorting 개선을 정리했다. 작업 상태 문서를 release prep 완료 상태로 정리했다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: version focused tests 5개는 통과했고 `repo-trust`, `repo-trust-kr`, `repotrust`는 모두 `0.2.3`을 출력했다. `.venv/bin/python -m pytest -q`는 `139 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.3/dist`는 wheel과 sdist를 생성했다. Clean wheel install smoke에서 세 entrypoint version, `explain`, fixture JSON generation, risky-to-good `compare`, risky fixture HTML, JSON `json.tool` 검증이 성공했다. Self-scan JSON은 score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었다.
+- 결과: v0.2.3 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. push/tag/GitHub Release publish는 아직 진행하지 않았다. 현재 active 작업은 없다.

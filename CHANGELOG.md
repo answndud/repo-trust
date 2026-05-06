@@ -6,6 +6,36 @@ All notable changes to RepoTrust are documented here.
 
 No changes yet.
 
+## v0.2.3 - 2026-05-06
+
+### Added
+
+- `repo-trust explain <finding-id>` and `repo-trust-kr explain <finding-id>` commands to explain a finding's category, default severity, meaning, and recommended action without rescanning a repository.
+- Static HTML finding filters for severity and category, plus expand/collapse controls for finding detail sections.
+- Static HTML copy actions for each finding card: copy the finding ID or copy `repo-trust explain <finding-id>`.
+- `repo-trust compare <old.json> <new.json>` and `repo-trust-kr compare <old.json> <new.json>` commands to compare saved JSON reports by score, grade, verdict, added findings, resolved findings, severity changes, and persisting findings.
+
+### Changed
+
+- Risky install fixture coverage now includes positive cases for sudo, global package install, and executable permission changes.
+- HTML and Markdown reports now clarify that summary priority IDs show only the top findings while the full finding list remains available in report output.
+- Console Mode JSON export now prompts for a generic repository target so local paths and GitHub URLs are both discoverable.
+- README and validation docs now describe sample report comparison, finding explanation, HTML filtering, and copy workflows.
+
+### Fixed
+
+- HTML finding titles and explanations now cover all risky install pattern IDs.
+- Markdown findings are sorted by severity to match the report text.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 139 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.3/dist` built `repotrust-0.2.3.tar.gz` and `repotrust-0.2.3-py3-none-any.whl`.
+- Clean wheel install smoke verified `repo-trust`, `repo-trust-kr`, and `repotrust` version `0.2.3`.
+- Clean wheel smoke verified `explain`, fixture JSON generation, risky-to-good `compare`, HTML finding copy actions, and JSON `json.tool`.
+- Fixture smoke verified risky-to-good JSON comparison with score `51 -> 100 (+49)` and 12 resolved findings.
+- Local self-scan returned score `98`, grade `A`, high confidence, full coverage, and no medium/high findings.
+
 ## v0.2.2 - 2026-04-30
 
 ### Changed
