@@ -20,6 +20,7 @@ from .config import (
     load_config,
 )
 from .console import ConsoleWorkflow, run_console_mode
+from .console_i18n import console_text
 from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
 from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
@@ -630,6 +631,7 @@ def _run_console_compare_workflow(workflow: ConsoleWorkflow) -> None:
         status_console.print(f"html 비교 리포트를 [bold]{output}[/bold]에 저장했습니다.")
     else:
         status_console.print(f"Wrote html comparison report to [bold]{output}[/bold]")
+    status_console.print(f"[dim]{console_text(workflow.locale)['compare_saved_hint']}[/dim]")
 
 
 def _run_scan(

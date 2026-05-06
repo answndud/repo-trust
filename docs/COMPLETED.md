@@ -1086,3 +1086,12 @@
 - 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: Console Mode smoke에서 최근 JSON 목록의 `2`, `1` 번호를 입력해 `result/repotrust-compare-2026-05-06.html`을 생성했고 HTML에 `Improved`, `Improvements: 12`, `security.no_policy`가 포함됐다. `.venv/bin/python -m pytest -q`는 `143 passed`였다. `git diff --check`도 통과했다.
 - 결과: Console Mode 사용자는 JSON 파일 경로를 직접 복사하지 않고 최근 리포트 번호만으로 before/after HTML 비교 리포트를 만들 수 있다. 현재 active 작업은 없다.
+
+## 119: Console recent report clarity
+
+- 완료일: 2026-05-06
+- 배경: Console Mode에서 compare HTML을 만들 수 있지만, 저장 후 사용자가 `[R] Reports`에서 어떤 파일이 비교 리포트인지 바로 구분하기 어려웠다.
+- 변경 내용: Recent Reports의 type label을 파일 확장자 대신 용도 중심으로 표시하도록 개선했다. JSON은 `json report`, 일반 HTML은 `html report`, 파일명에 `compare`가 들어간 HTML은 `compare html`, Markdown은 `markdown report`로 표시한다. compare workflow 완료 후에는 `[R] Reports`에서 저장 파일을 다시 찾을 수 있다는 안내를 출력한다. README와 testing guide도 새 안내와 type label 기대값에 맞게 갱신했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: Console Mode smoke에서 compare HTML 생성 후 `Use [R] Reports from Console Mode to find this file later.` 안내를 확인했다. 이어서 `[R] Reports` smoke에서 `result/repotrust-compare-2026-05-06.html`은 `compare html`, JSON 파일은 `json report`로 표시됐다. `.venv/bin/python -m pytest -q`는 `143 passed`였고 `git diff --check`도 통과했다.
+- 결과: 사용자는 compare HTML을 저장한 뒤 최근 리포트 목록에서 비교 리포트를 쉽게 식별하고 다시 찾을 수 있다. 현재 active 작업은 없다.

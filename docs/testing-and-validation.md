@@ -70,6 +70,7 @@ Expected behavior:
 - Console Mode should show `Selected:` feedback, GitHub URL example input, `[B] Back` target-input control, and a processing line before the result dashboard.
 - Console Mode JSON export should use a generic repository target prompt so local paths and GitHub URLs are both discoverable.
 - Console Mode JSON compare should list recent JSON reports, accept a list number or direct path for older/newer JSON report paths, default the output to `repotrust-compare.html`, and write an HTML comparison report under `result/` when the output path is relative.
+- Console Mode recent reports should label saved files by purpose, including `compare html`, `html report`, and `json report`; compare workflow completion should remind users that `[R] Reports` can find the saved file later.
 - Command Mode/help terminal UI should include `repotrust㉿` and `└─$`, and product terminal sources should not reintroduce pink/magenta/bright-green theme strings.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.

@@ -168,7 +168,7 @@ def _print_recent_reports(
     table.add_column(str(text["type_column"]))
     if reports:
         for index, path in enumerate(reports, start=1):
-            table.add_row(str(index), str(path), path.suffix.lstrip(".") or "report")
+            table.add_row(str(index), str(path), _report_type_label(path, text))
     else:
         table.add_row("-", str(text["no_reports_found"]), "-")
     console.print(table)
@@ -406,6 +406,20 @@ def _normalize_menu_choice(value: str) -> str:
 
 def _mtime_label(path: Path) -> str:
     return datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
+
+
+def _report_type_label(path: Path, text: ConsoleText) -> str:
+    suffix = path.suffix.lower()
+    stem = path.stem.lower()
+    if suffix == ".json":
+        return str(text["json_report_type"])
+    if suffix == ".html" and "compare" in stem:
+        return str(text["compare_html_report_type"])
+    if suffix == ".html":
+        return str(text["html_report_type"])
+    if suffix == ".md":
+        return str(text["markdown_report_type"])
+    return suffix.lstrip(".") or "report"
 
 
 def _pad_cells(value: str, width: int) -> str:

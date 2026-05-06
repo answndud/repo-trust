@@ -688,6 +688,7 @@ def test_direct_cli_interactive_compare_json_workflow_writes_html(tmp_path, monk
     assert "Enter newer JSON report path:" in stderr
     assert "Enter comparison HTML output path:" in stderr
     assert "Wrote html comparison report" in stderr
+    assert "Use [R] Reports from Console Mode to find this file later." in stderr
     assert len(compare_reports) == 1
     html = compare_reports[0].read_text(encoding="utf-8")
     assert "Improved" in html
@@ -784,6 +785,7 @@ def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
     result_dir.mkdir()
     (result_dir / "repo-2026-04-28.html").write_text("<html></html>", encoding="utf-8")
     (result_dir / "repo-2026-04-28.json").write_text("{}", encoding="utf-8")
+    (result_dir / "repo-compare-2026-04-28.html").write_text("<html></html>", encoding="utf-8")
 
     result = runner.invoke(direct_app, [], input="05\n", prog_name="repo-trust")
 
@@ -792,6 +794,10 @@ def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
     assert "recent reports" in result.stderr
     assert "repo-2026-04-28.html" in result.stderr
     assert "repo-2026-04-28.json" in result.stderr
+    assert "repo-compare-2026-04-28.html" in result.stderr
+    assert "compare html" in result.stderr
+    assert "json report" in result.stderr
+    assert "html report" in result.stderr
 
 
 def test_direct_cli_html_github_url_defaults_to_parse_only(monkeypatch, tmp_path):

@@ -107,7 +107,7 @@ m
 >
 ```
 
-마지막 입력에서 Enter만 누르면 `result/repotrust-compare-YYYY-MM-DD.html` 형태로 저장됩니다.
+마지막 입력에서 Enter만 누르면 `result/repotrust-compare-YYYY-MM-DD.html` 형태로 저장됩니다. 저장 후에는 `[R] 리포트`에서 `비교 HTML` 항목으로 다시 찾을 수 있습니다.
 
 ## Command Mode
 
