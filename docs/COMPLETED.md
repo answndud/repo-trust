@@ -1095,3 +1095,12 @@
 - 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: Console Mode smoke에서 compare HTML 생성 후 `Use [R] Reports from Console Mode to find this file later.` 안내를 확인했다. 이어서 `[R] Reports` smoke에서 `result/repotrust-compare-2026-05-06.html`은 `compare html`, JSON 파일은 `json report`로 표시됐다. `.venv/bin/python -m pytest -q`는 `143 passed`였고 `git diff --check`도 통과했다.
 - 결과: 사용자는 compare HTML을 저장한 뒤 최근 리포트 목록에서 비교 리포트를 쉽게 식별하고 다시 찾을 수 있다. 현재 active 작업은 없다.
+
+## 120: v0.2.4 release preparation
+
+- 완료일: 2026-05-06
+- 배경: v0.2.3 이후 compare export와 Console Mode compare workflow 개선이 초보 사용자에게 직접 가치가 있는 기능 묶음으로 쌓였으므로 patch release 후보로 정리해야 했다.
+- 변경 내용: package version을 `0.2.4`로 올리고 README GitHub Release install URL, Console Mode 예시, CLI version tests를 `0.2.4`에 맞췄다. CHANGELOG에 v0.2.4 section을 추가해 compare Markdown/HTML export, HTML compare readability, Console Mode compare workflow, recent JSON number picker, recent report clarity를 정리했다. 작업 상태 문서를 release prep 완료 상태로 정리했다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q`는 `143 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.4/dist`는 `repotrust-0.2.4.tar.gz`와 `repotrust-0.2.4-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version, fixture JSON generation, text/Markdown/HTML compare export, Console Mode recent JSON number selection compare workflow, recent reports type label, JSON `json.tool` 검증이 성공했다. Self-scan JSON은 score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었다.
+- 결과: v0.2.4 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. push/tag/GitHub Release publish는 아직 진행하지 않았다. 현재 active 작업은 없다.

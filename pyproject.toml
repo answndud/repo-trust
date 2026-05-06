@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "repotrust"
-version = "0.2.3"
+version = "0.2.4"
 description = "CLI reports for evaluating whether an open source repository is safe to install or depend on."
 readme = "README.md"
 requires-python = ">=3.10"

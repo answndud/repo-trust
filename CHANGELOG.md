@@ -6,6 +6,31 @@ All notable changes to RepoTrust are documented here.
 
 No changes yet.
 
+## v0.2.4 - 2026-05-06
+
+### Added
+
+- `repo-trust compare` and `repo-trust-kr compare` can now write comparison reports with `--format markdown --output <path>` or `--format html --output <path>`.
+- HTML comparison reports now include an outcome summary, `Improvements`, `New issues`, `Severity changes`, and `Still remaining` sections.
+- HTML comparison findings now include copy buttons for finding ID and `repo-trust explain <finding-id>`.
+- Console Mode now includes `[M] Compare JSON` / `[M] JSON 비교` to create a before/after HTML comparison report without memorizing command options.
+- Console Mode JSON comparison can list recent JSON reports from `result/` and accept list numbers or direct paths for older/newer report selection.
+
+### Changed
+
+- Console Mode recent reports now label files by purpose, including `compare html`, `html report`, `json report`, and `markdown report`.
+- Console Mode compare completion now reminds users that `[R] Reports` can find the saved comparison file later.
+- README now includes beginner-friendly Console Mode and Command Mode guides for creating and reading compare reports.
+- Testing guidance now covers compare report export, Console Mode compare workflow, recent JSON number selection, and recent report labels.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 143 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.4/dist` built `repotrust-0.2.4.tar.gz` and `repotrust-0.2.4-py3-none-any.whl`.
+- Clean wheel install smoke verified `repo-trust`, `repo-trust-kr`, and `repotrust` version `0.2.4`.
+- Clean wheel smoke verified compare text, Markdown export, HTML export, Console Mode compare workflow with recent JSON number selection, and JSON `json.tool`.
+- Local self-scan returned grade `A`, high confidence, full coverage, and no medium/high findings.
+
 ## v0.2.3 - 2026-05-06
 
 ### Added
