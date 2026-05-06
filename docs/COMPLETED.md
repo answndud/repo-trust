@@ -1041,3 +1041,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: version focused tests 5개는 통과했고 `repo-trust`, `repo-trust-kr`, `repotrust`는 모두 `0.2.3`을 출력했다. `.venv/bin/python -m pytest -q`는 `139 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.3/dist`는 wheel과 sdist를 생성했다. Clean wheel install smoke에서 세 entrypoint version, `explain`, fixture JSON generation, risky-to-good `compare`, risky fixture HTML, JSON `json.tool` 검증이 성공했다. Self-scan JSON은 score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었다.
 - 결과: v0.2.3 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. push/tag/GitHub Release publish는 아직 진행하지 않았다. 현재 active 작업은 없다.
+
+## 114: v0.2.3 GitHub Release publish
+
+- 완료일: 2026-05-06
+- 배경: v0.2.3 release candidate가 로컬 테스트, build, clean wheel smoke, self-scan을 통과했으므로 GitHub Release로 공개해야 했다.
+- 변경 내용: `main`의 release prep commit `e9481b7`을 origin에 push하고 GitHub Actions `ci` run `25416142099` 통과를 확인했다. annotated tag `v0.2.3`를 release commit에 생성해 push했고, GitHub Release `RepoTrust v0.2.3`를 publish했다. Release asset으로 `repotrust-0.2.3-py3-none-any.whl`과 `repotrust-0.2.3.tar.gz`를 업로드했다. 작업 상태 문서를 release publish 완료 상태로 archive했다.
+- 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `gh run watch 25416142099 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.3 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.3`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 `repo-trust --version`은 `0.2.3`을 출력했고, `explain`, fixture JSON generation, risky-to-good `compare`, JSON `json.tool` 검증이 성공했다.
+- 결과: v0.2.3은 https://github.com/answndud/repo-trust/releases/tag/v0.2.3 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
