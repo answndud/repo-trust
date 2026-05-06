@@ -217,8 +217,9 @@ def _prompt_workflow(
         _print_selected(console=console, label=str(text["selected_json"]))
         target = _ask_value(
             console=console,
-            prompt=str(text["github_url_prompt"]),
-            example=str(text["github_url_example"]),
+            prompt=str(text["any_target_prompt"]),
+            default=".",
+            default_hint=str(text["default_hint"]),
             controls=str(text["input_controls"]),
         )
         if target == BACK:

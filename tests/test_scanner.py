@@ -4,9 +4,24 @@ from inspect import signature
 from pathlib import Path
 
 from repotrust.detection import detect_files
-from repotrust.models import ScanResult
-from repotrust.reports import render_html, render_json, render_markdown
+from repotrust.models import (
+    Category,
+    DetectedFiles,
+    Finding,
+    ScanResult,
+    Severity,
+    Target,
+)
+from repotrust.reports import (
+    FINDING_EXPLANATIONS,
+    FINDING_TITLES,
+    render_html,
+    render_json,
+    render_markdown,
+)
+from repotrust.rules import RISKY_INSTALL_PATTERNS
 from repotrust.scanner import scan
+from repotrust.scoring import calculate_score
 
 
 FIXTURE_REPOS = Path(__file__).parent / "fixtures" / "repos"
@@ -121,6 +136,58 @@ def test_direct_vcs_install_is_medium_severity(tmp_path):
     assert risky
     assert risky[0].severity.value == "medium"
     assert risky[0].evidence == "pip install git+https://github.com/example/project.git"
+
+
+def test_sudo_install_is_high_severity(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
+
+    result = scan(str(repo))
+
+    risky = [
+        finding
+        for finding in result.findings
+        if finding.id == "install.risky.uses_sudo"
+    ]
+    assert risky
+    assert risky[0].severity.value == "high"
+    assert risky[0].evidence == "sudo npm install -g risky-package"
+
+
+def test_global_package_install_is_medium_severity(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
+
+    result = scan(str(repo))
+
+    risky = [
+        finding
+        for finding in result.findings
+        if finding.id == "install.risky.global_package_install"
+    ]
+    assert risky
+    assert risky[0].severity.value == "medium"
+    assert risky[0].evidence == "sudo npm install -g risky-package"
+
+
+def test_chmod_install_command_is_medium_severity(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
+
+    result = scan(str(repo))
+
+    risky = [
+        finding
+        for finding in result.findings
+        if finding.id == "install.risky.marks_downloaded_code_executable"
+    ]
+    assert risky
+    assert risky[0].severity.value == "medium"
+    assert risky[0].evidence == "chmod +x install.sh"
+
+
+def test_risky_install_finding_mappings_cover_all_pattern_ids():
+    risky_ids = {pattern["id"] for pattern in RISKY_INSTALL_PATTERNS}
+
+    assert risky_ids <= FINDING_TITLES.keys()
+    assert risky_ids <= FINDING_EXPLANATIONS.keys()
 
 
 def test_package_json_install_lifecycle_script_is_medium_severity(tmp_path):
@@ -501,6 +568,46 @@ def test_markdown_report_sections(tmp_path):
     assert "## Findings" in markdown
 
 
+def test_markdown_report_explains_priority_summary_vs_full_findings(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
+    result = scan(str(repo))
+
+    markdown = render_markdown(result)
+
+    assert "highlight up to 3 priority finding IDs" in markdown
+    assert f"lists all {len(result.findings)} findings sorted by severity" in markdown
+    assert "install.risky.marks_downloaded_code_executable" in markdown
+
+
+def test_markdown_report_sorts_full_findings_by_severity():
+    low = Finding(
+        id="example.low",
+        category=Category.PROJECT_HYGIENE,
+        severity=Severity.LOW,
+        message="Low example.",
+        evidence="low",
+        recommendation="Review later.",
+    )
+    high = Finding(
+        id="example.high",
+        category=Category.INSTALL_SAFETY,
+        severity=Severity.HIGH,
+        message="High example.",
+        evidence="high",
+        recommendation="Review first.",
+    )
+    result = ScanResult(
+        target=Target(raw=".", kind="local", path="."),
+        detected_files=DetectedFiles(),
+        findings=[low, high],
+        score=calculate_score([low, high]),
+    )
+
+    markdown = render_markdown(result)
+
+    assert markdown.index("### example.high") < markdown.index("### example.low")
+
+
 def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path):
     result = scan(str(tmp_path))
     html = render_html(result)
@@ -516,6 +623,8 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert "<h2>Why This Score</h2>" in html
     assert "<h2>Purpose Profiles</h2>" in html
     assert "<h2>Prioritized Findings</h2>" in html
+    assert "priority ID는 상위 3개 항목만 요약합니다" in html
+    assert f"전체 {len(result.findings)}개 finding" in html
     assert "<h2>Next Actions</h2>" in html
     assert 'class="finding severity-high"' in html
     assert "<dt>검사 영역</dt>" in html

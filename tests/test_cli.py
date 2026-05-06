@@ -372,6 +372,21 @@ def test_direct_cli_interactive_github_shortcut_shows_input_and_processing(monke
     assert "Open full report:" in result.stderr
 
 
+def test_direct_cli_interactive_json_export_uses_generic_target_prompt(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(direct_app, [], input="j\n.\n", prog_name="repo-trust")
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "Selected: JSON export" in stderr
+    assert "Enter repository target:" in stderr
+    assert "Enter GitHub URL:" not in stderr
+    assert "Example: https://github.com/openai/openai-python" not in stderr
+    assert "Running analysis..." in stderr
+    assert "Open full report:" in stderr
+
+
 def test_direct_kr_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
@@ -502,6 +517,20 @@ def test_direct_cli_json_github_url_defaults_to_parse_only(monkeypatch, tmp_path
     assert calls == [("https://github.com/owner/repo", None, False)]
     assert "RESULT:" in result.stderr
     assert "Open full report:" in result.stderr
+
+
+def test_direct_cli_dashboard_explains_top_three_findings_summary(tmp_path):
+    result = runner.invoke(
+        direct_app,
+        ["check", "tests/fixtures/repos/risky-install"],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "Showing top 3 of" in stderr
+    assert "See the Findings section" in stderr
+    assert "full list." in stderr
 
 
 def test_direct_cli_json_github_url_remote_option_enters_remote_boundary(monkeypatch, tmp_path):

@@ -978,3 +978,30 @@
 - 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`는 `124 passed`였다. `.venv/bin/repo-trust json . --output /tmp/repotrust-readme-english.json`는 score `98`, grade `A`, high confidence self-scan JSON을 생성했고 `json.tool` 검증을 통과했다. `git diff --check`도 통과했다.
 - 결과: 비한국어 사용자도 README 첫 화면에서 RepoTrust의 목적과 운영 정책을 빠르게 이해할 수 있다. 현재 active 작업은 없다.
+
+## 107: 리뷰 finding 개선
+
+- 완료일: 2026-05-06
+- 배경: 저장소 리뷰에서 risky install positive coverage 공백, HTML finding title/explanation 매핑 누락, Console Mode JSON export prompt 혼선이 발견됐다.
+- 변경 내용: `risky-install` fixture에 `sudo`, global npm install, `chmod +x` 설치 명령을 추가하고 해당 finding ID의 severity/evidence positive 테스트를 추가했다. 모든 `RISKY_INSTALL_PATTERNS` ID가 HTML title/explanation 매핑을 갖는지 검증하는 테스트를 추가했다. Console Mode JSON export는 GitHub 전용 prompt 대신 generic repository target prompt와 기본값 `.`을 사용하도록 수정했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `tests/fixtures/repos/risky-install/README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest -q tests/test_scanner.py tests/test_cli.py`는 `91 passed`였다. `.venv/bin/python -m pytest -q`는 `129 passed`였다. `.venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky-after.json`는 score `51`, grade `F`, Install Safety `0/100`을 유지하며 모든 risky install finding ID를 JSON에 포함했다.
+- 결과: 리뷰 finding 3건이 모두 해소됐고 현재 active 작업은 없다.
+
+## 108: Finding summary UX 명확화
+
+- 완료일: 2026-05-06
+- 배경: terminal WHY 요약과 assessment/profile priority ID는 상위 3개 finding만 보여주지만, HTML/Markdown/JSON 리포트에는 전체 finding이 들어 있어 사용자가 둘의 관계를 혼동할 수 있었다.
+- 변경 내용: terminal dashboard WHY 섹션에 전체 finding 중 상위 3개만 표시한다는 안내를 추가했다. Markdown Findings 섹션과 HTML Prioritized Findings 설명에 전체 finding count와 정렬 기준을 명시했다. 관련 CLI/renderer 회귀 테스트를 추가했다.
+- 코드/문서: `src/repotrust/dashboard.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: focused renderer/CLI 테스트 3개는 통과했다. `.venv/bin/repo-trust check tests/fixtures/repos/risky-install` smoke에서 `Showing top 3 of 12 findings` 안내를 확인했다. `.venv/bin/python -m pytest -q`는 `131 passed`였다.
+- 결과: summary와 full findings의 관계가 terminal, Markdown, HTML에서 명확해졌다. 현재 active 작업은 없다.
+
+## 109: 샘플 리포트 문서 정합화
+
+- 완료일: 2026-05-06
+- 배경: README와 testing guide의 fixture walkthrough도 terminal top-3 summary와 HTML/JSON full findings 동작을 설명해야 사용자 온보딩이 실제 UX와 일치한다.
+- 변경 내용: README 리포트 읽는 법과 샘플 리포트 섹션에 terminal `WHY`는 상위 3개 finding만 요약하고 HTML/JSON은 전체 finding을 보여준다는 설명을 추가했다. Testing guide fixture sample behavior에 risky fixture의 현재 score, 12개 finding count, high/medium risky install finding 기대값을 명시했다. Console Mode JSON export가 generic target prompt를 써야 한다는 검증 기대도 추가했다.
+- 코드/문서: `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/repo-trust check tests/fixtures/repos/risky-install` smoke에서 score `51/100`, grade `F`, `Showing top 3 of 12 findings` 안내를 확인했다. `.venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky-doc.json`과 `json.tool` 검증은 성공했고 JSON은 score `51`, grade `F`, Install Safety `0/100`, finding 12개와 risky install finding 7개를 포함했다. `.venv/bin/python -m pytest -q`는 `131 passed`였다.
+- 결과: README, testing guide, CLI/renderer 동작이 sample report walkthrough 기준으로 일치한다. 현재 active 작업은 없다.

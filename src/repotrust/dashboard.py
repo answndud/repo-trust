@@ -201,6 +201,21 @@ def _why_text(result: ScanResult, *, locale: str) -> str:
         message = message_text(finding.message, locale)
         recommendation = recommendation_text(finding.recommendation, locale)
         lines.append(f"{prefix} {message}\n  → {recommendation}")
+    if len(result.findings) > len(findings):
+        if locale == "ko":
+            lines.append(
+                muted(
+                    f"상위 {len(findings)}개만 표시했습니다. 전체 {len(result.findings)}개 finding은 "
+                    "HTML/JSON/Markdown 리포트의 Findings 섹션에서 확인하세요."
+                )
+            )
+        else:
+            lines.append(
+                muted(
+                    f"Showing top {len(findings)} of {len(result.findings)} findings. "
+                    "See the Findings section in the HTML/JSON/Markdown report for the full list."
+                )
+            )
     return "\n".join(lines)
 
 

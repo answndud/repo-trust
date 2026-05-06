@@ -71,7 +71,10 @@ FINDING_TITLES = {
     "install.risky.shell_pipe_install": "원격 스크립트를 바로 shell로 실행하는 설치 명령이 있습니다.",
     "install.risky.process_substitution_shell": "process substitution으로 원격 스크립트를 실행합니다.",
     "install.risky.python_inline_execution": "Python inline 실행 설치 명령이 있습니다.",
+    "install.risky.uses_sudo": "설치 명령에 sudo가 포함되어 있습니다.",
+    "install.risky.global_package_install": "전역 패키지 설치 명령이 있습니다.",
     "install.risky.vcs_direct_install": "Git 저장소에서 직접 설치하는 명령이 있습니다.",
+    "install.risky.marks_downloaded_code_executable": "다운로드한 코드에 실행 권한을 부여합니다.",
     "dependency.npm_lifecycle_script": "npm 설치 lifecycle script가 있습니다.",
     "dependency.unpinned_node_dependency": "Node dependency가 exact version으로 고정되어 있지 않습니다.",
     "dependency.unpinned_python_dependency": "Python dependency가 exact version으로 고정되어 있지 않습니다.",
@@ -116,7 +119,10 @@ FINDING_EXPLANATIONS = {
     "install.risky.shell_pipe_install": "curl이나 wget으로 받은 원격 스크립트를 바로 shell에 넘기는 방식입니다. 실행 전에 스크립트 내용을 검토하기 어렵고, 원격 내용이 바뀌면 설치 결과도 바뀔 수 있습니다.",
     "install.risky.process_substitution_shell": "원격 스크립트를 process substitution으로 shell에 직접 실행합니다. 일반적인 파일 검토 단계를 건너뛰므로 설치 전 확인이 어렵습니다.",
     "install.risky.python_inline_execution": "README가 Python 한 줄 실행으로 설치나 설정을 처리합니다. 실행되는 코드가 길거나 복잡하면 사용자가 의미를 검토하기 어렵습니다.",
+    "install.risky.uses_sudo": "설치 안내가 관리자 권한으로 명령을 실행하도록 요구합니다. 설치 스크립트나 패키지가 시스템 전체에 영향을 줄 수 있으므로 실행 전 내용을 더 엄격하게 검토해야 합니다.",
+    "install.risky.global_package_install": "npm이나 yarn 전역 설치는 사용자 환경 전체에 명령과 dependency를 추가합니다. 프로젝트별 격리 환경이나 고정된 실행 방식을 우선 확인해야 합니다.",
     "install.risky.vcs_direct_install": "패키지 레지스트리의 고정된 배포본이 아니라 Git 저장소에서 직접 설치합니다. branch나 commit이 고정되지 않으면 시간이 지나며 설치 결과가 달라질 수 있습니다.",
+    "install.risky.marks_downloaded_code_executable": "설치 안내가 파일에 실행 권한을 부여하도록 요구합니다. 다운로드한 파일이나 생성된 스크립트의 출처와 내용을 확인한 뒤 실행해야 합니다.",
     "dependency.npm_lifecycle_script": "npm install lifecycle script는 패키지 설치 중 자동 실행될 수 있습니다. 저장소를 설치하거나 AI agent에게 맡기기 전에 script 내용을 직접 검토해야 합니다.",
     "dependency.unpinned_node_dependency": "Node dependency version range나 tag는 시간이 지나며 다른 버전을 설치할 수 있습니다. lockfile과 업데이트 정책을 함께 확인해야 합니다.",
     "dependency.unpinned_python_dependency": "Python dependency version range나 미고정 선언은 시간이 지나며 다른 버전을 설치할 수 있습니다. lockfile과 업데이트 정책을 함께 확인해야 합니다.",
@@ -255,7 +261,12 @@ def render_markdown(result: ScanResult) -> str:
     if not result.findings:
         lines.append("No findings. The repository passed all enabled v1 checks.")
     else:
-        for finding in result.findings:
+        lines.append(
+            "Assessment and purpose-profile summaries highlight up to 3 priority finding IDs. "
+            f"This section lists all {len(result.findings)} findings sorted by severity."
+        )
+        lines.append("")
+        for finding in sorted(result.findings, key=_finding_sort_key):
             lines.extend(_finding_markdown(finding))
     lines.append("")
     return "\n".join(lines)
@@ -419,7 +430,7 @@ def render_html(result: ScanResult) -> str:
       </ul>
 
       <h2>Prioritized Findings</h2>
-      <p>Finding은 심각도 순으로 정렬됩니다. 각 항목은 안정적인 ID, 실제 근거, 추천 조치를 포함합니다.</p>
+      <p>Assessment와 Purpose Profiles의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {len(result.findings)}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 실제 근거, 추천 조치를 포함합니다.</p>
 {findings}
 
       <h2>Next Actions</h2>

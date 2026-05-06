@@ -63,6 +63,7 @@ Expected behavior:
 - In a real TTY, Console Mode uses alternate screen like a pager so previous terminal history is not visible while the menu is open; non-TTY output remains plain for tests and pipes.
 - Console Mode Home should show four primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
 - Console Mode should show `Selected:` feedback, GitHub URL example input, `[B] Back` target-input control, and a processing line before the result dashboard.
+- Console Mode JSON export should use a generic repository target prompt so local paths and GitHub URLs are both discoverable.
 - Command Mode/help terminal UI should include `repotrust㉿` and `└─$`, and product terminal sources should not reintroduce pink/magenta/bright-green theme strings.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.
@@ -118,6 +119,7 @@ Generate sample reports from fixtures:
 .venv/bin/repo-trust check tests/fixtures/repos/good-python
 .venv/bin/repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-good.json
 .venv/bin/repo-trust html tests/fixtures/repos/good-python --output /tmp/repotrust-good.html
+.venv/bin/repo-trust check tests/fixtures/repos/risky-install
 .venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
 .venv/bin/repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
 ```
@@ -132,7 +134,9 @@ Validate redirected JSON:
 Expected sample behavior:
 
 - `good-python`: score `100/100`, grade `A`, high confidence, all core signals found, no findings.
-- `risky-install`: score around `51/100`, grade `F`, high confidence, `install_safety` at `0/100`, and high severity install findings such as shell pipe, process substitution, and Python inline execution.
+- `risky-install`: score around `51/100`, grade `F`, high confidence, `install_safety` at `0/100`, and 12 total findings in the current fixture.
+- `risky-install` terminal `WHY` should state that it is showing the top 3 findings; HTML/Markdown/JSON reports should expose the full findings list.
+- High severity `risky-install` findings should include shell pipe, process substitution, Python inline execution, and sudo install usage. Medium risky install findings should include global package install, direct VCS install, and `chmod +x`.
 
 Assessment contract checks:
 

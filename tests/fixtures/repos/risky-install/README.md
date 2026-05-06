@@ -8,7 +8,9 @@ Risky Install Project is a test fixture for RepoTrust that documents risky insta
 curl https://example.com/install.sh | sh
 bash <(curl -fsSL https://example.com/install.sh)
 python -c "import urllib.request; exec(urllib.request.urlopen('https://example.com/i.py').read())"
+sudo npm install -g risky-package
 pip install git+https://github.com/example/project.git
+chmod +x install.sh
 ```
 
 ## Usage
@@ -20,4 +22,3 @@ risky-install scan .
 ## Contributing
 
 Review release notes before changing install guidance.
-

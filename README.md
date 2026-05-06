@@ -265,6 +265,8 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
+터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요.
+
 심각도는 이렇게 해석하면 됩니다.
 
 | Severity | 의미 |
@@ -283,6 +285,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 ```bash
 repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-good.json
 repo-trust html tests/fixtures/repos/good-python --output /tmp/repotrust-good.html
+repo-trust check tests/fixtures/repos/risky-install
 repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
 repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.html
 python -m json.tool /tmp/repotrust-good.json
@@ -292,9 +295,9 @@ python -m json.tool /tmp/repotrust-risky.json
 | Fixture | 기대 결과 | 먼저 볼 항목 |
 | --- | --- | --- |
 | `good-python` | `100/100`, grade `A`, high confidence | 모든 신호가 found이고 finding이 없어야 합니다. |
-| `risky-install` | `51/100`, grade `F`, high confidence | Install Safety가 `0/100`이고 risky install finding을 먼저 확인합니다. |
+| `risky-install` | `51/100`, grade `F`, high confidence | 터미널은 전체 12개 finding 중 상위 3개를 먼저 보여주고, HTML/JSON은 전체 finding을 보여줍니다. Install Safety가 `0/100`인지 확인합니다. |
 
-`risky-install`은 일부러 위험한 설치 명령을 담은 연습용 fixture입니다. 실제 저장소에서 비슷한 high finding이 나오면 명령을 바로 실행하지 말고, HTML 리포트의 evidence와 recommendation을 먼저 확인하세요.
+`risky-install`은 일부러 위험한 설치 명령을 담은 연습용 fixture입니다. 실제 저장소에서 비슷한 high finding이 나오면 명령을 바로 실행하지 말고, terminal `WHY`의 상위 항목과 HTML `Prioritized Findings`의 전체 evidence/recommendation을 함께 확인하세요.
 
 ## 실패 기준 설정
 
