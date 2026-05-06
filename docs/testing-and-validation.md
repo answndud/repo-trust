@@ -66,9 +66,10 @@ Expected behavior:
 - Local paths are scanned without network access.
 - `repo-trust` without a subcommand opens Console Mode with a Kali-style prompt header, primary shortcut actions, and recent reports.
 - In a real TTY, Console Mode uses alternate screen like a pager so previous terminal history is not visible while the menu is open; non-TTY output remains plain for tests and pipes.
-- Console Mode Home should show four primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
+- Console Mode Home should show five primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, `[M]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
 - Console Mode should show `Selected:` feedback, GitHub URL example input, `[B] Back` target-input control, and a processing line before the result dashboard.
 - Console Mode JSON export should use a generic repository target prompt so local paths and GitHub URLs are both discoverable.
+- Console Mode JSON compare should prompt for older/newer JSON report paths, default the output to `repotrust-compare.html`, and write an HTML comparison report under `result/` when the output path is relative.
 - Command Mode/help terminal UI should include `repotrust㉿` and `└─$`, and product terminal sources should not reintroduce pink/magenta/bright-green theme strings.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.

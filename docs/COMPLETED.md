@@ -1068,3 +1068,12 @@
 - 코드/문서: `src/repotrust/compare_reports.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `tests/test_cli.py -k compare`는 `5 passed`였다. `.venv/bin/python -m pytest -q`는 `141 passed`였다. `repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format html --output /tmp/repotrust-compare.html` smoke에서 `Improved`, `Improvements: 12`, `New issues: 0`, `Still remaining: 0`, `Copy explain`, `repo-trust explain install.risky.uses_sudo` copy value를 확인했다. `git diff --check`도 통과했다.
 - 결과: compare HTML report는 개선 여부, 해결된 문제, 새 문제, 남은 문제와 다음 explain 명령 복사까지 한 화면에서 제공한다. 현재 active 작업은 없다.
+
+## 117: Console compare workflow
+
+- 완료일: 2026-05-06
+- 배경: compare HTML report는 Command Mode에서 만들 수 있었지만, 초보 사용자는 `--format html --output` 옵션을 외워야 했다. Console Mode에서 메뉴로 같은 workflow를 실행할 수 있어야 했다.
+- 변경 내용: Console Mode home에 `[M] Compare JSON` / `[M] JSON 비교` action을 추가했다. Console workflow model을 scan/compare를 모두 표현하도록 확장했고, compare workflow는 이전 JSON, 최신 JSON, HTML output path를 차례대로 입력받는다. 기존 compare renderer를 재사용해 HTML 파일을 저장하고, 상대 output path는 기존 규칙대로 `result/<name>-YYYY-MM-DD.html`에 저장한다. README에 Console Mode JSON 비교 절차를 추가하고 testing guide 기대 동작을 갱신했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: Console Mode smoke에서 `m`, old/new JSON path, 기본 output 입력으로 `result/repotrust-compare-2026-05-06.html`이 생성됐고 HTML에 `Improved`, `Improvements: 12`, `Copy explain`이 포함됐다. `.venv/bin/python -m pytest -q`는 `142 passed`였다.
+- 결과: 사용자는 `repo-trust` 또는 `repo-trust-kr` 메뉴에서 두 JSON 리포트를 입력해 브라우저용 비교 HTML을 만들 수 있다. 현재 active 작업은 없다.

@@ -14,13 +14,17 @@ from .terminal_theme import badge, kali_section, kali_table, muted
 
 @dataclass(frozen=True)
 class ConsoleWorkflow:
-    target: str
-    report_format: str
+    target: str = ""
+    report_format: str = "html"
+    workflow_kind: str = "scan"
     terminal_only: bool = False
     parse_only: bool = False
     remote: bool = False
     verbose: bool = False
     locale: ConsoleLocale = "en"
+    old_report: Path | None = None
+    new_report: Path | None = None
+    output: Path | None = None
 
 
 RunWorkflow = Callable[[ConsoleWorkflow], None]
@@ -85,7 +89,12 @@ def _run_console_mode_body(
             console.print(help_text())
             return True
 
-        workflow = _prompt_workflow(choice, console=console, text=text, locale=locale)
+        workflow = _prompt_workflow(
+            choice,
+            console=console,
+            text=text,
+            locale=locale,
+        )
         if workflow is None:
             console.print(muted(text["back_message"]))
             continue
@@ -229,6 +238,38 @@ def _prompt_workflow(
             report_format="json",
             locale=locale,
         )
+    if choice == "m":
+        _print_selected(console=console, label=str(text["selected_compare"]))
+        old_report = _ask_value(
+            console=console,
+            prompt=str(text["old_json_prompt"]),
+            controls=str(text["input_controls"]),
+        )
+        if old_report == BACK:
+            return None
+        new_report = _ask_value(
+            console=console,
+            prompt=str(text["new_json_prompt"]),
+            controls=str(text["input_controls"]),
+        )
+        if new_report == BACK:
+            return None
+        output = _ask_value(
+            console=console,
+            prompt=str(text["compare_output_prompt"]),
+            default="repotrust-compare.html",
+            default_hint=str(text["default_hint"]),
+            controls=str(text["input_controls"]),
+        )
+        if output == BACK:
+            return None
+        return ConsoleWorkflow(
+            workflow_kind="compare",
+            locale=locale,
+            old_report=Path(old_report),
+            new_report=Path(new_report),
+            output=Path(output),
+        )
     _print_selected(console=console, label=str(text["selected_check"]))
     target = _ask_value(
         console=console,
@@ -249,7 +290,7 @@ def _prompt_workflow(
 
 
 def _ask_menu_choice(*, console: Console, text: ConsoleText) -> str:
-    choices = {"g", "l", "c", "j", "r", "?", "q"}
+    choices = {"g", "l", "c", "j", "m", "r", "?", "q"}
     while True:
         value = _input_command(console, prompt=f"[cyan]→[/] {text['select_prompt']} ").strip() or "1"
         normalized = _normalize_menu_choice(value)

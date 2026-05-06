@@ -585,6 +585,10 @@ def _run_console_shell(ctx: typer.Context, *, locale: str) -> None:
 
 
 def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
+    if workflow.workflow_kind == "compare":
+        _run_console_compare_workflow(workflow)
+        return
+
     _run_product_scan(
         target=workflow.target,
         report_format=ReportFormat(workflow.report_format),
@@ -597,6 +601,35 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
         terminal_only=workflow.terminal_only,
         locale=workflow.locale,
     )
+
+
+def _run_console_compare_workflow(workflow: ConsoleWorkflow) -> None:
+    if workflow.old_report is None or workflow.new_report is None:
+        status_console.print("Missing comparison input reports.")
+        raise typer.Exit(code=1)
+
+    try:
+        old_data = _load_report_json(workflow.old_report)
+        new_data = _load_report_json(workflow.new_report)
+    except ValueError as exc:
+        status_console.print(str(exc))
+        raise typer.Exit(code=1) from exc
+
+    output = _resolve_output_path(workflow.output or Path("repotrust-compare.html"))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        render_compare_reports(
+            old_data,
+            new_data,
+            output_format=CompareFormat.HTML,
+            locale=workflow.locale,
+        ),
+        encoding="utf-8",
+    )
+    if workflow.locale == "ko":
+        status_console.print(f"html 비교 리포트를 [bold]{output}[/bold]에 저장했습니다.")
+    else:
+        status_console.print(f"Wrote html comparison report to [bold]{output}[/bold]")
 
 
 def _run_scan(

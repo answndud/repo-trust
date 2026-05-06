@@ -148,6 +148,8 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert "Full file-level local scan" in stderr
     assert "[C]  Quick check" in stderr
     assert "[J]  Export JSON" in stderr
+    assert "[M]  Compare JSON" in stderr
+    assert "Create before/after HTML report" in stderr
     assert "Recent:" in stderr
     assert "[R] Reports   [?] Help   [Q] Quit" in stderr
     assert "→ Press a key" in stderr
@@ -171,6 +173,8 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "파일 근거까지 로컬 검사" in stderr
     assert "[C]  빠른 점검" in stderr
     assert "[J]  JSON 내보내기" in stderr
+    assert "[M]  JSON 비교" in stderr
+    assert "개선 전/후 HTML 만들기" in stderr
     assert "최근 리포트:" in stderr
     assert "[R] 리포트   [?] 도움말   [Q] 종료" in stderr
     assert "→ 키를 누르세요" in stderr
@@ -637,6 +641,57 @@ def test_direct_cli_interactive_json_export_uses_generic_target_prompt(tmp_path,
     assert "Example: https://github.com/openai/openai-python" not in stderr
     assert "Running analysis..." in stderr
     assert "Open full report:" in stderr
+
+
+def test_direct_cli_interactive_compare_json_workflow_writes_html(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    old_report = tmp_path / "old.json"
+    new_report = tmp_path / "new.json"
+    old_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2",
+                "score": {"total": 50, "grade": "F"},
+                "assessment": {"verdict": "do_not_install_before_review"},
+                "target": {"raw": "before"},
+                "findings": [{"id": "security.no_policy", "severity": "medium"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    new_report.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.2",
+                "score": {"total": 100, "grade": "A"},
+                "assessment": {"verdict": "usable_by_current_checks"},
+                "target": {"raw": "after"},
+                "findings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        direct_app,
+        [],
+        input=f"m\n{old_report}\n{new_report}\n\n",
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+    compare_reports = list((tmp_path / "result").glob("repotrust-compare-*.html"))
+
+    assert result.exit_code == 0
+    assert "Selected: JSON report compare" in stderr
+    assert "Enter older JSON report path:" in stderr
+    assert "Enter newer JSON report path:" in stderr
+    assert "Enter comparison HTML output path:" in stderr
+    assert "Wrote html comparison report" in stderr
+    assert len(compare_reports) == 1
+    html = compare_reports[0].read_text(encoding="utf-8")
+    assert "Improved" in html
+    assert "Improvements: 1" in html
+    assert "security.no_policy" in html
 
 
 def test_direct_kr_cli_interactive_local_html_workflow(tmp_path, monkeypatch):

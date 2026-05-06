@@ -48,7 +48,7 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 
 | 방식 | 명령 | 추천 상황 | 결과 |
 | --- | --- | --- | --- |
-| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 터미널 workflow 선택 |
+| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 검사, JSON 저장, JSON 비교 workflow 선택 |
 | Command Mode | `repo-trust html/json/check/explain/compare <대상, finding ID, 리포트>` | 반복 실행, 자동화, 문서화할 때 | HTML/JSON 파일, 터미널 대시보드, finding 설명, 리포트 비교 |
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
@@ -77,6 +77,7 @@ G  GitHub 저장소  기본은 API 없이 URL 확인
 L  로컬 저장소    파일 근거까지 로컬 검사
 C  빠른 점검      즉시 요약 보기
 J  JSON 내보내기  기계가 읽는 리포트 저장
+M  JSON 비교      개선 전/후 HTML 만들기
 ────────────────────────────────────
 최근 리포트: 3개
 [R] 리포트   [?] 도움말   [Q] 종료
@@ -86,6 +87,23 @@ J  JSON 내보내기  기계가 읽는 리포트 저장
 단축키는 대소문자를 구분하지 않습니다. 잘못 선택했다면 입력 단계에서 `[B]`를 눌러 작업 선택 화면으로 돌아갈 수 있습니다. 기존 숫자 입력도 호환되므로 `1` 또는 `01`은 로컬 리포트, `5` 또는 `05`는 최근 리포트 목록으로 동작합니다. `[R]` workflow는 파일을 직접 열거나 브라우저를 실행하지 않습니다. `result/` 폴더에 있는 최근 HTML/JSON 리포트 목록만 보여줍니다.
 
 영어 화면이 필요하면 `repo-trust`를 입력하면 됩니다.
+
+### Console Mode에서 JSON 비교 HTML 만들기
+
+명령어 옵션을 외우기 어렵다면 `repo-trust-kr`에서 `[M] JSON 비교`를 선택하세요. 이전 JSON 리포트 경로, 최신 JSON 리포트 경로, 저장할 HTML 파일 이름을 차례대로 입력하면 브라우저에서 열 수 있는 비교 리포트를 만듭니다.
+
+```text
+→ 키를 누르세요
+m
+이전 JSON 리포트 경로 입력:
+> /tmp/repotrust-before.json
+최신 JSON 리포트 경로 입력:
+> /tmp/repotrust-after.json
+비교 HTML 저장 경로 입력: (기본값 repotrust-compare.html)
+>
+```
+
+마지막 입력에서 Enter만 누르면 `result/repotrust-compare-YYYY-MM-DD.html` 형태로 저장됩니다.
 
 ## Command Mode
 
