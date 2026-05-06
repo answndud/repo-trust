@@ -75,7 +75,7 @@ Expected behavior:
 - `repo-trust explain <unknown-id>` exits with code `1` and suggests known finding IDs.
 - `repo-trust compare <old.json> <new.json>` compares saved JSON reports without scanning and shows score, grade, verdict, added findings, resolved findings, severity changes, and persisting finding count.
 - `repo-trust compare` exits with code `1` for invalid JSON or files that do not look like RepoTrust JSON reports.
-- Static HTML reports should include severity/category finding filters and expand/collapse controls while still rendering finding details without JavaScript.
+- Static HTML reports should include severity/category finding filters, expand/collapse controls, and copy buttons for finding ID / `repo-trust explain <id>` while still rendering finding details without JavaScript.
 - Product CLI GitHub URL commands default to parse-only without GitHub API access and never clone repositories.
 - Product `--remote` opts into GitHub API read-only metadata.
 - `--parse-only` parses a GitHub URL without GitHub API access and is equivalent to the product default for GitHub URL targets.

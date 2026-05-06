@@ -347,6 +347,9 @@ def render_html(result: ScanResult) -> str:
     .finding {{ border-left: 5px solid #64748b; margin: 16px 0; background: #ffffff; }}
     .finding header {{ display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }}
     .finding dl {{ display: grid; grid-template-columns: 130px 1fr; gap: 10px 16px; margin: 0; }}
+    .finding-actions {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }}
+    .copy-button {{ border: 1px solid var(--line); border-radius: 6px; background: #ffffff; color: #17212b; padding: 5px 8px; font: inherit; font-size: 0.84rem; font-weight: 800; cursor: pointer; }}
+    .copy-button[data-copied="true"] {{ border-color: #15803d; color: #15803d; }}
     .finding-controls {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }}
     .finding-controls button {{ border: 1px solid var(--line); border-radius: 6px; background: #ffffff; color: #17212b; padding: 7px 10px; font: inherit; font-size: 0.9rem; font-weight: 800; cursor: pointer; }}
     .finding-controls button[aria-pressed="true"] {{ background: #17212b; color: #ffffff; border-color: #17212b; }}
@@ -490,6 +493,37 @@ def render_html(result: ScanResult) -> str:
       document.querySelector('[data-action="collapse-findings"]')?.addEventListener('click', () => {{
         document.querySelectorAll('.finding details').forEach((detail) => detail.open = false);
       }});
+      async function copyText(value) {{
+        if (navigator.clipboard?.writeText) {{
+          await navigator.clipboard.writeText(value);
+          return;
+        }}
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+      }}
+      document.querySelectorAll('[data-copy-value]').forEach((button) => {{
+        button.addEventListener('click', async () => {{
+          try {{
+            await copyText(button.dataset.copyValue || '');
+            const original = button.textContent;
+            button.dataset.copied = 'true';
+            button.textContent = '복사됨';
+            setTimeout(() => {{
+              button.dataset.copied = 'false';
+              button.textContent = original;
+            }}, 1400);
+          }} catch (error) {{
+            button.textContent = '복사 실패';
+          }}
+        }});
+      }});
     </script>
   </main>
 </body>
@@ -560,11 +594,17 @@ def _finding_html(finding: Finding) -> str:
     severity_label = _severity_ko(finding.severity.value)
     category_label = _category_label(finding.category.value)
     category = html.escape(finding.category.value)
+    finding_id = html.escape(finding.id)
+    explain_command = html.escape(f"repo-trust explain {finding.id}")
     return f"""        <article class="finding severity-{severity}" data-severity="{severity}" data-category="{category}">
           <header>
             <div>
               <h3>{html.escape(_finding_title(finding))}</h3>
-              <p class="description"><code>{html.escape(finding.id)}</code></p>
+              <p class="description"><code>{finding_id}</code></p>
+              <div class="finding-actions" aria-label="Finding copy actions">
+                <button type="button" class="copy-button" data-copy-value="{finding_id}">ID 복사</button>
+                <button type="button" class="copy-button" data-copy-value="{explain_command}">explain 명령 복사</button>
+              </div>
             </div>
             <span class="badge badge-{severity}">{html.escape(severity_label)}</span>
           </header>

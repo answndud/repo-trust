@@ -1023,3 +1023,12 @@
 - 코드/문서: `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: risky fixture JSON과 good fixture JSON을 생성한 뒤 `repo-trust compare` smoke에서 score `51 -> 100 (+49)`, grade `F -> A`, resolved findings `12`를 확인했다. `repo-trust-kr compare`도 같은 비교를 한국어 label로 출력했다. `.venv/bin/python -m pytest -q`는 `139 passed`였다.
 - 결과: 사용자가 개선 전/후 RepoTrust JSON 리포트를 비교해 해결된 finding과 새로 생긴 finding을 바로 파악할 수 있다. 현재 active 작업은 없다.
+
+## 112: HTML finding copy actions
+
+- 완료일: 2026-05-06
+- 배경: HTML 리포트에서 finding ID를 확인한 뒤 `repo-trust explain <id>`로 이어가는 workflow가 생겼으므로, 사용자가 ID와 explain 명령을 직접 복사하지 않아도 되게 해야 했다.
+- 변경 내용: HTML finding card에 `ID 복사`와 `explain 명령 복사` 버튼을 추가했다. 각 버튼은 `data-copy-value`에 복사 대상을 노출하고, JavaScript는 Clipboard API를 우선 사용하며 실패/미지원 환경에서는 hidden textarea와 `document.execCommand('copy')` fallback을 사용한다. 버튼 클릭 후 짧게 `복사됨` 상태를 표시한다. README와 testing guide에 HTML copy actions 설명을 반영했다.
+- 코드/문서: `src/repotrust/reports.py`, `tests/test_scanner.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: focused HTML renderer test는 통과했다. risky fixture HTML smoke에서 `ID 복사`, `explain 명령 복사`, `data-copy-value="repo-trust explain install.risky.uses_sudo"`, Clipboard API, fallback copy script를 확인했다. `.venv/bin/python -m pytest -q`는 `139 passed`였다.
+- 결과: HTML 리포트에서 finding ID와 explain 명령을 바로 복사해 CLI 설명 workflow로 이어갈 수 있다. 현재 active 작업은 없다.

@@ -291,7 +291,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
-터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요. HTML 리포트에서는 severity/category 버튼으로 finding을 필터링하고, 각 finding의 근거와 추천 조치를 접거나 펼칠 수 있습니다.
+터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요. HTML 리포트에서는 severity/category 버튼으로 finding을 필터링하고, 각 finding의 근거와 추천 조치를 접거나 펼칠 수 있습니다. 각 finding card의 `ID 복사`와 `explain 명령 복사` 버튼으로 터미널 설명 명령을 바로 이어서 실행할 수 있습니다.
 
 심각도는 이렇게 해석하면 됩니다.
 
@@ -326,7 +326,7 @@ python -m json.tool /tmp/repotrust-risky.json
 
 `risky-install`은 일부러 위험한 설치 명령을 담은 연습용 fixture입니다. 실제 저장소에서 비슷한 high finding이 나오면 명령을 바로 실행하지 말고, terminal `WHY`의 상위 항목과 HTML `Prioritized Findings`의 전체 evidence/recommendation을 함께 확인하세요.
 
-특정 finding을 더 자세히 보고 싶으면 `repo-trust explain <finding-id>`를 실행하세요.
+특정 finding을 더 자세히 보고 싶으면 `repo-trust explain <finding-id>`를 실행하세요. HTML 리포트에서는 finding card에서 해당 명령을 바로 복사할 수 있습니다.
 
 ## 실패 기준 설정
 

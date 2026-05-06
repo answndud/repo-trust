@@ -632,6 +632,11 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert 'data-category="readme_quality"' in html
     assert "<details open>" in html
     assert "근거와 추천 조치" in html
+    assert 'aria-label="Finding copy actions"' in html
+    assert 'data-copy-value="readme.missing"' in html
+    assert 'data-copy-value="repo-trust explain readme.missing"' in html
+    assert "navigator.clipboard" in html
+    assert "execCommand('copy')" in html
     assert "<h2>Next Actions</h2>" in html
     assert 'class="finding severity-high"' in html
     assert "<dt>검사 영역</dt>" in html
