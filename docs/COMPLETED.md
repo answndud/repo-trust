@@ -1059,3 +1059,12 @@
 - 코드/문서: `src/repotrust/compare_reports.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `tests/test_cli.py -k compare`는 `5 passed`였다. `.venv/bin/python -m pytest -q`는 `141 passed`였다. `repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format html --output /tmp/repotrust-compare.html`와 `--format markdown --output /tmp/repotrust-compare.md` smoke가 성공했고, 두 파일 모두 score `51 -> 100 (+49)`와 `install.risky.uses_sudo` resolved finding을 포함했다. `git diff --check`도 통과했다.
 - 결과: 사용자는 저장된 두 JSON 리포트의 차이를 터미널, Markdown, HTML 중 원하는 형식으로 확인하고 공유할 수 있다. 현재 active 작업은 없다.
+
+## 116: Compare HTML readability
+
+- 완료일: 2026-05-06
+- 배경: compare HTML 파일 출력은 가능해졌지만, 초보 사용자가 브라우저에서 열었을 때 어떤 항목이 좋아졌고 무엇을 먼저 확인해야 하는지 더 직관적으로 보여줄 필요가 있었다.
+- 변경 내용: HTML compare report에 score delta 기반 outcome summary를 추가했다. finding 섹션을 `Improvements`, `New issues`, `Severity changes`, `Still remaining`으로 재정리하고 각 섹션에 쉬운 설명을 붙였다. finding ID마다 `Copy ID`와 `Copy explain` 버튼을 추가했으며 Clipboard API와 textarea fallback을 사용하는 copy script를 포함했다. README의 초보자용 compare guide와 testing guide 기대 동작을 새 HTML UI에 맞게 갱신했다.
+- 코드/문서: `src/repotrust/compare_reports.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `tests/test_cli.py -k compare`는 `5 passed`였다. `.venv/bin/python -m pytest -q`는 `141 passed`였다. `repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format html --output /tmp/repotrust-compare.html` smoke에서 `Improved`, `Improvements: 12`, `New issues: 0`, `Still remaining: 0`, `Copy explain`, `repo-trust explain install.risky.uses_sudo` copy value를 확인했다. `git diff --check`도 통과했다.
+- 결과: compare HTML report는 개선 여부, 해결된 문제, 새 문제, 남은 문제와 다음 explain 명령 복사까지 한 화면에서 제공한다. 현재 active 작업은 없다.

@@ -31,6 +31,7 @@ class CompareSummary:
     new_target: str
     added: list[str]
     resolved: list[str]
+    persisting: list[str]
     severity_changes: list[SeverityChange]
     persisting_count: int
 
@@ -86,6 +87,7 @@ def _compare_reports_summary(old_data: dict, new_data: dict) -> CompareSummary:
         new_target=_report_target_label(new_data),
         added=added,
         resolved=resolved,
+        persisting=persisting,
         severity_changes=changed,
         persisting_count=len(persisting),
     )
@@ -194,17 +196,40 @@ def _markdown_severity_section(title: str, changes: list[SeverityChange]) -> str
 
 def _compare_reports_html(summary: CompareSummary, *, locale: str) -> str:
     title = "RepoTrust 비교 리포트" if locale == "ko" else "RepoTrust Compare Report"
+    outcome = _html_outcome(summary, locale=locale)
     labels = {
         "old_target": "이전 대상" if locale == "ko" else "Old target",
         "new_target": "최신 대상" if locale == "ko" else "New target",
         "score": "점수" if locale == "ko" else "Score",
         "grade": "등급" if locale == "ko" else "Grade",
         "verdict": "판단" if locale == "ko" else "Verdict",
-        "added": "새 finding" if locale == "ko" else "Added findings",
-        "resolved": "해결된 finding" if locale == "ko" else "Resolved findings",
+        "added": "새로 생긴 문제" if locale == "ko" else "New issues",
+        "resolved": "좋아진 점" if locale == "ko" else "Improvements",
         "severity": "심각도 변경" if locale == "ko" else "Severity changes",
-        "persisting": "유지된 finding" if locale == "ko" else "Persisting findings",
+        "persisting": "아직 남은 문제" if locale == "ko" else "Still remaining",
         "none": "없음" if locale == "ko" else "None",
+    }
+    descriptions = {
+        "added": (
+            "수정 후 새로 나타난 finding입니다. 설치나 채택 전에 먼저 확인하세요."
+            if locale == "ko"
+            else "Findings that appeared in the newer report. Review these before installing or adopting."
+        ),
+        "resolved": (
+            "이전 리포트에는 있었지만 최신 리포트에서는 사라진 finding입니다."
+            if locale == "ko"
+            else "Findings that existed before and disappeared in the newer report."
+        ),
+        "severity": (
+            "같은 finding의 심각도가 바뀐 항목입니다."
+            if locale == "ko"
+            else "Findings whose severity changed between the two reports."
+        ),
+        "persisting": (
+            "아직 최신 리포트에도 남아 있는 finding입니다."
+            if locale == "ko"
+            else "Findings that still exist in the newer report."
+        ),
     }
     return f"""<!doctype html>
 <html lang="{html.escape(locale)}">
@@ -219,16 +244,26 @@ def _compare_reports_html(summary: CompareSummary, *, locale: str) -> str:
     h2 {{ margin-top: 28px; font-size: 20px; }}
     .summary {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }}
     .metric, section {{ border: 1px solid #d5dbe3; background: #ffffff; border-radius: 8px; padding: 16px; }}
+    .outcome {{ margin: 0 0 18px; border-left: 4px solid #2563eb; }}
+    .outcome strong {{ display: block; font-size: 18px; margin-bottom: 6px; }}
+    .section-note {{ color: #64748b; margin-top: -8px; }}
     .label {{ display: block; color: #64748b; font-size: 13px; margin-bottom: 6px; }}
     .value {{ font-size: 18px; font-weight: 700; }}
     code {{ background: #eef2f7; border-radius: 4px; padding: 2px 5px; }}
+    button {{ border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #334155; cursor: pointer; font: inherit; font-size: 13px; margin-left: 8px; padding: 4px 8px; }}
+    button:hover {{ background: #f1f5f9; }}
     ul {{ padding-left: 20px; }}
     li {{ margin: 6px 0; }}
+    .finding-actions {{ white-space: nowrap; }}
   </style>
 </head>
 <body>
   <main>
     <h1>{html.escape(title)}</h1>
+    <section class="outcome">
+      <strong>{html.escape(outcome[0])}</strong>
+      <span>{html.escape(outcome[1])}</span>
+    </section>
     <div class="summary">
       {_html_metric(labels["old_target"], summary.old_target)}
       {_html_metric(labels["new_target"], summary.new_target)}
@@ -236,16 +271,61 @@ def _compare_reports_html(summary: CompareSummary, *, locale: str) -> str:
       {_html_metric(labels["grade"], f"{summary.old_grade} -> {summary.new_grade}")}
       {_html_metric(labels["verdict"], f"{summary.old_verdict} -> {summary.new_verdict}")}
     </div>
-    {_html_findings_section(labels["added"], summary.added, labels["none"])}
-    {_html_findings_section(labels["resolved"], summary.resolved, labels["none"])}
-    {_html_severity_section(labels["severity"], summary.severity_changes, labels["none"])}
-    <section>
-      <h2>{html.escape(labels["persisting"])}: {summary.persisting_count}</h2>
-    </section>
+    {_html_findings_section(labels["resolved"], descriptions["resolved"], summary.resolved, labels["none"])}
+    {_html_findings_section(labels["added"], descriptions["added"], summary.added, labels["none"])}
+    {_html_severity_section(labels["severity"], descriptions["severity"], summary.severity_changes, labels["none"])}
+    {_html_findings_section(labels["persisting"], descriptions["persisting"], summary.persisting, labels["none"])}
   </main>
+  <script>
+    function copyRepoTrustValue(button) {{
+      var value = button.getAttribute("data-copy-value");
+      function markCopied() {{
+        var original = button.textContent;
+        button.textContent = button.getAttribute("data-copied-label") || "Copied";
+        setTimeout(function () {{ button.textContent = original; }}, 1200);
+      }}
+      if (navigator.clipboard && navigator.clipboard.writeText) {{
+        navigator.clipboard.writeText(value).then(markCopied).catch(function () {{ fallbackCopy(value); markCopied(); }});
+      }} else {{
+        fallbackCopy(value);
+        markCopied();
+      }}
+    }}
+    function fallbackCopy(value) {{
+      var textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }}
+  </script>
 </body>
 </html>
 """
+
+
+def _html_outcome(summary: CompareSummary, *, locale: str) -> tuple[str, str]:
+    if summary.delta > 0:
+        return (
+            ("개선됨", "점수가 올랐습니다. 해결된 finding과 아직 남은 finding을 함께 확인하세요.")
+            if locale == "ko"
+            else ("Improved", "The score increased. Review resolved findings and anything still remaining.")
+        )
+    if summary.delta < 0:
+        return (
+            ("악화됨", "점수가 내려갔습니다. 새로 생긴 문제와 심각도 변경을 먼저 확인하세요.")
+            if locale == "ko"
+            else ("Worse", "The score decreased. Check new issues and severity changes first.")
+        )
+    return (
+        ("점수 변화 없음", "점수는 같지만 finding 변화가 있을 수 있습니다. 아래 섹션을 확인하세요.")
+        if locale == "ko"
+        else ("No score change", "The score stayed the same, but finding details may still have changed.")
+    )
 
 
 def _html_metric(label: str, value: str) -> str:
@@ -257,17 +337,26 @@ def _html_metric(label: str, value: str) -> str:
     )
 
 
-def _html_findings_section(title: str, finding_ids: list[str], none_label: str) -> str:
+def _html_findings_section(
+    title: str,
+    description: str,
+    finding_ids: list[str],
+    none_label: str,
+) -> str:
     items = f"<p>{html.escape(none_label)}.</p>"
     if finding_ids:
         items = "<ul>" + "".join(
-            f"<li><code>{html.escape(finding_id)}</code></li>" for finding_id in finding_ids
+            f"<li>{_html_finding_with_actions(finding_id)}</li>" for finding_id in finding_ids
         ) + "</ul>"
-    return f"<section><h2>{html.escape(title)}: {len(finding_ids)}</h2>{items}</section>"
+    return (
+        f"<section><h2>{html.escape(title)}: {len(finding_ids)}</h2>"
+        f'<p class="section-note">{html.escape(description)}</p>{items}</section>'
+    )
 
 
 def _html_severity_section(
     title: str,
+    description: str,
     changes: list[SeverityChange],
     none_label: str,
 ) -> str:
@@ -275,12 +364,27 @@ def _html_severity_section(
     if changes:
         items = "<ul>" + "".join(
             "<li>"
-            f"<code>{html.escape(change.finding_id)}</code>: "
+            f"{_html_finding_with_actions(change.finding_id)}: "
             f"{html.escape(str(change.old_severity))} -> {html.escape(str(change.new_severity))}"
             "</li>"
             for change in changes
         ) + "</ul>"
-    return f"<section><h2>{html.escape(title)}: {len(changes)}</h2>{items}</section>"
+    return (
+        f"<section><h2>{html.escape(title)}: {len(changes)}</h2>"
+        f'<p class="section-note">{html.escape(description)}</p>{items}</section>'
+    )
+
+
+def _html_finding_with_actions(finding_id: str) -> str:
+    escaped_id = html.escape(finding_id)
+    explain_command = f"repo-trust explain {finding_id}"
+    return (
+        f"<code>{escaped_id}</code>"
+        '<span class="finding-actions">'
+        f'<button type="button" onclick="copyRepoTrustValue(this)" data-copy-value="{escaped_id}" data-copied-label="Copied">Copy ID</button>'
+        f'<button type="button" onclick="copyRepoTrustValue(this)" data-copy-value="{html.escape(explain_command)}" data-copied-label="Copied">Copy explain</button>'
+        "</span>"
+    )
 
 
 def _finding_map(report: dict) -> dict[str, dict]:

@@ -193,10 +193,11 @@ repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format
 **결과를 읽는 법**
 
 - `Score`가 올라가면 전반적인 신뢰 신호가 개선된 것입니다.
-- `Resolved findings`는 사라진 문제입니다. 숫자가 많을수록 개선된 항목이 많습니다.
-- `Added findings`는 새로 생긴 문제입니다. 0이어야 가장 좋습니다.
+- HTML 비교 리포트의 `Improvements`는 사라진 문제입니다. 숫자가 많을수록 개선된 항목이 많습니다.
+- HTML 비교 리포트의 `New issues`는 새로 생긴 문제입니다. 0이어야 가장 좋습니다.
 - `Severity changes`는 같은 finding의 심각도가 바뀐 경우입니다.
-- `Persisting findings`는 아직 남아 있는 문제입니다. HTML/JSON 리포트에서 해당 finding ID를 다시 확인하세요.
+- `Still remaining`은 아직 남아 있는 문제입니다. HTML/JSON 리포트에서 해당 finding ID를 다시 확인하세요.
+- HTML 비교 리포트에서 `Copy ID`는 finding ID만 복사하고, `Copy explain`은 `repo-trust explain <finding-id>` 명령을 복사합니다.
 
 ### 로컬 폴더를 HTML로 저장
 

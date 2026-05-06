@@ -501,10 +501,17 @@ def test_direct_cli_compare_writes_html_report(tmp_path):
     assert "<!doctype html>" in html
     assert "RepoTrust Compare Report" in html
     assert "80 -&gt; 70 (-10)" in html
+    assert "Worse" in html
+    assert "New issues: 1" in html
+    assert "Improvements: 1" in html
+    assert "Still remaining: 1" in html
     assert "install.risky.uses_sudo" in html
     assert "security.no_policy" in html
     assert "security.no_ci" in html
     assert "low -> medium" in html
+    assert 'data-copy-value="install.risky.uses_sudo"' in html
+    assert 'data-copy-value="repo-trust explain install.risky.uses_sudo"' in html
+    assert "copyRepoTrustValue" in html
 
 
 def test_direct_kr_cli_compare_reports(tmp_path):
