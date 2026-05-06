@@ -37,7 +37,9 @@ printf '2\n' | .venv/bin/repo-trust html --help
 printf 'q\n' | .venv/bin/repo-trust
 printf 'q\n' | .venv/bin/repo-trust-kr
 .venv/bin/repo-trust check .
+.venv/bin/repo-trust explain install.risky.uses_sudo
 .venv/bin/repo-trust-kr check .
+.venv/bin/repo-trust-kr explain security.no_policy
 .venv/bin/repo-trust html . --output /tmp/repotrust-report.html
 .venv/bin/repo-trust-kr html . --output /tmp/repotrust-kr-report.html
 .venv/bin/repo-trust json https://github.com/answndud/repo-trust
@@ -68,6 +70,9 @@ Expected behavior:
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.
 - `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance with the shared Kali-style terminal theme.
+- `repo-trust explain <finding-id>` prints a known finding's category, default severity, meaning, and recommended action without scanning a target.
+- `repo-trust explain <unknown-id>` exits with code `1` and suggests known finding IDs.
+- Static HTML reports should include severity/category finding filters and expand/collapse controls while still rendering finding details without JavaScript.
 - Product CLI GitHub URL commands default to parse-only without GitHub API access and never clone repositories.
 - Product `--remote` opts into GitHub API read-only metadata.
 - `--parse-only` parses a GitHub URL without GitHub API access and is equivalent to the product default for GitHub URL targets.

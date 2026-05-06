@@ -2,6 +2,7 @@ import re
 from dataclasses import fields
 from pathlib import Path
 
+from repotrust.finding_catalog import FINDING_REFERENCES
 from repotrust.models import (
     JSON_SCHEMA_VERSION,
     Assessment,
@@ -11,6 +12,7 @@ from repotrust.models import (
     Score,
     Target,
 )
+from repotrust.reports import FINDING_EXPLANATIONS, FINDING_TITLES
 
 
 DOCUMENTED_FINDING_ID_RE = re.compile(
@@ -34,6 +36,12 @@ def test_finding_reference_documents_source_finding_ids():
     documented_ids = set(DOCUMENTED_FINDING_ID_RE.findall(reference_text))
 
     assert source_ids <= documented_ids
+
+
+def test_finding_catalog_covers_report_explanations_and_titles():
+    report_ids = set(FINDING_TITLES) | set(FINDING_EXPLANATIONS)
+
+    assert report_ids <= set(FINDING_REFERENCES)
 
 
 def test_json_report_reference_documents_model_fields():

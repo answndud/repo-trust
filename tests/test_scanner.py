@@ -625,6 +625,13 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert "<h2>Prioritized Findings</h2>" in html
     assert "priority ID는 상위 3개 항목만 요약합니다" in html
     assert f"전체 {len(result.findings)}개 finding" in html
+    assert 'data-filter-type="severity" data-filter-value="high"' in html
+    assert 'data-filter-type="category" data-filter-value="install_safety"' in html
+    assert 'data-action="collapse-findings"' in html
+    assert 'data-severity="high"' in html
+    assert 'data-category="readme_quality"' in html
+    assert "<details open>" in html
+    assert "근거와 추천 조치" in html
     assert "<h2>Next Actions</h2>" in html
     assert 'class="finding severity-high"' in html
     assert "<dt>검사 영역</dt>" in html

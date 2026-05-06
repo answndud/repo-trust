@@ -275,6 +275,7 @@ def render_markdown(result: ScanResult) -> str:
 def render_html(result: ScanResult) -> str:
     title = html.escape(f"RepoTrust 리포트 - {result.target.raw}")
     assessment = result.assessment
+    finding_count = len(result.findings)
     category_items = "\n".join(
         _category_html(category, score)
         for category, score in result.score.categories.items()
@@ -346,6 +347,12 @@ def render_html(result: ScanResult) -> str:
     .finding {{ border-left: 5px solid #64748b; margin: 16px 0; background: #ffffff; }}
     .finding header {{ display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }}
     .finding dl {{ display: grid; grid-template-columns: 130px 1fr; gap: 10px 16px; margin: 0; }}
+    .finding-controls {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }}
+    .finding-controls button {{ border: 1px solid var(--line); border-radius: 6px; background: #ffffff; color: #17212b; padding: 7px 10px; font: inherit; font-size: 0.9rem; font-weight: 800; cursor: pointer; }}
+    .finding-controls button[aria-pressed="true"] {{ background: #17212b; color: #ffffff; border-color: #17212b; }}
+    .finding details {{ margin-top: 10px; }}
+    .finding summary {{ cursor: pointer; color: #17212b; font-weight: 800; margin-bottom: 10px; }}
+    .finding[hidden] {{ display: none; }}
     .badge {{ display: inline-block; border-radius: 999px; padding: 3px 10px; color: #ffffff; font-size: 0.8rem; font-weight: 800; white-space: nowrap; }}
     .severity-info {{ border-left-color: #64748b; }}
     .severity-low {{ border-left-color: #15803d; }}
@@ -430,7 +437,18 @@ def render_html(result: ScanResult) -> str:
       </ul>
 
       <h2>Prioritized Findings</h2>
-      <p>Assessment와 Purpose Profiles의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {len(result.findings)}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 실제 근거, 추천 조치를 포함합니다.</p>
+      <p>Assessment와 Purpose Profiles의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {finding_count}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 실제 근거, 추천 조치를 포함합니다.</p>
+      <div class="finding-controls" aria-label="Finding filters">
+        <button type="button" data-filter-type="all" data-filter-value="all" aria-pressed="true">전체</button>
+        <button type="button" data-filter-type="severity" data-filter-value="high" aria-pressed="false">높음</button>
+        <button type="button" data-filter-type="severity" data-filter-value="medium" aria-pressed="false">중간</button>
+        <button type="button" data-filter-type="severity" data-filter-value="low" aria-pressed="false">낮음</button>
+        <button type="button" data-filter-type="severity" data-filter-value="info" aria-pressed="false">정보</button>
+        <button type="button" data-filter-type="category" data-filter-value="install_safety" aria-pressed="false">설치 안전성</button>
+        <button type="button" data-filter-type="category" data-filter-value="security_posture" aria-pressed="false">보안 태세</button>
+        <button type="button" data-action="expand-findings">전체 펼치기</button>
+        <button type="button" data-action="collapse-findings">전체 접기</button>
+      </div>
 {findings}
 
       <h2>Next Actions</h2>
@@ -451,6 +469,28 @@ def render_html(result: ScanResult) -> str:
         </li>
       </ul>
     </section>
+    <script>
+      const controls = document.querySelectorAll('[data-filter-type]');
+      const findings = document.querySelectorAll('.finding');
+      controls.forEach((button) => {{
+        button.addEventListener('click', () => {{
+          controls.forEach((control) => control.setAttribute('aria-pressed', 'false'));
+          button.setAttribute('aria-pressed', 'true');
+          const type = button.dataset.filterType;
+          const value = button.dataset.filterValue;
+          findings.forEach((finding) => {{
+            const show = type === 'all' || finding.dataset[type] === value;
+            finding.hidden = !show;
+          }});
+        }});
+      }});
+      document.querySelector('[data-action="expand-findings"]')?.addEventListener('click', () => {{
+        document.querySelectorAll('.finding details').forEach((detail) => detail.open = true);
+      }});
+      document.querySelector('[data-action="collapse-findings"]')?.addEventListener('click', () => {{
+        document.querySelectorAll('.finding details').forEach((detail) => detail.open = false);
+      }});
+    </script>
   </main>
 </body>
 </html>
@@ -519,7 +559,8 @@ def _finding_html(finding: Finding) -> str:
     severity = html.escape(finding.severity.value)
     severity_label = _severity_ko(finding.severity.value)
     category_label = _category_label(finding.category.value)
-    return f"""        <article class="finding severity-{severity}">
+    category = html.escape(finding.category.value)
+    return f"""        <article class="finding severity-{severity}" data-severity="{severity}" data-category="{category}">
           <header>
             <div>
               <h3>{html.escape(_finding_title(finding))}</h3>
@@ -527,14 +568,17 @@ def _finding_html(finding: Finding) -> str:
             </div>
             <span class="badge badge-{severity}">{html.escape(severity_label)}</span>
           </header>
-          <dl>
-            <dt>검사 영역</dt><dd>{html.escape(category_label)} <code>{html.escape(finding.category.value)}</code></dd>
-            <dt>심각도</dt><dd>{html.escape(severity_label)} <code>{severity}</code></dd>
-            <dt>무슨 뜻인가요?</dt><dd>{html.escape(_finding_explanation(finding))}</dd>
-            <dt>원문 메시지</dt><dd>{html.escape(finding.message)}</dd>
-            <dt>실제 근거</dt><dd>{html.escape(finding.evidence)}</dd>
-            <dt>추천 조치</dt><dd>{html.escape(finding.recommendation)}</dd>
-          </dl>
+          <details open>
+            <summary>근거와 추천 조치</summary>
+            <dl>
+              <dt>검사 영역</dt><dd>{html.escape(category_label)} <code>{category}</code></dd>
+              <dt>심각도</dt><dd>{html.escape(severity_label)} <code>{severity}</code></dd>
+              <dt>무슨 뜻인가요?</dt><dd>{html.escape(_finding_explanation(finding))}</dd>
+              <dt>원문 메시지</dt><dd>{html.escape(finding.message)}</dd>
+              <dt>실제 근거</dt><dd>{html.escape(finding.evidence)}</dd>
+              <dt>추천 조치</dt><dd>{html.escape(finding.recommendation)}</dd>
+            </dl>
+          </details>
         </article>"""
 
 

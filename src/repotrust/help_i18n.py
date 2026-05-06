@@ -17,6 +17,7 @@ Commands:
   json   Write a JSON trust report.
   check  Inspect a target and print a terminal dashboard.
   gate   Write JSON and fail when policy requirements are not met.
+  explain Explain a finding ID.
 
 Console Mode:
   repo-trust      Open the English workflow console.
@@ -35,6 +36,7 @@ Console Mode:
   json   JSON 신뢰 리포트를 저장합니다.
   check  파일 저장 없이 터미널 대시보드로 검사합니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
+  explain finding ID의 의미와 추천 조치를 설명합니다.
 
 콘솔 모드:
   repo-trust      영어 workflow 콘솔을 엽니다.
@@ -171,6 +173,28 @@ JSON 리포트를 출력하고 정책 요구사항을 만족하지 못하면 실
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   --help             영어 또는 한국어 도움말을 선택해 봅니다.
+""",
+    },
+    "explain": {
+        "en": """Usage: repo-trust explain [OPTIONS] FINDING_ID
+
+Explain a RepoTrust finding ID.
+
+Arguments:
+  FINDING_ID  Finding ID such as install.risky.uses_sudo.
+
+Options:
+  --help  Choose English or Korean help and exit.
+""",
+        "ko": """사용법: repo-trust explain [옵션] FINDING_ID
+
+RepoTrust finding ID의 의미와 추천 조치를 설명합니다.
+
+인자:
+  FINDING_ID  install.risky.uses_sudo 같은 finding ID입니다.
+
+옵션:
+  --help  영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },
 }

@@ -49,7 +49,7 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 | 방식 | 명령 | 추천 상황 | 결과 |
 | --- | --- | --- | --- |
 | Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 터미널 workflow 선택 |
-| Command Mode | `repo-trust html/json/check <대상>` | 반복 실행, 자동화, 문서화할 때 | HTML/JSON 파일 또는 터미널 대시보드 |
+| Command Mode | `repo-trust html/json/check/explain <대상 또는 finding ID>` | 반복 실행, 자동화, 문서화할 때 | HTML/JSON 파일, 터미널 대시보드, finding 설명 |
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
@@ -126,6 +126,19 @@ result/codex-YYYY-MM-DD.json
 ```
 
 JSON 파일은 `schema_version`, `target`, `detected_files`, `findings`, `score`, `assessment`, `generated_at`을 포함합니다. `assessment.profiles`에는 설치, dependency 채택, AI agent 위임 목적별 판단이 들어갑니다. 터미널 대시보드는 stderr로만 출력되므로 JSON 파일 내용과 섞이지 않습니다. 자동화에서 파싱할 key와 compatibility 기준은 [docs/json-report-reference.md](docs/json-report-reference.md)에 정리되어 있습니다.
+
+### Finding ID 설명 보기
+
+리포트에서 본 finding ID가 무엇을 뜻하는지 바로 확인할 수 있습니다.
+
+**입력할 명령**
+
+```bash
+repo-trust explain install.risky.uses_sudo
+repo-trust-kr explain security.no_policy
+```
+
+`explain`은 저장소를 다시 검사하지 않고 finding ID의 영역, 기본 심각도, 의미, 추천 조치를 보여줍니다. HTML 리포트에서 ID를 발견한 뒤 터미널에서 자세히 확인할 때 유용합니다.
 
 ### 로컬 폴더를 HTML로 저장
 
@@ -265,7 +278,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
-터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요.
+터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요. HTML 리포트에서는 severity/category 버튼으로 finding을 필터링하고, 각 finding의 근거와 추천 조치를 접거나 펼칠 수 있습니다.
 
 심각도는 이렇게 해석하면 됩니다.
 
@@ -298,6 +311,8 @@ python -m json.tool /tmp/repotrust-risky.json
 | `risky-install` | `51/100`, grade `F`, high confidence | 터미널은 전체 12개 finding 중 상위 3개를 먼저 보여주고, HTML/JSON은 전체 finding을 보여줍니다. Install Safety가 `0/100`인지 확인합니다. |
 
 `risky-install`은 일부러 위험한 설치 명령을 담은 연습용 fixture입니다. 실제 저장소에서 비슷한 high finding이 나오면 명령을 바로 실행하지 말고, terminal `WHY`의 상위 항목과 HTML `Prioritized Findings`의 전체 evidence/recommendation을 함께 확인하세요.
+
+특정 finding을 더 자세히 보고 싶으면 `repo-trust explain <finding-id>`를 실행하세요.
 
 ## 실패 기준 설정
 

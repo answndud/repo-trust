@@ -267,6 +267,7 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "json" in stdout
     assert "check" in stdout
     assert "gate" in stdout
+    assert "explain" in stdout
     assert "RepoTrust Console" not in stdout
 
 
@@ -281,6 +282,7 @@ def test_direct_cli_help_can_show_korean_product_commands():
     assert "HTML 신뢰 리포트를 저장합니다." in stdout
     assert "파일 저장 없이 터미널 대시보드로 검사합니다." in stdout
     assert "JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다." in stdout
+    assert "finding ID의 의미와 추천 조치를 설명합니다." in stdout
 
 
 def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
@@ -292,6 +294,7 @@ def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
     assert "html" in stdout
     assert "json" in stdout
     assert "check" in stdout
+    assert "explain" in stdout
     assert "RepoTrust 한국어 콘솔" not in stdout
 
 
@@ -318,6 +321,50 @@ def test_direct_kr_cli_subcommand_help_can_show_english_without_target():
     assert "Usage: repo-trust check" in stdout
     assert "Inspect a target and print a terminal dashboard." in stdout
     assert "--fail-under" in stdout
+
+
+def test_direct_cli_explain_finding_id():
+    result = runner.invoke(
+        direct_app,
+        ["explain", "install.risky.uses_sudo"],
+        prog_name="repo-trust",
+    )
+    stdout = plain_output(result.stdout)
+
+    assert result.exit_code == 0
+    assert "Finding: install.risky.uses_sudo" in stdout
+    assert "Category: install_safety" in stdout
+    assert "Default severity: high" in stdout
+    assert "Meaning:" in stdout
+    assert "Recommended action:" in stdout
+
+
+def test_direct_kr_cli_explain_finding_id():
+    result = runner.invoke(
+        direct_kr_app,
+        ["explain", "install.risky.uses_sudo"],
+        prog_name="repo-trust-kr",
+    )
+    stdout = plain_output(result.stdout)
+
+    assert result.exit_code == 0
+    assert "Finding: install.risky.uses_sudo" in stdout
+    assert "영역: install_safety" in stdout
+    assert "기본 심각도: high" in stdout
+    assert "추천 조치:" in stdout
+
+
+def test_direct_cli_explain_unknown_finding_exits_with_suggestions():
+    result = runner.invoke(
+        direct_app,
+        ["explain", "unknown.finding"],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 1
+    assert "Unknown finding ID: unknown.finding" in stderr
+    assert "install.risky.uses_sudo" in stderr
 
 
 def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):

@@ -19,6 +19,7 @@ from .config import (
 )
 from .console import ConsoleWorkflow, run_console_mode
 from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
+from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
 from .models import ScanResult
 from .reports import render_report
@@ -424,6 +425,54 @@ def gate(
         dashboard=False,
         dashboard_locale=_product_locale(ctx),
     )
+
+
+@direct_app.command("explain", add_help_option=False)
+@direct_kr_app.command("explain", add_help_option=False)
+def explain(
+    ctx: typer.Context,
+    finding_id: Annotated[str, typer.Argument(help="Finding ID to explain.")],
+    help_requested: Annotated[
+        bool,
+        typer.Option(
+            "--help",
+            callback=_help_callback("explain"),
+            help=HELP_OPTION_HELP,
+            is_eager=True,
+        ),
+    ] = False,
+) -> None:
+    """Explain a RepoTrust finding ID."""
+    reference = get_finding_reference(finding_id)
+    locale = _product_locale(ctx)
+    if reference is None:
+        examples = [
+            "install.risky.uses_sudo",
+            "security.no_policy",
+            "target.github_not_fetched",
+        ]
+        status_console.print(
+            f"Unknown finding ID: [bold]{finding_id}[/]\n"
+            "Run [bold]repo-trust explain --help[/bold] for usage, or try one of:\n"
+            + "\n".join(f"- {example}" for example in examples)
+        )
+        raise typer.Exit(code=1)
+
+    if locale == "ko":
+        typer.echo(f"Finding: {reference.id}")
+        typer.echo(f"제목: {reference.title}")
+        typer.echo(f"영역: {reference.category.value}")
+        typer.echo(f"기본 심각도: {reference.severity.value}")
+        typer.echo(f"의미: {reference.explanation}")
+        typer.echo(f"추천 조치: {reference.action}")
+        return
+
+    typer.echo(f"Finding: {reference.id}")
+    typer.echo(f"Title: {reference.title}")
+    typer.echo(f"Category: {reference.category.value}")
+    typer.echo(f"Default severity: {reference.severity.value}")
+    typer.echo(f"Meaning: {reference.explanation}")
+    typer.echo(f"Recommended action: {reference.action}")
 
 
 def _run_product_scan(

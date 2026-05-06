@@ -20,6 +20,13 @@ disabled = ["remote.github_issues_disabled"]
 
 Score caps are separate from severity deductions. A cap can still limit the total score when the finding remains enabled.
 
+To explain a finding at the command line:
+
+```bash
+repo-trust explain install.risky.uses_sudo
+repo-trust-kr explain security.no_policy
+```
+
 ## Verdict Impact
 
 - High severity findings make the top-level verdict `do_not_install_before_review`.

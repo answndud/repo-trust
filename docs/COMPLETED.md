@@ -1005,3 +1005,12 @@
 - 코드/문서: `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/repo-trust check tests/fixtures/repos/risky-install` smoke에서 score `51/100`, grade `F`, `Showing top 3 of 12 findings` 안내를 확인했다. `.venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky-doc.json`과 `json.tool` 검증은 성공했고 JSON은 score `51`, grade `F`, Install Safety `0/100`, finding 12개와 risky install finding 7개를 포함했다. `.venv/bin/python -m pytest -q`는 `131 passed`였다.
 - 결과: README, testing guide, CLI/renderer 동작이 sample report walkthrough 기준으로 일치한다. 현재 active 작업은 없다.
+
+## 110: Explain command와 HTML finding filters
+
+- 완료일: 2026-05-06
+- 배경: 사용자가 단순 리팩터링보다 직관적인 사용자 기능을 원했고, finding을 바로 이해하는 CLI와 많은 finding을 탐색하기 쉬운 HTML 리포트가 가장 효과적인 다음 기능으로 판단됐다.
+- 변경 내용: known finding catalog를 추가하고 `repo-trust explain <finding-id>` / `repo-trust-kr explain <finding-id>` 명령을 구현했다. HTML 리포트의 `Prioritized Findings`에 severity/category 필터, 전체 펼치기/접기 controls, finding별 `details` 접기 UI와 `data-severity`/`data-category` 속성을 추가했다. README, finding reference, testing guide, localized help를 새 기능에 맞게 갱신했다.
+- 코드/문서: `src/repotrust/finding_catalog.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `tests/test_docs.py`, `README.md`, `docs/finding-reference.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `repo-trust explain install.risky.uses_sudo`와 `repo-trust-kr explain security.no_policy` smoke가 title/category/severity/meaning/action을 출력했다. unknown finding ID는 exit code `1`과 대표 ID 예시를 반환했다. HTML fixture smoke에서 filter buttons, expand/collapse controls, `data-severity`, `data-category` 속성을 확인했다. `.venv/bin/python -m pytest -q`는 `136 passed`였다.
+- 결과: 사용자가 finding을 CLI에서 바로 해석하고, HTML 리포트에서 finding을 필터링/접기 탐색할 수 있다. 현재 active 작업은 없다.
