@@ -30,6 +30,6 @@
 
 ## 다음 실행 순서
 
-1. 사용자가 승인하면 v0.2.7 publish를 진행한다.
-2. Publish 단계는 `main` push, GitHub Actions 확인, annotated tag `v0.2.7`, GitHub Release 생성, wheel/sdist asset upload 순서로 진행한다.
-3. Publish 후 GitHub Release wheel URL로 clean install smoke를 다시 확인한다.
+1. 새 milestone으로 beginner-friendly 기능을 이어간다.
+2. 추천 후보: HTML 리포트에서 `Next safest command`를 더 눈에 띄게 보여주고, Console Mode에서 리포트 저장 후 열기 명령을 안내한다.
+3. 다음 작업을 시작할 때 작은 story 하나를 `In Progress`로 승격한다.

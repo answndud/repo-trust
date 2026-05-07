@@ -28,4 +28,4 @@
 
 ## 다음 액션
 
-다음 추천 작업: v0.2.7 publish.
+다음 추천 작업: HTML/Console beginner command guidance 개선.

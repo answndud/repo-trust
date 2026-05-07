@@ -1212,3 +1212,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `git diff --check`는 통과했다. `.venv/bin/python -m pytest -q`는 `150 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.7/dist`는 `repotrust-0.2.7.tar.gz`와 `repotrust-0.2.7-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version `0.2.7`, `safe-install` README install commands, Console `[S] 안전 설치`, fixture JSON 생성, `json.tool`, HTML Safe Install section 렌더링을 확인했다. Self-scan JSON은 grade `A`, high confidence, full coverage, medium/high finding 0개였다.
 - 결과: v0.2.7 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. GitHub Release publish는 명시 승인 대기 상태다.
+
+## 133: v0.2.7 GitHub Release publish
+
+- 완료일: 2026-05-07
+- 배경: v0.2.7 release candidate가 전체 테스트, build, clean wheel smoke, self-scan을 통과했고 사용자가 다음 작업 진행을 요청했으므로 GitHub Release로 공개해야 했다.
+- 변경 내용: `main`의 release prep commit `26ee982`까지 origin에 push하고 GitHub Actions `ci` run `25476035889` 통과를 확인했다. annotated tag `v0.2.7`을 release commit에 생성해 push했고, GitHub Release `RepoTrust v0.2.7`을 publish했다. Release asset으로 `repotrust-0.2.7-py3-none-any.whl`과 `repotrust-0.2.7.tar.gz`를 업로드했다. 작업 상태 문서를 active 작업 없음으로 정리했다.
+- 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `gh run watch 25476035889 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.7 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.7`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.7`, `safe-install` README install commands, Console `[S] 안전 설치`, fixture JSON 생성, `json.tool` 검증이 성공했다.
+- 결과: v0.2.7은 https://github.com/answndud/repo-trust/releases/tag/v0.2.7 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
