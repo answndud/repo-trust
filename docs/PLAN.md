@@ -30,6 +30,6 @@
 
 ## 다음 실행 순서
 
-1. 새 milestone으로 beginner-friendly 기능을 이어간다.
-2. 추천 후보: HTML 리포트에서 `Next safest command`를 더 눈에 띄게 보여주고, Console Mode에서 리포트 저장 후 열기 명령을 안내한다.
-3. 다음 작업을 시작할 때 작은 story 하나를 `In Progress`로 승격한다.
+1. 다음 milestone 후보를 고른다.
+2. 추천 후보: sample report gallery 또는 beginner tutorial command를 README/Console에 추가한다.
+3. 선택한 story 하나를 `In Progress`로 승격한다.

@@ -663,6 +663,7 @@ def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     assert "WHY" in result.stderr
     assert "ACTIONS" in result.stderr
     assert "Open full report:" in result.stderr
+    assert "Open with: open result/" in plain_output(result.stderr)
 
 
 def test_direct_cli_interactive_github_shortcut_shows_input_and_processing(monkeypatch, tmp_path):
@@ -699,6 +700,7 @@ def test_direct_cli_interactive_github_shortcut_shows_input_and_processing(monke
     assert "Running analysis..." in result.stderr
     assert "RESULT:" in result.stderr
     assert "Open full report:" in result.stderr
+    assert "Open with: open result/" in plain_output(result.stderr)
 
 
 def test_direct_cli_interactive_json_export_uses_generic_target_prompt(tmp_path, monkeypatch):
@@ -714,6 +716,7 @@ def test_direct_cli_interactive_json_export_uses_generic_target_prompt(tmp_path,
     assert "Example: https://github.com/openai/openai-python" not in stderr
     assert "Running analysis..." in stderr
     assert "Open full report:" in stderr
+    assert "Open with: open result/" in stderr
 
 
 def test_direct_cli_interactive_safe_install_workflow():
@@ -959,6 +962,9 @@ def test_direct_cli_html_github_url_defaults_to_parse_only(monkeypatch, tmp_path
     assert "ACTIONS" in result.stderr
     assert "Open full report:" in result.stderr
     assert f"result/repo-{date.today().isoformat()}.html" in plain_output(result.stderr)
+    assert f"Open with: open result/repo-{date.today().isoformat()}.html" in plain_output(
+        result.stderr
+    )
 
 
 def test_direct_cli_json_github_url_defaults_to_parse_only(monkeypatch, tmp_path):
@@ -1176,6 +1182,7 @@ def test_direct_kr_cli_json_writes_file_with_korean_status(monkeypatch, tmp_path
     assert output.exists()
     assert "RESULT:" in result.stderr
     assert "전체 리포트 열기:" in result.stderr
+    assert "열기 명령: open result/" in plain_output(result.stderr)
     data = json.loads(output.read_text(encoding="utf-8"))
     assert data["schema_version"] == "1.2"
     assert data["target"]["kind"] == "github"

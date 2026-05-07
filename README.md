@@ -196,7 +196,7 @@ repo-trust-kr safe-install tests/fixtures/repos/good-python
 repo-trust safe-install https://github.com/openai/codex
 ```
 
-`safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 더 격리된 설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다.
+`safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 더 격리된 설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. HTML 리포트의 `Safe Install` 섹션은 `Next safest command`를 맨 위에 따로 보여주므로, 설치 명령을 실행하기 전에 먼저 할 일을 빠르게 확인할 수 있습니다.
 
 ### JSON 리포트 비교
 
@@ -369,7 +369,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
-터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요. HTML 리포트의 `Safe Install` 섹션은 실행 전 체크리스트, README에서 발견한 설치 명령, 더 안전한 설치 패턴을 함께 보여줍니다. HTML finding card는 `터미널 없이 읽는 설명과 근거`를 포함하므로 CLI를 다시 열지 않아도 finding의 의미, 실제 근거, 추천 조치를 바로 읽을 수 있습니다. 각 finding card의 `ID 복사`와 `explain 명령 복사` 버튼으로 터미널 설명 명령을 바로 이어서 실행할 수 있습니다.
+터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요. HTML 리포트의 `Safe Install` 섹션은 `Next safest command`, 실행 전 체크리스트, README에서 발견한 설치 명령, 더 안전한 설치 패턴을 함께 보여줍니다. HTML finding card는 `터미널 없이 읽는 설명과 근거`를 포함하므로 CLI를 다시 열지 않아도 finding의 의미, 실제 근거, 추천 조치를 바로 읽을 수 있습니다. 각 finding card의 `ID 복사`와 `explain 명령 복사` 버튼으로 터미널 설명 명령을 바로 이어서 실행할 수 있습니다. HTML/JSON 리포트를 저장한 뒤 터미널의 `Open with: open <path>` 또는 `열기 명령: open <경로>` 안내를 복사하면 macOS에서 바로 파일을 열 수 있습니다.
 
 심각도는 이렇게 해석하면 됩니다.
 

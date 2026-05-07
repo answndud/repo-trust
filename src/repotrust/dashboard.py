@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shlex
 
 from rich.console import Console
 from rich.table import Table
@@ -222,9 +223,10 @@ def _why_text(result: ScanResult, *, locale: str) -> str:
 def _report_text(output_label: Path | None, *, locale: str) -> str:
     if output_label is None:
         return "파일 저장 안 함" if locale == "ko" else "No file written for this terminal-only check."
+    open_command = f"open {shlex.quote(str(output_label))}"
     if locale == "ko":
-        return f"전체 리포트 열기:\n→ {output_label}"
-    return f"Open full report:\n→ {output_label}"
+        return f"전체 리포트 열기:\n→ {output_label}\n열기 명령: {open_command}"
+    return f"Open full report:\n→ {output_label}\nOpen with: {open_command}"
 
 
 def _has_complete_evidence(result: ScanResult) -> bool:

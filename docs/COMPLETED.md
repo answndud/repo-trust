@@ -1221,3 +1221,12 @@
 - 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `gh run watch 25476035889 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.7 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.7`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.7`, `safe-install` README install commands, Console `[S] 안전 설치`, fixture JSON 생성, `json.tool` 검증이 성공했다.
 - 결과: v0.2.7은 https://github.com/answndud/repo-trust/releases/tag/v0.2.7 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
+
+## 134: HTML/Console beginner command guidance
+
+- 완료일: 2026-05-07
+- 배경: v0.2.7 이후 초보 사용자가 HTML 리포트에서 다음에 무엇을 실행해야 하는지와 저장된 리포트를 어떻게 열어야 하는지 더 빠르게 찾을 수 있게 해야 했다.
+- 변경 내용: HTML Safe Install 섹션 상단에 `Next safest command` 강조 블록을 추가했다. 고위험 설치 finding이 있으면 설치 명령 대신 `repo-trust explain <finding-id>` 검토 명령을 보여주고, clean fixture처럼 설치 blocker가 없으면 첫 safe install command를 보여준다. Console/Command dashboard의 저장된 리포트 안내에는 `Open with: open <path>` / `열기 명령: open <경로>` helper를 추가했다. README, CHANGELOG, testing guide, PLAN/PROGRESS/COMPLETED를 갱신했다.
+- 코드/문서: `src/repotrust/dashboard.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_scanner.py -k html_report -q`는 `3 passed, 32 deselected`였다. `.venv/bin/python -m pytest tests/test_cli.py -k "html_github_url_defaults or json_writes_file_with_korean_status or interactive_local_html or interactive_github_shortcut" -q`는 `5 passed, 72 deselected`였다. `git diff --check`는 통과했고, `.venv/bin/python -m pytest -q`는 `151 passed`였다. CLI smoke에서 저장된 HTML/JSON 리포트의 `Open with: open <path>` / `열기 명령: open <경로>` 안내를 확인했다. HTML smoke에서 `Next safest command`와 `repo-trust explain install.risky.process_substitution_shell` 렌더링을 확인했다.
+- 결과: 리포트를 만든 직후 사용자가 다음 안전 행동과 파일 열기 명령을 더 쉽게 찾을 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 sample report gallery 또는 beginner tutorial command다.

@@ -4,7 +4,10 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
-No changes yet.
+### Added
+
+- Static HTML Safe Install sections now highlight a `Next safest command` before the longer checklist.
+- Saved report dashboards now show an `open <path>` helper under the report path.
 
 ## v0.2.7 - 2026-05-07
 

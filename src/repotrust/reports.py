@@ -326,6 +326,8 @@ def render_html(result: ScanResult) -> str:
     .lead {{ color: #3d4852; font-size: 1.03rem; max-width: 860px; }}
     .assessment-grid {{ display: grid; grid-template-columns: minmax(260px, 0.95fr) minmax(320px, 1.05fr); gap: 18px; margin: 24px 0; }}
     .score-panel, .section-panel, .finding, .empty-state {{ border: 1px solid var(--line); border-radius: 8px; background: #fbfcfd; padding: 18px; }}
+    .next-command {{ border: 1px solid #b6d9d3; border-left: 4px solid var(--accent); border-radius: 8px; background: #f0faf8; padding: 12px 14px; margin: 8px 0 18px; }}
+    .next-command code {{ display: inline-block; background: #ffffff; border: 1px solid #c7e5df; padding: 6px 8px; }}
     .command-list {{ display: grid; gap: 8px; padding-left: 0; list-style: none; }}
     .command-list li {{ border: 1px solid #e3e8ef; border-radius: 6px; background: #ffffff; padding: 8px 10px; }}
     .score {{ display: flex; align-items: baseline; gap: 12px; margin: 8px 0 12px; }}
@@ -561,6 +563,10 @@ def _safe_install_html(result: ScanResult) -> str:
     profile = result.assessment.profiles["install"]
     readme_commands = readme_install_commands(result)
     safe_pattern_commands = safe_commands(result, locale="ko")
+    next_command_label, next_command, next_command_detail = _next_safe_command(
+        result,
+        safe_pattern_commands=safe_pattern_commands,
+    )
     readme_items = _command_items_html(
         readme_commands,
         empty_text="로컬 README 설치 섹션에서 인식 가능한 설치 명령을 찾지 못했습니다.",
@@ -570,6 +576,12 @@ def _safe_install_html(result: ScanResult) -> str:
       <section class="section-panel" aria-label="Safe Install">
         <p class="profile-verdict" style="color: {_verdict_color(profile.verdict)};">{html.escape(_assessment_label(profile.verdict))}</p>
         <p>{html.escape(_install_profile_summary_ko(profile.summary))}</p>
+        <h3>Next safest command</h3>
+        <div class="next-command">
+          <p><strong>{html.escape(next_command_label)}</strong></p>
+          <p><code>{html.escape(next_command)}</code></p>
+          <p class="description">{html.escape(next_command_detail)}</p>
+        </div>
         <h3>실행 전 체크리스트</h3>
         <ul class="next-steps">
           <li>명령이 저장소 README나 신뢰할 수 있는 release notes에서 나온 것인지 확인하세요.</li>
@@ -586,6 +598,32 @@ def _safe_install_html(result: ScanResult) -> str:
         </ul>
       </section>
 """
+
+
+def _next_safe_command(
+    result: ScanResult,
+    *,
+    safe_pattern_commands: list[str],
+) -> tuple[str, str, str]:
+    install_profile = result.assessment.profiles["install"]
+    priority_finding = next(iter(install_profile.priority_finding_ids), "")
+    if install_profile.verdict == "do_not_install_before_review" and priority_finding:
+        return (
+            "설치 대신 먼저 이 finding을 확인하세요.",
+            f"repo-trust explain {priority_finding}",
+            "고위험 설치 근거가 있으면 README 설치 명령이나 대체 설치 명령을 바로 실행하지 않는 것이 가장 안전합니다.",
+        )
+    if safe_pattern_commands:
+        return (
+            "설치가 필요하다면 이 명령부터 시작하세요.",
+            safe_pattern_commands[0],
+            "README 명령을 그대로 복사하기 전에 격리된 환경을 먼저 만드는 흐름입니다.",
+        )
+    return (
+        "먼저 리포트 근거를 확인하세요.",
+        f"repo-trust safe-install {result.target.raw}",
+        "표준 manifest를 찾지 못해 설치 명령보다 안전 설치 안내를 먼저 확인해야 합니다.",
+    )
 
 
 def _command_items_html(commands: list[str], *, empty_text: str | None = None) -> str:
