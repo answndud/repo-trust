@@ -275,7 +275,7 @@ def test_direct_cli_samples_writes_good_and_risky_gallery(tmp_path):
     assert result.stdout == ""
     assert "RepoTrust Sample Report Gallery" in result.stderr
     assert "Open with: open" in result.stderr
-    assert good_html.name in result.stderr
+    assert good_html.name in result.stderr.replace("\n", "")
     for path in [good_html, good_json, risky_html, risky_json]:
         assert path.exists()
     assert "Next safest command" in risky_html.read_text(encoding="utf-8")
