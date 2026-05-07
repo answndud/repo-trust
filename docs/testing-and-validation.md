@@ -71,7 +71,7 @@ Expected behavior:
 - Console Mode JSON export should use a generic repository target prompt so local paths and GitHub URLs are both discoverable.
 - Console Mode JSON compare should list recent JSON reports, accept a list number or direct path for older/newer JSON report paths, default the output to `repotrust-compare.html`, and write an HTML comparison report under `result/` when the output path is relative.
 - Console Mode recent reports should label saved files by purpose, including `compare html`, `html report`, and `json report`; compare workflow completion should remind users that `[R] Reports` can find the saved file later.
-- README first-use onboarding should keep a short `처음 쓰는 사람은 3단계만` path covering `repo-trust-kr`, `[L]`/`[G]`/`[J]`, and `[M] JSON 비교`.
+- README first-use onboarding should keep a short `처음 쓰는 사람은 3단계만` path covering `repo-trust-kr`, `[L]`/`[G]`/`[J]`, and `[M] JSON 비교`; detailed Command Mode compare docs should stay option-focused and avoid repeating the same beginner workflow.
 - Command Mode/help terminal UI should include `repotrust㉿` and `└─$`, and product terminal sources should not reintroduce pink/magenta/bright-green theme strings.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.

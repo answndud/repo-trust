@@ -12,20 +12,20 @@
 
 ## 현재 작업
 
-현재 active 작업 없음
+현재 active 작업 없음.
 
 ## 개발 상태 요약
 
-현재 active 작업 없음
+현재 active 작업 없음.
 
 ## Blocker
 
-현재 active 작업 없음
+현재 active 작업 없음.
 
 ## 최근 검증
 
-현재 active 작업 없음
+현재 active 작업 없음.
 
 ## 다음 액션
 
-현재 active 작업 없음
+현재 active 작업 없음.

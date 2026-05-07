@@ -73,7 +73,7 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
-차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`는 두 방식 모두 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
+차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`는 두 방식 모두 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
 ## Console Mode
 
@@ -204,35 +204,7 @@ repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format
 
 HTML 파일은 브라우저에서 열어 읽을 수 있고, Markdown 파일은 GitHub issue, PR 설명, 문서에 붙여 넣기 쉽습니다.
 
-### 초보자용: 개선 전/후 비교 파일 만들기
-
-코드를 잘 몰라도 아래 순서대로 실행하면 “수정 전에는 무엇이 문제였고, 수정 후에는 무엇이 좋아졌는지”를 파일로 남길 수 있습니다. 이 예시는 RepoTrust 안에 들어 있는 연습용 저장소를 사용합니다.
-
-**1. 위험한 예시를 JSON으로 저장**
-
-```bash
-repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-before.json
-```
-
-**2. 좋은 예시를 JSON으로 저장**
-
-```bash
-repo-trust json tests/fixtures/repos/good-python --output /tmp/repotrust-after.json
-```
-
-**3. 비교 결과를 브라우저용 HTML로 저장**
-
-```bash
-repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format html --output /tmp/repotrust-compare.html
-```
-
-**4. 비교 결과를 문서용 Markdown으로 저장**
-
-```bash
-repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format markdown --output /tmp/repotrust-compare.md
-```
-
-**결과를 읽는 법**
+**비교 결과를 읽는 법**
 
 - `Score`가 올라가면 전반적인 신뢰 신호가 개선된 것입니다.
 - HTML 비교 리포트의 `Improvements`는 사라진 문제입니다. 숫자가 많을수록 개선된 항목이 많습니다.
@@ -240,6 +212,8 @@ repo-trust compare /tmp/repotrust-before.json /tmp/repotrust-after.json --format
 - `Severity changes`는 같은 finding의 심각도가 바뀐 경우입니다.
 - `Still remaining`은 아직 남아 있는 문제입니다. HTML/JSON 리포트에서 해당 finding ID를 다시 확인하세요.
 - HTML 비교 리포트에서 `Copy ID`는 finding ID만 복사하고, `Copy explain`은 `repo-trust explain <finding-id>` 명령을 복사합니다.
+
+처음 연습할 때는 아래의 [샘플 리포트로 연습](#샘플-리포트로-연습) 섹션을 그대로 실행하면 됩니다.
 
 ### 로컬 폴더를 HTML로 저장
 

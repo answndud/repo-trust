@@ -1122,3 +1122,12 @@
 - 코드/문서: `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `rg`로 README의 `처음 쓰는 사람은 3단계만`, `repo-trust-kr`, `[M] JSON 비교`, `[R] 리포트` 문구를 확인했다. `.venv/bin/python -m pytest -q`는 `143 passed`였고 `git diff --check`도 통과했다.
 - 결과: README 상단에서 설치 후 첫 검사와 compare HTML 생성까지의 최소 경로를 바로 확인할 수 있다. 현재 active 작업은 없다.
+
+## 123: README compare docs dedupe
+
+- 완료일: 2026-05-07
+- 배경: README 상단 first-use path가 추가되면서 Command Mode compare 섹션의 초보자용 4단계 절차와 내용이 중복되어 문서가 길어졌다.
+- 변경 내용: Command Mode compare 섹션에서 중복된 `초보자용: 개선 전/후 비교 파일 만들기` 절차를 제거하고, compare 결과 읽는 법은 유지했다. 연습용 명령은 기존 `샘플 리포트로 연습` 섹션으로 연결했다. Console Mode 요약 문구에 `[M]` compare action을 추가했고, testing guide에는 first-use onboarding과 상세 Command Mode compare docs의 역할 분리를 기대값으로 추가했다.
+- 코드/문서: `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `rg`로 README의 `처음 쓰는 사람은 3단계만`, `비교 결과를 읽는 법`, `샘플 리포트로 연습`, `[M]` 문구와 `초보자용: 개선 전/후` 제거를 확인했다. `.venv/bin/python -m pytest -q`는 `143 passed`였고 `git diff --check`도 통과했다.
+- 결과: README 상단은 초보자 first-use path를 담당하고, Command Mode compare 섹션은 옵션 중심의 상세 설명으로 짧아졌다. 현재 active 작업은 없다.
