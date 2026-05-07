@@ -149,6 +149,8 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert "Full file-level local scan" in stderr
     assert "[C]  Quick check" in stderr
     assert "[J]  Export JSON" in stderr
+    assert "[S]  Safe Install" in stderr
+    assert "Advice before running install commands" in stderr
     assert "[M]  Compare JSON" in stderr
     assert "Create before/after HTML report" in stderr
     assert "Recent:" in stderr
@@ -174,6 +176,8 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "파일 근거까지 로컬 검사" in stderr
     assert "[C]  빠른 점검" in stderr
     assert "[J]  JSON 내보내기" in stderr
+    assert "[S]  안전 설치" in stderr
+    assert "설치 전 다음 단계 안내" in stderr
     assert "[M]  JSON 비교" in stderr
     assert "개선 전/후 HTML 만들기" in stderr
     assert "최근 리포트:" in stderr
@@ -698,6 +702,42 @@ def test_direct_cli_interactive_json_export_uses_generic_target_prompt(tmp_path,
     assert "Example: https://github.com/openai/openai-python" not in stderr
     assert "Running analysis..." in stderr
     assert "Open full report:" in stderr
+
+
+def test_direct_cli_interactive_safe_install_workflow():
+    result = runner.invoke(
+        direct_app,
+        [],
+        input="s\ntests/fixtures/repos/risky-install\n",
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "Selected: Safe install advice" in stderr
+    assert "Enter repository target:" in stderr
+    assert "Running analysis..." in stderr
+    assert "RepoTrust Safe Install Advice" in stderr
+    assert "Do not run the README install commands yet." in stderr
+    assert "install.risky.shell_pipe_install" in stderr
+
+
+def test_direct_kr_cli_interactive_safe_install_workflow():
+    result = runner.invoke(
+        direct_kr_app,
+        [],
+        input="s\ntests/fixtures/repos/risky-install\n",
+        prog_name="repo-trust-kr",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "선택됨: 안전 설치 안내" in stderr
+    assert "검사할 대상 입력:" in stderr
+    assert "분석 중..." in stderr
+    assert "RepoTrust 안전 설치 안내" in stderr
+    assert "아직 README 설치 명령을 실행하지 마세요." in stderr
+    assert "고위험 설치 근거" in stderr
 
 
 def test_direct_cli_interactive_compare_json_workflow_writes_html(tmp_path, monkeypatch):

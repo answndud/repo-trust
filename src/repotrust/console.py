@@ -309,6 +309,22 @@ def _prompt_workflow(
             new_report=new_report,
             output=Path(output),
         )
+    if choice == "s":
+        _print_selected(console=console, label=str(text["selected_safe_install"]))
+        target = _ask_value(
+            console=console,
+            prompt=str(text["any_target_prompt"]),
+            default=".",
+            default_hint=str(text["default_hint"]),
+            controls=str(text["input_controls"]),
+        )
+        if target == BACK:
+            return None
+        return ConsoleWorkflow(
+            target=target,
+            workflow_kind="safe_install",
+            locale=locale,
+        )
     _print_selected(console=console, label=str(text["selected_check"]))
     target = _ask_value(
         console=console,
@@ -329,7 +345,7 @@ def _prompt_workflow(
 
 
 def _ask_menu_choice(*, console: Console, text: ConsoleText) -> str:
-    choices = {"g", "l", "c", "j", "m", "r", "?", "q"}
+    choices = {"g", "l", "c", "j", "s", "m", "r", "?", "q"}
     while True:
         value = _input_command(console, prompt=f"[cyan]→[/] {text['select_prompt']} ").strip() or "1"
         normalized = _normalize_menu_choice(value)
@@ -400,6 +416,7 @@ def _normalize_menu_choice(value: str) -> str:
             "5": "r",
             "6": "?",
             "7": "m",
+            "8": "s",
         }.get(str(int(normalized)), normalized)
     return normalized
 

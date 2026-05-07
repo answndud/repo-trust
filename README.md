@@ -48,9 +48,9 @@ repo-trust-kr
 - GitHub URL을 빠르게 확인하려면 `[G] GitHub 저장소`를 선택하고 URL을 붙여 넣습니다.
 - 나중에 비교할 JSON을 남기려면 `[J] JSON 내보내기`를 선택합니다.
 
-### 3. 개선 전/후 비교하기
+### 3. 설치 전 안내와 개선 전/후 비교 확인하기
 
-JSON 리포트를 두 번 저장했다면 `[M] JSON 비교`를 선택하세요. 최근 JSON 목록에서 이전 리포트 번호와 최신 리포트 번호를 고르면 브라우저에서 열 수 있는 비교 HTML이 만들어집니다. 저장한 파일은 나중에 `[R] 리포트`에서 다시 찾을 수 있습니다.
+README의 설치 명령을 실행하기 전에는 `[S] 안전 설치`를 선택해 먼저 확인하세요. JSON 리포트를 두 번 저장했다면 `[M] JSON 비교`를 선택하세요. 최근 JSON 목록에서 이전 리포트 번호와 최신 리포트 번호를 고르면 브라우저에서 열 수 있는 비교 HTML이 만들어집니다. 저장한 파일은 나중에 `[R] 리포트`에서 다시 찾을 수 있습니다.
 
 RepoTrust를 수정하거나 테스트하려는 개발자는 저장소를 clone한 뒤 editable install을 사용하세요.
 
@@ -68,12 +68,12 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 
 | 방식 | 명령 | 추천 상황 | 결과 |
 | --- | --- | --- | --- |
-| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 검사, JSON 저장, JSON 비교 workflow 선택 |
+| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 검사, 안전 설치 안내, JSON 저장, JSON 비교 workflow 선택 |
 | Command Mode | `repo-trust html/json/check/safe-install/explain/compare <대상, finding ID, 리포트>` | 반복 실행, 자동화, 문서화할 때 | HTML/JSON 파일, 터미널 대시보드, 안전 설치 안내, finding 설명, 리포트 비교 |
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
-차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`는 두 방식 모두 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
+차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`와 `safe-install`은 두 방식 모두 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
 ## Console Mode
 
@@ -97,6 +97,7 @@ G  GitHub 저장소  기본은 API 없이 URL 확인
 L  로컬 저장소    파일 근거까지 로컬 검사
 C  빠른 점검      즉시 요약 보기
 J  JSON 내보내기  기계가 읽는 리포트 저장
+S  안전 설치      설치 전 다음 단계 안내
 M  JSON 비교      개선 전/후 HTML 만들기
 ────────────────────────────────────
 최근 리포트: 3개

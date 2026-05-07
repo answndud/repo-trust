@@ -15,7 +15,8 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         ),
         "command_mode_label": "Command Mode",
         "command_mode": (
-            "repo-trust html <target>   repo-trust json <target>   repo-trust check <target>"
+            "repo-trust html <target>   repo-trust safe-install <target>   "
+            "repo-trust check <target>"
         ),
         "workflows_title": "Select action:",
         "key_column": "Key",
@@ -27,6 +28,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
             ("L", "Local repo", "Full file-level local scan", ""),
             ("C", "Quick check", "Instant trust summary", ""),
             ("J", "Export JSON", "Save machine-readable report", ""),
+            ("S", "Safe Install", "Advice before running install commands", ""),
             ("M", "Compare JSON", "Create before/after HTML report", ""),
         ],
         "controls_title": "Controls",
@@ -54,6 +56,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         "selected_local": "Selected: Local repository",
         "selected_check": "Selected: Quick check",
         "selected_json": "Selected: JSON export",
+        "selected_safe_install": "Selected: Safe install advice",
         "selected_compare": "Selected: JSON report compare",
         "processing_message": "Running analysis...",
         "session_closed": "Session closed.",
@@ -80,7 +83,8 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         ),
         "command_mode_label": "명령 모드",
         "command_mode": (
-            "repo-trust html <대상>   repo-trust json <대상>   repo-trust check <대상>"
+            "repo-trust html <대상>   repo-trust safe-install <대상>   "
+            "repo-trust check <대상>"
         ),
         "workflows_title": "작업 선택:",
         "key_column": "번호",
@@ -92,6 +96,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
             ("L", "로컬 저장소", "파일 근거까지 로컬 검사", ""),
             ("C", "빠른 점검", "즉시 요약 보기", ""),
             ("J", "JSON 내보내기", "기계가 읽는 리포트 저장", ""),
+            ("S", "안전 설치", "설치 전 다음 단계 안내", ""),
             ("M", "JSON 비교", "개선 전/후 HTML 만들기", ""),
         ],
         "controls_title": "컨트롤",
@@ -119,6 +124,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         "selected_local": "선택됨: 로컬 저장소",
         "selected_check": "선택됨: 빠른 점검",
         "selected_json": "선택됨: JSON 내보내기",
+        "selected_safe_install": "선택됨: 안전 설치 안내",
         "selected_compare": "선택됨: JSON 리포트 비교",
         "processing_message": "분석 중...",
         "session_closed": "세션을 종료했습니다.",

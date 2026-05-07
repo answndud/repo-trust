@@ -634,6 +634,9 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
     if workflow.workflow_kind == "compare":
         _run_console_compare_workflow(workflow)
         return
+    if workflow.workflow_kind == "safe_install":
+        _run_console_safe_install_workflow(workflow)
+        return
 
     _run_product_scan(
         target=workflow.target,
@@ -677,6 +680,19 @@ def _run_console_compare_workflow(workflow: ConsoleWorkflow) -> None:
     else:
         status_console.print(f"Wrote html comparison report to [bold]{output}[/bold]")
     status_console.print(f"[dim]{console_text(workflow.locale)['compare_saved_hint']}[/dim]")
+
+
+def _run_console_safe_install_workflow(workflow: ConsoleWorkflow) -> None:
+    result = _scan_result(
+        target=workflow.target,
+        config=None,
+        remote=workflow.remote,
+    )
+    status_console.print(
+        render_safe_install_advice(result, locale=workflow.locale),
+        end="",
+        markup=False,
+    )
 
 
 def _run_scan(

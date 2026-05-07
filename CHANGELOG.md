@@ -7,6 +7,7 @@ All notable changes to RepoTrust are documented here.
 ### Added
 
 - `repo-trust safe-install <target>` and `repo-trust-kr safe-install <target>` now print install advice without executing repository install commands.
+- Console Mode now includes `[S] Safe Install` / `[S] 안전 설치` for the same install advice workflow.
 
 ### Changed
 

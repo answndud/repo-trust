@@ -1140,3 +1140,12 @@
 - 코드/문서: `src/repotrust/install_advice.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/architecture.md`, `docs/prd.md`, `docs/trd.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -k safe_install -q`는 `4 passed, 71 deselected`였다. `repo-trust safe-install` risky/good fixture smoke와 `repo-trust-kr safe-install` risky fixture smoke, `repo-trust safe-install --help` 한국어 help smoke를 확인했다. `git diff --check && .venv/bin/python -m pytest -q`는 `147 passed`였다.
 - 결과: 사용자는 설치 명령을 실행하지 않고도 RepoTrust 검사 결과 기반의 안전 설치 안내를 영어/한국어로 받을 수 있다. 현재 active 작업은 없다.
+
+## 125: Console safe install workflow
+
+- 완료일: 2026-05-07
+- 배경: `safe-install` 명령은 추가됐지만, 초보 사용자는 Command Mode 명령을 외우기보다 Console Mode 메뉴에서 기능을 발견하는 편이 자연스럽다.
+- 변경 내용: Console Mode Home에 `[S] Safe Install` / `[S] 안전 설치` action을 추가했다. 새 workflow는 generic repository target prompt를 받은 뒤 기존 `render_safe_install_advice`를 재사용해 영어/한국어 안전 설치 안내를 출력한다. README first-use path, Console Mode 예시, testing guide, architecture, CHANGELOG를 새 메뉴에 맞게 갱신했다.
+- 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "interactive_safe_install or root_starts" -q`는 `4 passed, 73 deselected`였다. `git diff --check && .venv/bin/python -m pytest -q`는 `149 passed`였다. `printf 's\ntests/fixtures/repos/risky-install\n' | .venv/bin/repo-trust`와 `repo-trust-kr` smoke에서 `[S]` 메뉴와 safe install advice 출력을 확인했다.
+- 결과: 사용자는 `repo-trust` 또는 `repo-trust-kr` 메뉴에서 설치 전 안전 안내를 바로 실행할 수 있다. 현재 active 작업은 없다.

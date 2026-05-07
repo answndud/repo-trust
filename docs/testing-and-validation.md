@@ -68,12 +68,12 @@ Expected behavior:
 - Local paths are scanned without network access.
 - `repo-trust` without a subcommand opens Console Mode with a Kali-style prompt header, primary shortcut actions, and recent reports.
 - In a real TTY, Console Mode uses alternate screen like a pager so previous terminal history is not visible while the menu is open; non-TTY output remains plain for tests and pipes.
-- Console Mode Home should show five primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, `[M]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
+- Console Mode Home should show six primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[M]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
 - Console Mode should show `Selected:` feedback, GitHub URL example input, `[B] Back` target-input control, and a processing line before the result dashboard.
-- Console Mode JSON export should use a generic repository target prompt so local paths and GitHub URLs are both discoverable.
+- Console Mode JSON export and Safe Install should use a generic repository target prompt so local paths and GitHub URLs are both discoverable.
 - Console Mode JSON compare should list recent JSON reports, accept a list number or direct path for older/newer JSON report paths, default the output to `repotrust-compare.html`, and write an HTML comparison report under `result/` when the output path is relative.
 - Console Mode recent reports should label saved files by purpose, including `compare html`, `html report`, and `json report`; compare workflow completion should remind users that `[R] Reports` can find the saved file later.
-- README first-use onboarding should keep a short `처음 쓰는 사람은 3단계만` path covering `repo-trust-kr`, `[L]`/`[G]`/`[J]`, and `[M] JSON 비교`; detailed Command Mode compare docs should stay option-focused and avoid repeating the same beginner workflow.
+- README first-use onboarding should keep a short `처음 쓰는 사람은 3단계만` path covering `repo-trust-kr`, `[L]`/`[G]`/`[J]`, `[S] 안전 설치`, and `[M] JSON 비교`; detailed Command Mode compare docs should stay option-focused and avoid repeating the same beginner workflow.
 - Command Mode/help terminal UI should include `repotrust㉿` and `└─$`, and product terminal sources should not reintroduce pink/magenta/bright-green theme strings.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
 - `repo-trust html/json/check --help` prompts for help language and does not require `TARGET`.
