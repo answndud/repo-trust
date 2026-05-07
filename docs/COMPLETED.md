@@ -1239,3 +1239,12 @@
 - 코드/문서: `src/repotrust/tutorial.py`, `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "tutorial or root_starts" -q`는 `5 passed, 75 deselected`였다. `git diff --check`는 통과했고, `.venv/bin/python -m pytest -q`는 `154 passed`였다. Smoke에서 `repo-trust tutorial`, `repo-trust-kr tutorial`, Console `[T] 튜토리얼` 출력이 copyable first-run commands를 보여주는 것을 확인했다.
 - 결과: 사용자는 설치 직후 `tutorial` 명령이나 Console `[T]`로 첫 로컬 검사부터 안전 설치 확인, JSON 저장까지의 최소 경로를 바로 볼 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 sample report gallery다.
+
+## 136: Sample report gallery
+
+- 완료일: 2026-05-07
+- 배경: 초보 사용자가 실제 저장소를 검사하기 전에 좋은 리포트와 위험 리포트가 어떻게 보이는지 빠르게 익힐 수 있는 내장 예시가 필요했다.
+- 변경 내용: `repo-trust samples` / `repo-trust-kr samples` 명령을 추가했다. 새 sample gallery generator는 tests fixture나 네트워크에 의존하지 않는 in-memory good/risky `ScanResult`를 만들고, `sample-good-YYYY-MM-DD.html/json`과 `sample-risky-YYYY-MM-DD.html/json` 4개 파일을 생성한다. Console Mode에는 `[P] Samples` / `[P] 샘플` workflow를 추가했다. localized help, README, CHANGELOG, testing guide, PLAN/PROGRESS/COMPLETED를 갱신했다.
+- 코드/문서: `src/repotrust/sample_gallery.py`, `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "samples or root_starts" -q`는 `5 passed, 78 deselected`였다. `git diff --check`는 통과했고, `.venv/bin/python -m pytest -q`는 `157 passed`였다. Smoke에서 `repo-trust samples`, `repo-trust-kr samples`, Console `[P] Samples`가 good/risky HTML/JSON 4개 파일을 생성하는 것을 확인했다. 생성된 sample JSON은 `json.tool` 검증을 통과했고, risky sample HTML에는 `Next safest command`와 `install.risky.shell_pipe_install`이 렌더링됐다.
+- 결과: 사용자는 실제 저장소를 검사하기 전에 built-in sample report gallery로 좋은 결과와 위험 결과의 차이를 학습할 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 v0.2.8 release prep 또는 sample gallery polish다.

@@ -18,6 +18,7 @@ Commands:
   check  Inspect a target and print a terminal dashboard.
   safe-install Print install advice without running install commands.
   tutorial Print a beginner tutorial with copyable commands.
+  samples Write built-in good/risky sample reports.
   gate   Write JSON and fail when policy requirements are not met.
   explain Explain a finding ID.
   compare Compare two JSON reports.
@@ -40,6 +41,7 @@ Console Mode:
   check  파일 저장 없이 터미널 대시보드로 검사합니다.
   safe-install 설치 명령을 실행하지 않고 안전한 다음 단계를 안내합니다.
   tutorial 초보자가 처음 따라 할 명령을 보여줍니다.
+  samples 좋은/위험 샘플 리포트를 생성합니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
   explain finding ID의 의미와 추천 조치를 설명합니다.
   compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
@@ -190,6 +192,24 @@ Options:
 초보자가 처음 따라 할 명령을 보여줍니다.
 
 옵션:
+  --help  영어 또는 한국어 도움말을 선택해 봅니다.
+""",
+    },
+    "samples": {
+        "en": """Usage: repo-trust samples [OPTIONS]
+
+Write built-in good/risky sample reports.
+
+Options:
+  -o, --output-dir PATH  Directory for generated sample reports. Defaults to result/.
+  --help  Choose English or Korean help and exit.
+""",
+        "ko": """사용법: repo-trust samples [옵션]
+
+좋은/위험 샘플 리포트를 생성합니다.
+
+옵션:
+  -o, --output-dir PATH  샘플 리포트를 저장할 디렉터리입니다. 기본값은 result/입니다.
   --help  영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },

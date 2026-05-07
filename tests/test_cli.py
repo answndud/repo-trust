@@ -154,6 +154,8 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert "Advice before running install commands" in stderr
     assert "[T]  Tutorial" in stderr
     assert "Copyable first-run commands" in stderr
+    assert "[P]  Samples" in stderr
+    assert "Generate good/risky sample reports" in stderr
     assert "[M]  Compare JSON" in stderr
     assert "Create before/after HTML report" in stderr
     assert "Recent:" in stderr
@@ -184,6 +186,8 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "설치 전 다음 단계 안내" in stderr
     assert "[T]  튜토리얼" in stderr
     assert "처음 따라 할 명령 보기" in stderr
+    assert "[P]  샘플" in stderr
+    assert "좋은/위험 리포트 예시 생성" in stderr
     assert "[M]  JSON 비교" in stderr
     assert "개선 전/후 HTML 만들기" in stderr
     assert "최근 리포트:" in stderr
@@ -254,6 +258,43 @@ def test_direct_kr_cli_tutorial_outputs_korean_first_run_commands():
     assert "repo-trust-kr json ." in result.stdout
     assert "repo-trust-kr check https://github.com/owner/repo" in result.stdout
     assert "[L] 로컬 검사, [S] 안전 설치, [J] JSON 저장" in result.stdout
+
+
+def test_direct_cli_samples_writes_good_and_risky_gallery(tmp_path):
+    result = runner.invoke(
+        direct_app,
+        ["samples", "--output-dir", str(tmp_path)],
+        prog_name="repo-trust",
+    )
+
+    good_html = tmp_path / f"sample-good-{date.today().isoformat()}.html"
+    good_json = tmp_path / f"sample-good-{date.today().isoformat()}.json"
+    risky_html = tmp_path / f"sample-risky-{date.today().isoformat()}.html"
+    risky_json = tmp_path / f"sample-risky-{date.today().isoformat()}.json"
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "RepoTrust Sample Report Gallery" in result.stderr
+    assert "Open with: open" in result.stderr
+    assert good_html.name in result.stderr
+    for path in [good_html, good_json, risky_html, risky_json]:
+        assert path.exists()
+    assert "Next safest command" in risky_html.read_text(encoding="utf-8")
+    assert json.loads(good_json.read_text(encoding="utf-8"))["score"]["grade"] == "A"
+    assert json.loads(risky_json.read_text(encoding="utf-8"))["score"]["grade"] == "F"
+
+
+def test_direct_kr_cli_samples_outputs_korean_gallery(tmp_path):
+    result = runner.invoke(
+        direct_kr_app,
+        ["samples", "--output-dir", str(tmp_path)],
+        prog_name="repo-trust-kr",
+    )
+
+    assert result.exit_code == 0
+    assert result.stdout == ""
+    assert "RepoTrust 샘플 리포트 갤러리" in result.stderr
+    assert "열기 명령: open" in result.stderr
+    assert (tmp_path / f"sample-good-{date.today().isoformat()}.html").exists()
 
 
 def test_direct_cli_safe_install_explains_parse_only_evidence_gap():
@@ -779,6 +820,20 @@ def test_direct_cli_interactive_tutorial_workflow():
     assert "RepoTrust Beginner Tutorial" in stderr
     assert "repo-trust html ." in stderr
     assert "repo-trust safe-install ." in stderr
+
+
+def test_direct_cli_interactive_samples_workflow(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(direct_app, [], input="p\n", prog_name="repo-trust")
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "Selected: Sample report gallery" in stderr
+    assert "Running analysis..." in stderr
+    assert "RepoTrust Sample Report Gallery" in stderr
+    assert "sample-good" in stderr
+    assert (tmp_path / "result" / f"sample-good-{date.today().isoformat()}.html").exists()
 
 
 def test_direct_kr_cli_interactive_safe_install_workflow():

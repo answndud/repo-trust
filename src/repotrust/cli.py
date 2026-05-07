@@ -27,6 +27,7 @@ from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_hel
 from .install_advice import render_safe_install_advice
 from .models import ScanResult
 from .reports import render_report
+from .sample_gallery import render_sample_gallery_summary, write_sample_gallery
 from .scanner import ScanInputError, scan as scan_target
 from .targets import parse_target
 from .tutorial import render_tutorial
@@ -388,6 +389,32 @@ def tutorial(
     typer.echo(render_tutorial(locale=_product_locale(ctx)), nl=False)
 
 
+@direct_app.command("samples", add_help_option=False)
+@direct_kr_app.command("samples", add_help_option=False)
+def samples(
+    ctx: typer.Context,
+    help_requested: Annotated[
+        bool,
+        typer.Option(
+            "--help",
+            callback=_help_callback("samples"),
+            help=HELP_OPTION_HELP,
+            is_eager=True,
+        ),
+    ] = False,
+    output_dir: Annotated[
+        Path,
+        typer.Option("--output-dir", "-o", help="Directory for generated sample reports."),
+    ] = Path("result"),
+) -> None:
+    """Write built-in good/risky sample reports."""
+    paths = write_sample_gallery(output_dir)
+    status_console.print(
+        render_sample_gallery_summary(paths, locale=_product_locale(ctx)),
+        markup=False,
+    )
+
+
 @direct_app.command("safe-install", add_help_option=False)
 @direct_kr_app.command("safe-install", add_help_option=False)
 def safe_install(
@@ -658,6 +685,13 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
         return
     if workflow.workflow_kind == "tutorial":
         status_console.print(render_tutorial(locale=workflow.locale), markup=False)
+        return
+    if workflow.workflow_kind == "samples":
+        paths = write_sample_gallery(Path("result"))
+        status_console.print(
+            render_sample_gallery_summary(paths, locale=workflow.locale),
+            markup=False,
+        )
         return
 
     _run_product_scan(

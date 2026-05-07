@@ -31,5 +31,5 @@
 ## 다음 실행 순서
 
 1. 다음 milestone 후보를 고른다.
-2. 추천 후보: sample report gallery를 추가해 good/risky 리포트 예시를 빠르게 볼 수 있게 한다.
+2. 추천 후보: v0.2.8 release prep 또는 sample gallery polish.
 3. 선택한 story 하나를 `In Progress`로 승격한다.

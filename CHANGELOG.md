@@ -10,6 +10,8 @@ All notable changes to RepoTrust are documented here.
 - Saved report dashboards now show an `open <path>` helper under the report path.
 - `repo-trust tutorial` / `repo-trust-kr tutorial` now print copyable first-run commands.
 - Console Mode now includes `[T] Tutorial` / `[T] 튜토리얼`.
+- `repo-trust samples` / `repo-trust-kr samples` now generate built-in good/risky sample HTML and JSON reports.
+- Console Mode now includes `[P] Samples` / `[P] 샘플`.
 
 ## v0.2.7 - 2026-05-07
 
