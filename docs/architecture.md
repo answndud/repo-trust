@@ -21,12 +21,13 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 - `src/repotrust/rules.py`: deterministic rule checks that emit findings.
 - `src/repotrust/scoring.py`: category scores, scan completeness score caps, total score, grade, and risk label.
 - `src/repotrust/reports.py`: Markdown, JSON, and static HTML report rendering.
+- `src/repotrust/install_advice.py`: install-purpose assessment을 초보자용 안전 설치 안내로 렌더링.
 - `src/repotrust/models.py`: dataclass models shared across the scanner, including machine-readable assessment.
 - `tests/`: pytest coverage for parsing, scanning, reports, and CLI behavior.
 
 ## Data Flow
 
-1. `repo-trust` English Console Mode, `repo-trust-kr` Korean Console Mode, `repo-trust html/json/check <target>`, or legacy `repotrust scan <target>` enters through `cli.py`.
+1. `repo-trust` English Console Mode, `repo-trust-kr` Korean Console Mode, `repo-trust html/json/check/safe-install <target>`, or legacy `repotrust scan <target>` enters through `cli.py`.
 2. If `--config <path>` is provided, `config.py` loads and validates the local policy file.
 3. `scanner.scan()` calls `targets.parse_target()`.
 4. Local paths are inspected with `detection.detect_files()`.
@@ -34,10 +35,10 @@ RepoTrust is intentionally small and offline-first. The CLI scans a target, crea
 6. `scoring.calculate_score()` converts findings into category scores, applies scan completeness caps, and returns total score.
 7. If config policy disables findings or overrides severity, `config.py` adjusts findings and recalculates score and assessment.
 8. `ScanResult` attaches an `Assessment` with verdict, confidence, coverage, reasons, and next actions.
-9. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`.
+9. `reports.render_report()` renders Markdown, JSON, or HTML from `ScanResult`; `install_advice.render_safe_install_advice()` renders terminal install guidance from the same result.
 10. `repo-trust gate` compares the adjusted score and profile verdicts with policy thresholds after the JSON report has been written.
 
-The product CLI treats GitHub URLs as parse-only by default for `repo-trust html/json/check/gate`, so the default path does not require a secret key, API token, or GitHub API access. Users can pass `--remote` to opt into GitHub REST read-only metadata, and `--parse-only` remains as an explicit compatibility option for URL-only behavior. `repo-trust-kr` provides the same product commands and workflows with Korean Console Mode text, Korean status messages, and Korean terminal dashboard labels. Product `--help` prompts for English or Korean help before printing root or direct command help. Console Mode uses Rich alternate screen only for real terminals, so it opens like a pager without covering visible scrollback; non-TTY tests and pipes keep normal output. Console Mode Home is action-driven: four primary shortcuts `[G]`, `[L]`, `[C]`, `[J]`, a compact recent-report count, and a controls line for `[R]`, `[?]`, and `[Q]`. Selection prints an explicit `Selected:` state before the target input prompt; GitHub input includes an example URL; target input accepts `[B] Back` to return to Home without scanning. Legacy numeric input `1`-`6` and zero-padded values remain accepted for compatibility. Command Mode dashboards, help, and legacy summaries continue to use Kali-style prompt primitives such as `┌──(repotrust㉿...)-[...]` and `└─$`. Report rendering, JSON shape, and scan behavior are shared. The legacy `repotrust scan` command keeps its original explicit `--remote` opt-in behavior. Remote scans enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
+The product CLI treats GitHub URLs as parse-only by default for `repo-trust html/json/check/safe-install/gate`, so the default path does not require a secret key, API token, or GitHub API access. Users can pass `--remote` to opt into GitHub REST read-only metadata, and `--parse-only` remains as an explicit compatibility option for URL-only behavior. `repo-trust-kr` provides the same product commands and workflows with Korean Console Mode text, Korean status messages, and Korean terminal dashboard labels. Product `--help` prompts for English or Korean help before printing root or direct command help. Console Mode uses Rich alternate screen only for real terminals, so it opens like a pager without covering visible scrollback; non-TTY tests and pipes keep normal output. Console Mode Home is action-driven: four primary shortcuts `[G]`, `[L]`, `[C]`, `[J]`, a compact recent-report count, and a controls line for `[R]`, `[?]`, and `[Q]`. Selection prints an explicit `Selected:` state before the target input prompt; GitHub input includes an example URL; target input accepts `[B] Back` to return to Home without scanning. Legacy numeric input `1`-`6` and zero-padded values remain accepted for compatibility. Command Mode dashboards, help, and legacy summaries continue to use Kali-style prompt primitives such as `┌──(repotrust㉿...)-[...]` and `└─$`. Report rendering, install advice, JSON shape, and scan behavior are shared. The legacy `repotrust scan` command keeps its original explicit `--remote` opt-in behavior. Remote scans enter `remote.py`, which owns GitHub REST access, remote failure finding conversion, remote metadata-to-`DetectedFiles` conversion, and remote use of the existing rule/scoring/report contract.
 
 ## Extension Boundaries
 

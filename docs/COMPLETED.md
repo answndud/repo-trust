@@ -1131,3 +1131,12 @@
 - 코드/문서: `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `rg`로 README의 `처음 쓰는 사람은 3단계만`, `비교 결과를 읽는 법`, `샘플 리포트로 연습`, `[M]` 문구와 `초보자용: 개선 전/후` 제거를 확인했다. `.venv/bin/python -m pytest -q`는 `143 passed`였고 `git diff --check`도 통과했다.
 - 결과: README 상단은 초보자 first-use path를 담당하고, Command Mode compare 섹션은 옵션 중심의 상세 설명으로 짧아졌다. 현재 active 작업은 없다.
+
+## 124: Safe install advice command
+
+- 완료일: 2026-05-07
+- 배경: 초보 사용자는 README 설치 명령을 바로 실행해도 되는지 판단하기 어렵다. 기존 report와 finding은 충분한 근거를 제공하지만, “지금 설치 명령을 실행하지 말아야 하는지”와 “더 안전한 다음 행동은 무엇인지”를 별도 명령으로 바로 보여줄 필요가 있었다.
+- 변경 내용: `repo-trust safe-install <target>` / `repo-trust-kr safe-install <target>` 명령을 추가했다. 새 `install_advice` renderer는 기존 scan result, install profile, install safety finding, manifest/lockfile 신호를 재사용해 설치 조언을 출력한다. high-risk install finding이 있으면 README 설치 명령 실행을 막고, good Python fixture에는 virtualenv 기반 설치 패턴을 제안하며, GitHub parse-only 대상은 파일 근거 부족을 설명한다. README, CHANGELOG, localized help, testing guide, PRD/TRD/architecture 문서를 갱신했다.
+- 코드/문서: `src/repotrust/install_advice.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/architecture.md`, `docs/prd.md`, `docs/trd.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -k safe_install -q`는 `4 passed, 71 deselected`였다. `repo-trust safe-install` risky/good fixture smoke와 `repo-trust-kr safe-install` risky fixture smoke, `repo-trust safe-install --help` 한국어 help smoke를 확인했다. `git diff --check && .venv/bin/python -m pytest -q`는 `147 passed`였다.
+- 결과: 사용자는 설치 명령을 실행하지 않고도 RepoTrust 검사 결과 기반의 안전 설치 안내를 영어/한국어로 받을 수 있다. 현재 active 작업은 없다.

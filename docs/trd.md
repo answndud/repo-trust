@@ -241,7 +241,7 @@ Current implementation boundary:
 - Legacy `--remote` CLI option exists on `repotrust scan`.
 - Legacy `--remote` is rejected for local path targets.
 - Legacy GitHub URL without `--remote` remains parse-only.
-- Product `repo-trust html/json/check/gate <github-url>` defaults to parse-only.
+- Product `repo-trust html/json/check/safe-install/gate <github-url>` defaults to parse-only.
 - Product `--remote` is rejected for local path targets.
 - Product `repo-trust` without a subcommand opens an interactive launcher that routes to the same `html/json/check` execution path.
 - Product `--parse-only` keeps URL-only behavior without GitHub API access and is equivalent to the default for GitHub URLs.
@@ -252,10 +252,10 @@ Current implementation boundary:
 
 Interface:
 
-- `repo-trust html/json/check/gate <github-url>` 기본 동작은 URL parse-only scan이다.
+- `repo-trust html/json/check/safe-install/gate <github-url>` 기본 동작은 URL parse-only scan이다.
 - `repo-trust` 무인자 실행은 interactive launcher를 열고 선택한 workflow를 같은 scan/report path로 전달한다.
-- `repo-trust html/json/check/gate <github-url> --remote`는 GitHub API remote scan을 실행한다.
-- `repo-trust html/json/check/gate <github-url> --parse-only`는 URL parse-only로 유지한다.
+- `repo-trust html/json/check/safe-install/gate <github-url> --remote`는 GitHub API remote scan을 실행한다.
+- `repo-trust html/json/check/safe-install/gate <github-url> --parse-only`는 URL parse-only로 유지한다.
 - GitHub `tree`/`blob` subpath URL은 repository root 기준 scan에 `target.github_subpath_unsupported` finding을 추가한다. 하위 폴더 단위 신뢰 평가는 local checkout scan으로 안내한다.
 - `repotrust scan <github-url>` 기본 동작은 legacy compatibility를 위해 URL parse-only로 유지한다.
 - `repotrust scan <github-url> --remote`는 legacy path에서 GitHub API remote scan을 실행한다.

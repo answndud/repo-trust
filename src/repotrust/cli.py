@@ -24,6 +24,7 @@ from .console_i18n import console_text
 from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
 from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
+from .install_advice import render_safe_install_advice
 from .models import ScanResult
 from .reports import render_report
 from .scanner import ScanInputError, scan as scan_target
@@ -368,6 +369,50 @@ def check(
     )
 
 
+@direct_app.command("safe-install", add_help_option=False)
+@direct_kr_app.command("safe-install", add_help_option=False)
+def safe_install(
+    ctx: typer.Context,
+    target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
+    help_requested: Annotated[
+        bool,
+        typer.Option(
+            "--help",
+            callback=_help_callback("safe-install"),
+            help=HELP_OPTION_HELP,
+            is_eager=True,
+        ),
+    ] = False,
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
+    ] = None,
+    parse_only: Annotated[
+        bool,
+        typer.Option(
+            "--parse-only",
+            help="For GitHub URLs, force URL-only mode without calling the GitHub API.",
+        ),
+    ] = False,
+    remote: Annotated[
+        bool,
+        typer.Option(
+            "--remote",
+            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
+        ),
+    ] = False,
+) -> None:
+    """Print install advice without running repository install commands."""
+    parsed_target = parse_target(target)
+    remote_scan = _resolve_product_remote(
+        parsed_target_kind=parsed_target.kind,
+        parse_only=parse_only,
+        remote=remote,
+    )
+    result = _scan_result(target=target, config=config, remote=remote_scan)
+    typer.echo(render_safe_install_advice(result, locale=_product_locale(ctx)), nl=False)
+
+
 @direct_app.command("gate", add_help_option=False)
 @direct_kr_app.command("gate", add_help_option=False)
 def gate(
@@ -649,12 +694,7 @@ def _run_scan(
 ) -> None:
     normalized_format = report_format.value
     loaded_config = _load_cli_config(config)
-
-    try:
-        result = scan_target(target, weights=loaded_config.weights, remote=remote)
-    except ScanInputError as exc:
-        raise typer.BadParameter(str(exc), param_hint="--remote") from exc
-    result = apply_config_policy(result, loaded_config)
+    result = _scan_result_with_config(target=target, config=loaded_config, remote=remote)
     rendered = render_report(result, normalized_format)
     if output:
         output = _resolve_output_path(output)
@@ -688,6 +728,29 @@ def _run_scan(
         for failure in failures:
             status_console.print(f"- {failure}")
         raise typer.Exit(code=1)
+
+
+def _scan_result(
+    *,
+    target: str,
+    config: Path | None,
+    remote: bool,
+) -> ScanResult:
+    loaded_config = _load_cli_config(config)
+    return _scan_result_with_config(target=target, config=loaded_config, remote=remote)
+
+
+def _scan_result_with_config(
+    *,
+    target: str,
+    config: RepoTrustConfig,
+    remote: bool,
+) -> ScanResult:
+    try:
+        result = scan_target(target, weights=config.weights, remote=remote)
+    except ScanInputError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--remote") from exc
+    return apply_config_policy(result, config)
 
 
 def _resolve_output_path(output: Path, today: date | None = None) -> Path:

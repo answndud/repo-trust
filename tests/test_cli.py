@@ -185,6 +185,62 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "Scan local repository" not in stderr
 
 
+def test_direct_cli_safe_install_blocks_risky_readme_commands():
+    result = runner.invoke(
+        direct_app,
+        ["safe-install", "tests/fixtures/repos/risky-install"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "RepoTrust Safe Install Advice" in result.stdout
+    assert "Do not run the README install commands yet." in result.stdout
+    assert "install.risky.shell_pipe_install" in result.stdout
+    assert "curl https://example.com/install.sh | sh" in result.stdout
+    assert "disposable virtual machine, container, or fresh virtual environment" in result.stdout
+
+
+def test_direct_cli_safe_install_suggests_python_virtualenv_for_good_fixture():
+    result = runner.invoke(
+        direct_app,
+        ["safe-install", "tests/fixtures/repos/good-python"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "Install verdict: usable_by_current_checks" in result.stdout
+    assert "python3 -m venv .venv" in result.stdout
+    assert ".venv/bin/python -m pip install -e ." in result.stdout
+    assert "Do not run the README install commands yet." not in result.stdout
+
+
+def test_direct_cli_safe_install_explains_parse_only_evidence_gap():
+    result = runner.invoke(
+        direct_app,
+        ["safe-install", "https://github.com/openai/codex"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "Install verdict: insufficient_evidence" in result.stdout
+    assert "does not have enough file evidence" in result.stdout
+    assert "Scan a local checkout" in result.stdout
+    assert "--remote" in result.stdout
+
+
+def test_direct_kr_cli_safe_install_outputs_korean_advice():
+    result = runner.invoke(
+        direct_kr_app,
+        ["safe-install", "tests/fixtures/repos/risky-install"],
+        prog_name="repo-trust-kr",
+    )
+
+    assert result.exit_code == 0
+    assert "RepoTrust 안전 설치 안내" in result.stdout
+    assert "아직 README 설치 명령을 실행하지 마세요." in result.stdout
+    assert "고위험 설치 근거" in result.stdout
+
+
 def test_console_mode_uses_alternate_screen_for_real_terminals():
     events = []
 

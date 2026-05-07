@@ -16,6 +16,7 @@ Commands:
   html   Write an HTML trust report.
   json   Write a JSON trust report.
   check  Inspect a target and print a terminal dashboard.
+  safe-install Print install advice without running install commands.
   gate   Write JSON and fail when policy requirements are not met.
   explain Explain a finding ID.
   compare Compare two JSON reports.
@@ -36,6 +37,7 @@ Console Mode:
   html   HTML 신뢰 리포트를 저장합니다.
   json   JSON 신뢰 리포트를 저장합니다.
   check  파일 저장 없이 터미널 대시보드로 검사합니다.
+  safe-install 설치 명령을 실행하지 않고 안전한 다음 단계를 안내합니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
   explain finding ID의 의미와 추천 조치를 설명합니다.
   compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
@@ -143,6 +145,34 @@ Options:
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
   --help             영어 또는 한국어 도움말을 선택해 봅니다.
+""",
+    },
+    "safe-install": {
+        "en": """Usage: repo-trust safe-install [OPTIONS] TARGET
+
+Print install advice without running repository install commands.
+
+Arguments:
+  TARGET  Local path or GitHub URL to inspect.
+
+Options:
+  --config PATH  Load an explicit repotrust.toml policy file.
+  --remote       For GitHub URLs, call the GitHub API for read-only metadata.
+  --parse-only   For GitHub URLs, force URL-only mode without the GitHub API.
+  --help         Choose English or Korean help and exit.
+""",
+        "ko": """사용법: repo-trust safe-install [옵션] 대상
+
+저장소 설치 명령을 실행하지 않고 안전한 다음 단계를 안내합니다.
+
+인자:
+  대상  검사할 로컬 경로 또는 GitHub URL입니다.
+
+옵션:
+  --config PATH  repotrust.toml 정책 파일을 직접 지정합니다.
+  --remote       GitHub URL에서 GitHub API read-only metadata를 조회합니다.
+  --parse-only   GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
+  --help         영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },
     "gate": {

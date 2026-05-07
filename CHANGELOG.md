@@ -4,7 +4,13 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
-No changes yet.
+### Added
+
+- `repo-trust safe-install <target>` and `repo-trust-kr safe-install <target>` now print install advice without executing repository install commands.
+
+### Changed
+
+- README, testing guide, and architecture docs now describe the safe install workflow for beginner users.
 
 ## v0.2.4 - 2026-05-06
 
