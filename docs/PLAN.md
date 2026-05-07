@@ -30,6 +30,6 @@
 
 ## 다음 실행 순서
 
-1. v0.2.7 release prep로 이번 beginner adoption 기능 묶음을 공개 release asset에 반영한다.
-2. Release prep에서 version bump, CHANGELOG release section, build, clean wheel smoke, self-scan을 진행한다.
-3. 사용자가 승인하면 push/tag/GitHub Release publish를 진행한다.
+1. 사용자가 승인하면 v0.2.7 publish를 진행한다.
+2. Publish 단계는 `main` push, GitHub Actions 확인, annotated tag `v0.2.7`, GitHub Release 생성, wheel/sdist asset upload 순서로 진행한다.
+3. Publish 후 GitHub Release wheel URL로 clean install smoke를 다시 확인한다.

@@ -20,7 +20,7 @@ PyPI는 사용하지 않습니다. 공식 배포 채널은 GitHub Releases이며
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.6/repotrust-0.2.6-py3-none-any.whl
+python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.7/repotrust-0.2.7-py3-none-any.whl
 repo-trust-kr
 ```
 
@@ -29,7 +29,7 @@ repo-trust-kr
 wheel 설치가 맞지 않는 환경에서는 같은 release의 source archive를 설치할 수 있습니다.
 
 ```bash
-python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.6/repotrust-0.2.6.tar.gz
+python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.7/repotrust-0.2.7.tar.gz
 ```
 
 ## 처음 쓰는 사람은 3단계만
@@ -89,7 +89,7 @@ repo-trust-kr
 **화면 예시**
 
 ```text
-RepoTrust v0.2.6
+RepoTrust v0.2.7
 설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다.
 처음이면: [L] 로컬 검사 -> [S] 안전 설치 -> [J] JSON 저장.
 ────────────────────────────────────

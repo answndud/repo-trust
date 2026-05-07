@@ -4,6 +4,10 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
+No changes yet.
+
+## v0.2.7 - 2026-05-07
+
 ### Added
 
 - `safe-install` now lists README install commands found during local scans before showing install advice.
@@ -14,6 +18,14 @@ All notable changes to RepoTrust are documented here.
 ### Changed
 
 - Static HTML finding cards now include terminal-free Korean explanations, evidence, and recommendations directly in the report.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 150 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.7/dist` built `repotrust-0.2.7.tar.gz` and `repotrust-0.2.7-py3-none-any.whl`.
+- Clean wheel install smoke verified `repo-trust`, `repo-trust-kr`, and `repotrust` version `0.2.7`.
+- Clean wheel smoke verified README install command display in `safe-install`, Console Mode `[S] 안전 설치`, fixture JSON generation, JSON `json.tool`, and HTML Safe Install rendering.
+- Local self-scan returned grade `A`, high confidence, full coverage, and no medium/high findings.
 
 ## v0.2.6 - 2026-05-07
 

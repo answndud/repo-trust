@@ -1203,3 +1203,12 @@
 - 코드/문서: `src/repotrust/rules.py`, `src/repotrust/install_advice.py`, `src/repotrust/reports.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `git diff --check`는 통과했다. `.venv/bin/python -m pytest -q`는 `150 passed`였다. `repo-trust safe-install` good/risky fixture smoke에서 README install commands와 safe install guidance를 확인했다. `repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky-html-safe.html` smoke와 `rg`로 HTML의 `Safe Install`, `README에서 발견한 설치 명령`, `터미널 없이 읽는 설명과 근거`, 위험 설치 명령 렌더링을 확인했다. `printf 'r\n' | .venv/bin/repo-trust` smoke에서 first-run hint와 recent reports open helper를 확인했다.
 - 결과: beginner adoption 기능 5개가 모두 구현/문서화/검증됐다. 현재 active 작업은 없다. 다음 추천 작업은 이번 기능 묶음을 GitHub Release asset에 반영하는 v0.2.7 release prep이다.
+
+## 132: v0.2.7 release preparation
+
+- 완료일: 2026-05-07
+- 배경: beginner adoption install/report guidance 기능 묶음이 사용자-facing 개선이므로 GitHub Release asset으로 공개할 수 있게 patch release candidate로 정리해야 했다.
+- 변경 내용: package version과 runtime version을 `0.2.7`로 올리고 README GitHub Release install URL, Console Mode 예시, CLI version tests를 `0.2.7`에 맞췄다. CHANGELOG에 v0.2.7 section을 추가해 README install command display, HTML Safe Install section, Console first-run hint, recent reports open helper, terminal-free HTML finding explanations와 validation 결과를 정리했다. 작업 상태 문서는 active 작업 없음으로 정리했다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `git diff --check`는 통과했다. `.venv/bin/python -m pytest -q`는 `150 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.7/dist`는 `repotrust-0.2.7.tar.gz`와 `repotrust-0.2.7-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version `0.2.7`, `safe-install` README install commands, Console `[S] 안전 설치`, fixture JSON 생성, `json.tool`, HTML Safe Install section 렌더링을 확인했다. Self-scan JSON은 grade `A`, high confidence, full coverage, medium/high finding 0개였다.
+- 결과: v0.2.7 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. GitHub Release publish는 명시 승인 대기 상태다.
