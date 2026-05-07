@@ -14,15 +14,27 @@
 
 ## 현재 목표
 
-현재 active 작업 없음
+post-v0.2.5 safe-install polish 안정화
 
 ## 현재 우선순위
 
-현재 active 작업 없음
+1. v0.2.6 GitHub Release publish는 명시 승인 대기 상태다.
 
 ## In Progress
 
-현재 active 작업 없음
+- status: blocked
+- goal: v0.2.6 GitHub Release publish
+- scope: release prep commit push, CI 확인, annotated tag push, GitHub Release 생성과 wheel/sdist asset 업로드.
+- non-goals: PyPI/TestPyPI 배포는 하지 않는다.
+- blocker: dev-loop safety상 push/tag/release는 live external write이므로 명시 승인이 필요하다.
+- acceptance criteria:
+  - GitHub Release `v0.2.6` published.
+  - release URL clean install smoke 통과.
+  - publish 기록 archive.
+- verification commands:
+  - `gh run watch <run-id> --repo answndud/repo-trust --exit-status`
+  - release URL clean install smoke commands
+- next action: 사용자가 push/tag/release publish를 명시 승인하면 진행한다.
 
 ## Pending
 
@@ -30,4 +42,4 @@
 
 ## 다음 실행 순서
 
-현재 active 작업 없음
+1. 사용자가 publish를 명시 승인하면 v0.2.6 GitHub Release publish를 진행한다.

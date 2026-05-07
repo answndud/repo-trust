@@ -6,6 +6,21 @@ All notable changes to RepoTrust are documented here.
 
 No changes yet.
 
+## v0.2.6 - 2026-05-07
+
+### Changed
+
+- `safe-install` output now includes a short pre-run checklist before any install advice.
+- README and testing guidance now describe the safe-install pre-run checklist.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 149 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.6/dist` built `repotrust-0.2.6.tar.gz` and `repotrust-0.2.6-py3-none-any.whl`.
+- Clean wheel install smoke verified `repo-trust`, `repo-trust-kr`, and `repotrust` version `0.2.6`.
+- Clean wheel smoke verified `safe-install` pre-run checklist, Console Mode `[S] 안전 설치`, fixture JSON generation, and JSON `json.tool`.
+- Local self-scan returned grade `A`, high confidence, full coverage, and no medium/high findings.
+
 ## v0.2.5 - 2026-05-07
 
 ### Added

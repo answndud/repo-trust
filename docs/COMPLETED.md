@@ -1176,3 +1176,12 @@
 - 코드/문서: `src/repotrust/install_advice.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -k safe_install -q`는 `6 passed, 71 deselected`였다. `git diff --check && .venv/bin/python -m pytest -q`는 `149 passed`였다. 영어/한국어 `safe-install` smoke에서 `Before you run anything:` / `실행 전 체크리스트:` 출력을 확인했다.
 - 결과: 사용자는 설치 조언을 읽는 즉시 실행 전 확인해야 할 최소 행동을 볼 수 있다. 현재 active 작업은 없다.
+
+## 129: v0.2.6 release preparation
+
+- 완료일: 2026-05-07
+- 배경: `safe-install` pre-run checklist가 v0.2.5 공개 직후 main에 추가됐으므로, 문서와 release artifact가 다시 일치하도록 patch release candidate로 정리해야 했다.
+- 변경 내용: package version과 runtime version을 `0.2.6`으로 올리고 README GitHub Release install URL, Console Mode 예시, CLI version tests를 `0.2.6`에 맞췄다. CHANGELOG에 v0.2.6 section을 추가해 safe-install pre-run checklist와 validation 결과를 정리했다. publish 단계는 push/tag/release 생성이 필요한 live external write이므로 명시 승인 전까지 blocked로 남겼다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `git diff --check && .venv/bin/python -m pytest -q`는 `149 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.6/dist`는 `repotrust-0.2.6.tar.gz`와 `repotrust-0.2.6-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version `0.2.6`, safe-install checklist, Console `[S] 안전 설치`, risky fixture JSON 생성, `json.tool` 검증이 성공했다. Self-scan JSON은 score `98`, grade `A`, high confidence, full coverage, medium/high finding 0개였다.
+- 결과: v0.2.6 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. GitHub Release publish는 명시 승인 대기 상태다.
