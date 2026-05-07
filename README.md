@@ -195,7 +195,7 @@ repo-trust-kr safe-install tests/fixtures/repos/good-python
 repo-trust safe-install https://github.com/openai/codex
 ```
 
-`safe-install`은 high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 더 격리된 설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다.
+`safe-install`은 high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 더 격리된 설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다.
 
 ### JSON 리포트 비교
 

@@ -1167,3 +1167,12 @@
 - 코드/문서: `docs/COMPLETED.md`를 수정했다.
 - 검증: `gh run watch 25471816207 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.5 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.5`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.5`, `safe-install`, Console `[S] 안전 설치`, risky fixture JSON 생성, `json.tool` 검증이 성공했다.
 - 결과: v0.2.5는 https://github.com/answndud/repo-trust/releases/tag/v0.2.5 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
+
+## 128: Safe install pre-run checklist
+
+- 완료일: 2026-05-07
+- 배경: `safe-install`은 위험 판단과 다음 행동을 보여주지만, 초보 사용자가 설치 명령을 복사하기 직전에 확인할 간단한 checklist가 없었다.
+- 변경 내용: 영어/한국어 `safe-install` 출력 상단에 3줄 실행 전 체크리스트를 추가했다. 명령 출처 확인, global/sudo/shell-pipe 대신 격리 패턴 우선, high-risk evidence가 있으면 HTML 리포트 먼저 확인하는 흐름을 명시했다. README와 testing guide 기대값, CLI 테스트를 갱신했다.
+- 코드/문서: `src/repotrust/install_advice.py`, `tests/test_cli.py`, `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -k safe_install -q`는 `6 passed, 71 deselected`였다. `git diff --check && .venv/bin/python -m pytest -q`는 `149 passed`였다. 영어/한국어 `safe-install` smoke에서 `Before you run anything:` / `실행 전 체크리스트:` 출력을 확인했다.
+- 결과: 사용자는 설치 조언을 읽는 즉시 실행 전 확인해야 할 최소 행동을 볼 수 있다. 현재 active 작업은 없다.

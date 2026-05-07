@@ -24,6 +24,11 @@ def _render_en(result: ScanResult) -> str:
         f"Install verdict: {profile.verdict}",
         f"Confidence: {result.assessment.confidence} ({result.assessment.coverage})",
         "",
+        "Before you run anything:",
+        "- Confirm the command came from the repository README or trusted release notes.",
+        "- Prefer the isolated pattern below over global, sudo, or shell-pipe installs.",
+        "- If any high-risk evidence appears, stop and review the HTML report first.",
+        "",
     ]
 
     if high_findings:
@@ -86,6 +91,11 @@ def _render_ko(result: ScanResult) -> str:
         f"대상: {result.target.raw}",
         f"설치 판단: {profile.verdict}",
         f"신뢰도: {result.assessment.confidence} ({result.assessment.coverage})",
+        "",
+        "실행 전 체크리스트:",
+        "- 명령이 저장소 README나 신뢰할 수 있는 release notes에서 나온 것인지 확인하세요.",
+        "- 전역 설치, sudo, shell pipe보다 아래의 격리된 설치 패턴을 우선하세요.",
+        "- 고위험 근거가 보이면 멈추고 HTML 리포트를 먼저 확인하세요.",
         "",
     ]
 

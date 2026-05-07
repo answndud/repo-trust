@@ -80,7 +80,7 @@ Expected behavior:
 - `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance with the shared Kali-style terminal theme.
 - `repo-trust explain <finding-id>` prints a known finding's category, default severity, meaning, and recommended action without scanning a target.
 - `repo-trust explain <unknown-id>` exits with code `1` and suggests known finding IDs.
-- `repo-trust safe-install <target>` prints install advice without executing repository install commands. Risky install fixtures should block README command execution, good Python fixtures should suggest a virtualenv install pattern, and GitHub parse-only targets should explain the evidence gap.
+- `repo-trust safe-install <target>` prints install advice without executing repository install commands. It should include a short pre-run checklist. Risky install fixtures should block README command execution, good Python fixtures should suggest a virtualenv install pattern, and GitHub parse-only targets should explain the evidence gap.
 - `repo-trust compare <old.json> <new.json>` compares saved JSON reports without scanning and shows score, grade, verdict, added findings, resolved findings, severity changes, and persisting finding count.
 - `repo-trust compare <old.json> <new.json> --format html/markdown --output <path>` writes a shareable comparison file and prints the saved path on stderr.
 - HTML comparison reports should include an outcome summary, Improvements/New issues/Severity changes/Still remaining sections, and copy buttons for finding ID / `repo-trust explain <id>`.
