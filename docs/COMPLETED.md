@@ -1104,3 +1104,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest -q`는 `143 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.4/dist`는 `repotrust-0.2.4.tar.gz`와 `repotrust-0.2.4-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version, fixture JSON generation, text/Markdown/HTML compare export, Console Mode recent JSON number selection compare workflow, recent reports type label, JSON `json.tool` 검증이 성공했다. Self-scan JSON은 score `98`, grade `A`, high confidence, full coverage, medium/high finding 없음이었다.
 - 결과: v0.2.4 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. push/tag/GitHub Release publish는 아직 진행하지 않았다. 현재 active 작업은 없다.
+
+## 121: v0.2.4 GitHub Release publish
+
+- 완료일: 2026-05-07
+- 배경: v0.2.4 release candidate가 로컬 테스트, build, clean wheel smoke, self-scan을 통과했으므로 GitHub Release로 공개해야 했다.
+- 변경 내용: `main`의 release prep commit `19753c9`을 origin에 push하고 GitHub Actions `ci` run `25470956575` 통과를 확인했다. annotated tag `v0.2.4`를 release commit에 생성해 push했고, GitHub Release `RepoTrust v0.2.4`를 publish했다. Release asset으로 `repotrust-0.2.4-py3-none-any.whl`과 `repotrust-0.2.4.tar.gz`를 업로드했다. 작업 상태 문서를 release publish 완료 상태로 archive했다.
+- 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `gh run watch 25470956575 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.4 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.4`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.4`, fixture JSON generation, text/HTML compare export, Console Mode recent JSON number selection compare workflow, recent report type label, JSON `json.tool` 검증이 성공했다.
+- 결과: v0.2.4는 https://github.com/answndud/repo-trust/releases/tag/v0.2.4 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
