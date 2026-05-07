@@ -1248,3 +1248,12 @@
 - 코드/문서: `src/repotrust/sample_gallery.py`, `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "samples or root_starts" -q`는 `5 passed, 78 deselected`였다. `git diff --check`는 통과했고, `.venv/bin/python -m pytest -q`는 `157 passed`였다. Smoke에서 `repo-trust samples`, `repo-trust-kr samples`, Console `[P] Samples`가 good/risky HTML/JSON 4개 파일을 생성하는 것을 확인했다. 생성된 sample JSON은 `json.tool` 검증을 통과했고, risky sample HTML에는 `Next safest command`와 `install.risky.shell_pipe_install`이 렌더링됐다.
 - 결과: 사용자는 실제 저장소를 검사하기 전에 built-in sample report gallery로 좋은 결과와 위험 결과의 차이를 학습할 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 v0.2.8 release prep 또는 sample gallery polish다.
+
+## 137: v0.2.8 release preparation
+
+- 완료일: 2026-05-07
+- 배경: beginner command guidance, tutorial command, sample gallery가 사용자-facing 기능 묶음으로 쌓였으므로 GitHub Release asset으로 공개할 수 있게 patch release candidate로 정리해야 했다.
+- 변경 내용: package version과 runtime version을 `0.2.8`로 올리고 README GitHub Release install URL, Console Mode 예시, CLI version tests를 `0.2.8`에 맞췄다. CHANGELOG에 v0.2.8 section을 추가해 Next safest command, report open helper, tutorial command, sample gallery, Console `[T]`/`[P]` workflow와 validation 결과를 정리했다. 작업 상태 문서는 active 작업 없음으로 정리했다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `git diff --check`는 통과했다. `.venv/bin/python -m pytest -q`는 `157 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.8/dist`는 `repotrust-0.2.8.tar.gz`와 `repotrust-0.2.8-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version `0.2.8`, `tutorial`, `samples`, Console `[P] Samples`, `safe-install`, fixture JSON 생성, `json.tool`을 확인했다. Self-scan JSON은 grade `A`, high confidence, full coverage, medium/high finding 0개였다.
+- 결과: v0.2.8 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. GitHub Release publish는 명시 승인 대기 상태다.

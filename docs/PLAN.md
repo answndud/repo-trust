@@ -30,6 +30,6 @@
 
 ## 다음 실행 순서
 
-1. 다음 milestone 후보를 고른다.
-2. 추천 후보: v0.2.8 release prep 또는 sample gallery polish.
-3. 선택한 story 하나를 `In Progress`로 승격한다.
+1. 사용자가 승인하면 v0.2.8 publish를 진행한다.
+2. Publish 단계는 `main` push, GitHub Actions 확인, annotated tag `v0.2.8`, GitHub Release 생성, wheel/sdist asset upload 순서로 진행한다.
+3. Publish 후 GitHub Release wheel URL로 clean install smoke를 다시 확인한다.

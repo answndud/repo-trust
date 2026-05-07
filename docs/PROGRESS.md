@@ -28,4 +28,4 @@
 
 ## 다음 액션
 
-다음 추천 작업: v0.2.8 release prep 또는 sample gallery polish.
+다음 추천 작업: v0.2.8 publish.

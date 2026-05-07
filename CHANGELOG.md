@@ -4,6 +4,10 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
+No changes yet.
+
+## v0.2.8 - 2026-05-07
+
 ### Added
 
 - Static HTML Safe Install sections now highlight a `Next safest command` before the longer checklist.
@@ -12,6 +16,14 @@ All notable changes to RepoTrust are documented here.
 - Console Mode now includes `[T] Tutorial` / `[T] 튜토리얼`.
 - `repo-trust samples` / `repo-trust-kr samples` now generate built-in good/risky sample HTML and JSON reports.
 - Console Mode now includes `[P] Samples` / `[P] 샘플`.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 157 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.8/dist` built `repotrust-0.2.8.tar.gz` and `repotrust-0.2.8-py3-none-any.whl`.
+- Clean wheel install smoke verified `repo-trust`, `repo-trust-kr`, and `repotrust` version `0.2.8`.
+- Clean wheel smoke verified `tutorial`, built-in `samples`, Console Mode `[P] Samples`, `safe-install`, fixture JSON generation, and JSON `json.tool`.
+- Local self-scan returned grade `A`, high confidence, full coverage, and no medium/high findings.
 
 ## v0.2.7 - 2026-05-07
 
