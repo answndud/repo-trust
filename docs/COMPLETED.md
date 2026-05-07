@@ -1113,3 +1113,12 @@
 - 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `gh run watch 25470956575 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.4 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.4`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.4`, fixture JSON generation, text/HTML compare export, Console Mode recent JSON number selection compare workflow, recent report type label, JSON `json.tool` 검증이 성공했다.
 - 결과: v0.2.4는 https://github.com/answndud/repo-trust/releases/tag/v0.2.4 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
+
+## 122: README first-use onboarding
+
+- 완료일: 2026-05-07
+- 배경: v0.2.4에서 Console Mode와 compare workflow가 늘어나 README 초반부만 보고는 초보 사용자가 “처음에 무엇을 누르면 되는지”를 바로 파악하기 어려울 수 있었다.
+- 변경 내용: README 설치 빠른 시작 바로 뒤에 `처음 쓰는 사람은 3단계만` 섹션을 추가했다. `repo-trust-kr`로 메뉴 열기, `[L]`/`[G]`/`[J]`로 첫 검사와 JSON 저장하기, `[M] JSON 비교`로 개선 전/후 HTML을 만들고 `[R] 리포트`에서 다시 찾는 흐름을 짧게 정리했다. Testing guide에 README first-use onboarding 기대값을 추가했다.
+- 코드/문서: `README.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `rg`로 README의 `처음 쓰는 사람은 3단계만`, `repo-trust-kr`, `[M] JSON 비교`, `[R] 리포트` 문구를 확인했다. `.venv/bin/python -m pytest -q`는 `143 passed`였고 `git diff --check`도 통과했다.
+- 결과: README 상단에서 설치 후 첫 검사와 compare HTML 생성까지의 최소 경로를 바로 확인할 수 있다. 현재 active 작업은 없다.
