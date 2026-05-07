@@ -1149,3 +1149,12 @@
 - 코드/문서: `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/cli.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/architecture.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "interactive_safe_install or root_starts" -q`는 `4 passed, 73 deselected`였다. `git diff --check && .venv/bin/python -m pytest -q`는 `149 passed`였다. `printf 's\ntests/fixtures/repos/risky-install\n' | .venv/bin/repo-trust`와 `repo-trust-kr` smoke에서 `[S]` 메뉴와 safe install advice 출력을 확인했다.
 - 결과: 사용자는 `repo-trust` 또는 `repo-trust-kr` 메뉴에서 설치 전 안전 안내를 바로 실행할 수 있다. 현재 active 작업은 없다.
+
+## 126: v0.2.5 release preparation
+
+- 완료일: 2026-05-07
+- 배경: safe-install Command Mode와 Console `[S]` workflow가 사용자-facing 기능 묶음으로 main에 반영되고 CI가 통과했으므로 patch release candidate로 정리해야 했다.
+- 변경 내용: package version과 runtime version을 `0.2.5`로 올리고 README GitHub Release install URL, Console Mode 예시, CLI version tests를 `0.2.5`에 맞췄다. CHANGELOG에 v0.2.5 section을 추가해 safe-install command, Console `[S]` workflow, beginner docs 갱신과 validation 결과를 정리했다. 작업 상태 문서를 release prep 완료 상태로 정리했다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `git diff --check && .venv/bin/python -m pytest -q`는 `149 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.5/dist`는 `repotrust-0.2.5.tar.gz`와 `repotrust-0.2.5-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version `0.2.5`, `safe-install`, Console `[S] 안전 설치`, risky fixture JSON 생성, `json.tool` 검증이 성공했다. Self-scan JSON은 score `98`, grade `A`, high confidence, full coverage, medium/high finding 0개였다.
+- 결과: v0.2.5 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. push/tag/GitHub Release publish는 아직 진행하지 않았다. 현재 active 작업은 없다.

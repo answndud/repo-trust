@@ -4,6 +4,10 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
+No changes yet.
+
+## v0.2.5 - 2026-05-07
+
 ### Added
 
 - `repo-trust safe-install <target>` and `repo-trust-kr safe-install <target>` now print install advice without executing repository install commands.
@@ -12,6 +16,14 @@ All notable changes to RepoTrust are documented here.
 ### Changed
 
 - README, testing guide, and architecture docs now describe the safe install workflow for beginner users.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 149 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.5/dist` built `repotrust-0.2.5.tar.gz` and `repotrust-0.2.5-py3-none-any.whl`.
+- Clean wheel install smoke verified `repo-trust`, `repo-trust-kr`, and `repotrust` version `0.2.5`.
+- Clean wheel smoke verified `safe-install`, Console Mode `[S] 안전 설치`, fixture JSON generation, and JSON `json.tool`.
+- Local self-scan returned grade `A`, high confidence, full coverage, and no medium/high findings.
 
 ## v0.2.4 - 2026-05-06
 
