@@ -115,6 +115,7 @@ def _print_console_home(
 ) -> None:
     console.print(f"[bold white]{text['console_title']} v{version}[/]")
     console.print(muted(text["tagline"]))
+    console.print(muted(text["first_run_hint"]))
     console.print(_separator())
     console.print(f"[bold white]{text['workflows_title']}[/]")
     for line in _workflow_lines(text):
@@ -172,6 +173,7 @@ def _print_recent_reports(
     else:
         table.add_row("-", str(text["no_reports_found"]), "-")
     console.print(table)
+    console.print(muted(text["recent_reports_open_hint"]))
 
 
 def _print_recent_json_reports(

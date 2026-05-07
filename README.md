@@ -91,6 +91,7 @@ repo-trust-kr
 ```text
 RepoTrust v0.2.6
 설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다.
+처음이면: [L] 로컬 검사 -> [S] 안전 설치 -> [J] JSON 저장.
 ────────────────────────────────────
 작업 선택:
 G  GitHub 저장소  기본은 API 없이 URL 확인
@@ -105,7 +106,7 @@ M  JSON 비교      개선 전/후 HTML 만들기
 → 키를 누르세요
 ```
 
-단축키는 대소문자를 구분하지 않습니다. 잘못 선택했다면 입력 단계에서 `[B]`를 눌러 작업 선택 화면으로 돌아갈 수 있습니다. 기존 숫자 입력도 호환되므로 `1` 또는 `01`은 로컬 리포트, `5` 또는 `05`는 최근 리포트 목록으로 동작합니다. `[R]` workflow는 파일을 직접 열거나 브라우저를 실행하지 않습니다. `result/` 폴더에 있는 최근 HTML/JSON 리포트 목록만 보여줍니다.
+단축키는 대소문자를 구분하지 않습니다. 잘못 선택했다면 입력 단계에서 `[B]`를 눌러 작업 선택 화면으로 돌아갈 수 있습니다. 기존 숫자 입력도 호환되므로 `1` 또는 `01`은 로컬 리포트, `5` 또는 `05`는 최근 리포트 목록으로 동작합니다. `[R]` workflow는 파일을 직접 열거나 브라우저를 실행하지 않습니다. `result/` 폴더에 있는 최근 HTML/JSON/Markdown 리포트 목록과 macOS에서 `open <경로>`로 여는 힌트를 보여줍니다.
 
 영어 화면이 필요하면 `repo-trust`를 입력하면 됩니다.
 
@@ -195,7 +196,7 @@ repo-trust-kr safe-install tests/fixtures/repos/good-python
 repo-trust safe-install https://github.com/openai/codex
 ```
 
-`safe-install`은 high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 더 격리된 설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다.
+`safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 더 격리된 설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다.
 
 ### JSON 리포트 비교
 
@@ -368,7 +369,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다.
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
-터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요. HTML 리포트에서는 severity/category 버튼으로 finding을 필터링하고, 각 finding의 근거와 추천 조치를 접거나 펼칠 수 있습니다. 각 finding card의 `ID 복사`와 `explain 명령 복사` 버튼으로 터미널 설명 명령을 바로 이어서 실행할 수 있습니다.
+터미널의 `이유`/`WHY` 영역은 빠르게 읽을 수 있도록 심각도 기준 상위 3개 finding만 요약합니다. 전체 finding은 저장된 HTML 리포트의 `Prioritized Findings` 섹션이나 JSON의 `findings` 배열에서 확인하세요. HTML 리포트의 `Safe Install` 섹션은 실행 전 체크리스트, README에서 발견한 설치 명령, 더 안전한 설치 패턴을 함께 보여줍니다. HTML finding card는 `터미널 없이 읽는 설명과 근거`를 포함하므로 CLI를 다시 열지 않아도 finding의 의미, 실제 근거, 추천 조치를 바로 읽을 수 있습니다. 각 finding card의 `ID 복사`와 `explain 명령 복사` 버튼으로 터미널 설명 명령을 바로 이어서 실행할 수 있습니다.
 
 심각도는 이렇게 해석하면 됩니다.
 

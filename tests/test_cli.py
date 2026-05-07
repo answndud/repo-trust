@@ -142,6 +142,7 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert result.stdout == ""
     assert "RepoTrust v0.2.6" in stderr
     assert "Offline-first trust checks before installing a repository." in stderr
+    assert "First run: [L] scan local repo -> [S] safe install -> [J] export JSON." in stderr
     assert "Select action:" in stderr
     assert "[G]  GitHub repo" in stderr
     assert "URL check without API by default" in stderr
@@ -169,6 +170,7 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert result.stdout == ""
     assert "RepoTrust v0.2.6" in stderr
     assert "설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다." in stderr
+    assert "처음이면: [L] 로컬 검사 -> [S] 안전 설치 -> [J] JSON 저장." in stderr
     assert "작업 선택:" in stderr
     assert "[G]  GitHub 저장소" in stderr
     assert "기본은 API 없이 URL 확인" in stderr
@@ -200,6 +202,7 @@ def test_direct_cli_safe_install_blocks_risky_readme_commands():
     assert "RepoTrust Safe Install Advice" in result.stdout
     assert "Before you run anything:" in result.stdout
     assert "Confirm the command came from the repository README" in result.stdout
+    assert "README install commands found:" in result.stdout
     assert "Do not run the README install commands yet." in result.stdout
     assert "install.risky.shell_pipe_install" in result.stdout
     assert "curl https://example.com/install.sh | sh" in result.stdout
@@ -216,6 +219,8 @@ def test_direct_cli_safe_install_suggests_python_virtualenv_for_good_fixture():
     assert result.exit_code == 0
     assert "Install verdict: usable_by_current_checks" in result.stdout
     assert "Before you run anything:" in result.stdout
+    assert "README install commands found:" in result.stdout
+    assert "pip install good-python-project" in result.stdout
     assert "python3 -m venv .venv" in result.stdout
     assert ".venv/bin/python -m pip install -e ." in result.stdout
     assert "Do not run the README install commands yet." not in result.stdout
@@ -231,6 +236,7 @@ def test_direct_cli_safe_install_explains_parse_only_evidence_gap():
     assert result.exit_code == 0
     assert "Install verdict: insufficient_evidence" in result.stdout
     assert "Before you run anything:" in result.stdout
+    assert "README install commands found:" not in result.stdout
     assert "does not have enough file evidence" in result.stdout
     assert "Scan a local checkout" in result.stdout
     assert "--remote" in result.stdout
@@ -246,6 +252,7 @@ def test_direct_kr_cli_safe_install_outputs_korean_advice():
     assert result.exit_code == 0
     assert "RepoTrust 안전 설치 안내" in result.stdout
     assert "실행 전 체크리스트:" in result.stdout
+    assert "README에서 발견한 설치 명령:" in result.stdout
     assert "아직 README 설치 명령을 실행하지 마세요." in result.stdout
     assert "고위험 설치 근거" in result.stdout
 
@@ -724,6 +731,7 @@ def test_direct_cli_interactive_safe_install_workflow():
     assert "Running analysis..." in stderr
     assert "RepoTrust Safe Install Advice" in stderr
     assert "Before you run anything:" in stderr
+    assert "README install commands found:" in stderr
     assert "Do not run the README install commands yet." in stderr
     assert "install.risky.shell_pipe_install" in stderr
 
@@ -901,6 +909,7 @@ def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
     assert "compare html" in result.stderr
     assert "json report" in result.stderr
     assert "html report" in result.stderr
+    assert "Open helper: copy a path below, or run `open <path>` on macOS." in result.stderr
 
 
 def test_direct_cli_html_github_url_defaults_to_parse_only(monkeypatch, tmp_path):

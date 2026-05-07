@@ -4,6 +4,7 @@ import html
 import json
 
 from .evidence import EvidenceRow, evidence_rows
+from .install_advice import readme_install_commands, safe_commands
 from .models import JSON_SCHEMA_VERSION, AssessmentProfile, Finding, ScanResult
 
 
@@ -290,6 +291,7 @@ def render_html(result: ScanResult) -> str:
     next_action_items = "\n".join(
         f"          <li>{html.escape(action)}</li>" for action in assessment.next_actions
     )
+    safe_install_section = _safe_install_html(result)
     findings = "\n".join(
         _finding_html(finding) for finding in sorted(result.findings, key=_finding_sort_key)
     )
@@ -324,6 +326,8 @@ def render_html(result: ScanResult) -> str:
     .lead {{ color: #3d4852; font-size: 1.03rem; max-width: 860px; }}
     .assessment-grid {{ display: grid; grid-template-columns: minmax(260px, 0.95fr) minmax(320px, 1.05fr); gap: 18px; margin: 24px 0; }}
     .score-panel, .section-panel, .finding, .empty-state {{ border: 1px solid var(--line); border-radius: 8px; background: #fbfcfd; padding: 18px; }}
+    .command-list {{ display: grid; gap: 8px; padding-left: 0; list-style: none; }}
+    .command-list li {{ border: 1px solid #e3e8ef; border-radius: 6px; background: #ffffff; padding: 8px 10px; }}
     .score {{ display: flex; align-items: baseline; gap: 12px; margin: 8px 0 12px; }}
     .score strong {{ font-size: 2.5rem; color: #0f172a; }}
     .score span {{ color: var(--muted); font-weight: 700; }}
@@ -432,6 +436,8 @@ def render_html(result: ScanResult) -> str:
 {reason_items}
         </ul>
       </section>
+
+{safe_install_section}
 
       <h2>Purpose Profiles</h2>
       <p>같은 finding을 설치, dependency 채택, AI agent 위임 목적별로 다시 읽은 판단입니다.</p>
@@ -551,6 +557,44 @@ def _profile_markdown(key: str, profile: AssessmentProfile) -> list[str]:
     return lines
 
 
+def _safe_install_html(result: ScanResult) -> str:
+    profile = result.assessment.profiles["install"]
+    readme_commands = readme_install_commands(result)
+    safe_pattern_commands = safe_commands(result, locale="ko")
+    readme_items = _command_items_html(
+        readme_commands,
+        empty_text="로컬 README 설치 섹션에서 인식 가능한 설치 명령을 찾지 못했습니다.",
+    )
+    safe_pattern_items = _command_items_html(safe_pattern_commands)
+    return f"""      <h2>Safe Install</h2>
+      <section class="section-panel" aria-label="Safe Install">
+        <p class="profile-verdict" style="color: {_verdict_color(profile.verdict)};">{html.escape(_assessment_label(profile.verdict))}</p>
+        <p>{html.escape(_install_profile_summary_ko(profile.summary))}</p>
+        <h3>실행 전 체크리스트</h3>
+        <ul class="next-steps">
+          <li>명령이 저장소 README나 신뢰할 수 있는 release notes에서 나온 것인지 확인하세요.</li>
+          <li>전역 설치, sudo, shell pipe보다 격리된 설치 패턴을 우선하세요.</li>
+          <li>고위험 근거가 보이면 멈추고 HTML 리포트의 install finding을 먼저 확인하세요.</li>
+        </ul>
+        <h3>README에서 발견한 설치 명령</h3>
+        <ul class="command-list">
+{readme_items}
+        </ul>
+        <h3>더 안전한 설치 패턴</h3>
+        <ul class="command-list">
+{safe_pattern_items}
+        </ul>
+      </section>
+"""
+
+
+def _command_items_html(commands: list[str], *, empty_text: str | None = None) -> str:
+    if not commands:
+        text = empty_text or "추천할 명령을 만들 근거가 부족합니다."
+        return f"          <li>{html.escape(text)}</li>"
+    return "\n".join(f"          <li><code>{html.escape(command)}</code></li>" for command in commands)
+
+
 def _profile_html(key: str, profile: AssessmentProfile) -> str:
     reasons = "\n".join(
         f"              <li>{html.escape(reason)}</li>" for reason in profile.reasons
@@ -574,6 +618,23 @@ def _profile_html(key: str, profile: AssessmentProfile) -> str:
             </ul>
           </details>
         </li>"""
+
+
+def _install_profile_summary_ko(summary: str) -> str:
+    return {
+        "Do not run the documented install commands before reviewing the high-risk install evidence.": (
+            "고위험 설치 근거를 검토하기 전에는 문서의 설치 명령을 실행하지 마세요."
+        ),
+        "Install may be possible, but install-related findings should be reviewed first.": (
+            "설치가 가능할 수 있지만, 설치 관련 finding을 먼저 검토해야 합니다."
+        ),
+        "Current checks did not find install-specific blockers.": (
+            "현재 검사 기준에서는 설치를 막는 install-specific finding을 찾지 못했습니다."
+        ),
+        "RepoTrust did not collect enough file evidence to judge install safety.": (
+            "RepoTrust가 설치 안전성을 판단할 파일 근거를 충분히 수집하지 못했습니다."
+        ),
+    }.get(summary, summary)
 
 
 def _finding_markdown(finding: Finding) -> list[str]:
@@ -609,7 +670,7 @@ def _finding_html(finding: Finding) -> str:
             <span class="badge badge-{severity}">{html.escape(severity_label)}</span>
           </header>
           <details open>
-            <summary>근거와 추천 조치</summary>
+            <summary>터미널 없이 읽는 설명과 근거</summary>
             <dl>
               <dt>검사 영역</dt><dd>{html.escape(category_label)} <code>{category}</code></dd>
               <dt>심각도</dt><dd>{html.escape(severity_label)} <code>{severity}</code></dd>

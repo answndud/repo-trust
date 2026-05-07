@@ -20,12 +20,12 @@
 
 ## Blocker
 
-현재 active 작업 없음.
+현재 blocker 없음.
 
 ## 최근 검증
 
-현재 active 작업 없음.
+최근 완료 작업은 `docs/COMPLETED.md`에 archive했다.
 
 ## 다음 액션
 
-현재 active 작업 없음.
+다음 추천 작업: v0.2.7 release prep.

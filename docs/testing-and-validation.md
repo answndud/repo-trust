@@ -68,11 +68,11 @@ Expected behavior:
 - Local paths are scanned without network access.
 - `repo-trust` without a subcommand opens Console Mode with a Kali-style prompt header, primary shortcut actions, and recent reports.
 - In a real TTY, Console Mode uses alternate screen like a pager so previous terminal history is not visible while the menu is open; non-TTY output remains plain for tests and pipes.
-- Console Mode Home should show six primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[M]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
+- Console Mode Home should show the first-run hint `[L] scan local repo -> [S] safe install -> [J] export JSON`, six primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[M]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
 - Console Mode should show `Selected:` feedback, GitHub URL example input, `[B] Back` target-input control, and a processing line before the result dashboard.
 - Console Mode JSON export and Safe Install should use a generic repository target prompt so local paths and GitHub URLs are both discoverable.
 - Console Mode JSON compare should list recent JSON reports, accept a list number or direct path for older/newer JSON report paths, default the output to `repotrust-compare.html`, and write an HTML comparison report under `result/` when the output path is relative.
-- Console Mode recent reports should label saved files by purpose, including `compare html`, `html report`, and `json report`; compare workflow completion should remind users that `[R] Reports` can find the saved file later.
+- Console Mode recent reports should label saved files by purpose, including `compare html`, `html report`, and `json report`, and should show a path-copy/open helper such as `open <path>`; compare workflow completion should remind users that `[R] Reports` can find the saved file later.
 - README first-use onboarding should keep a short `처음 쓰는 사람은 3단계만` path covering `repo-trust-kr`, `[L]`/`[G]`/`[J]`, `[S] 안전 설치`, and `[M] JSON 비교`; detailed Command Mode compare docs should stay option-focused and avoid repeating the same beginner workflow.
 - Command Mode/help terminal UI should include `repotrust㉿` and `└─$`, and product terminal sources should not reintroduce pink/magenta/bright-green theme strings.
 - `repo-trust --help` prompts for help language and prints command help instead of opening the launcher.
@@ -80,12 +80,13 @@ Expected behavior:
 - `repo-trust-kr html/json/check` prints Korean command headers, dashboard labels, write notices, and next-action guidance with the shared Kali-style terminal theme.
 - `repo-trust explain <finding-id>` prints a known finding's category, default severity, meaning, and recommended action without scanning a target.
 - `repo-trust explain <unknown-id>` exits with code `1` and suggests known finding IDs.
-- `repo-trust safe-install <target>` prints install advice without executing repository install commands. It should include a short pre-run checklist. Risky install fixtures should block README command execution, good Python fixtures should suggest a virtualenv install pattern, and GitHub parse-only targets should explain the evidence gap.
+- `repo-trust safe-install <target>` prints install advice without executing repository install commands. It should include README install commands found in local scans and a short pre-run checklist. Risky install fixtures should block README command execution, good Python fixtures should suggest a virtualenv install pattern, and GitHub parse-only targets should explain the evidence gap.
 - `repo-trust compare <old.json> <new.json>` compares saved JSON reports without scanning and shows score, grade, verdict, added findings, resolved findings, severity changes, and persisting finding count.
 - `repo-trust compare <old.json> <new.json> --format html/markdown --output <path>` writes a shareable comparison file and prints the saved path on stderr.
 - HTML comparison reports should include an outcome summary, Improvements/New issues/Severity changes/Still remaining sections, and copy buttons for finding ID / `repo-trust explain <id>`.
 - `repo-trust compare` exits with code `1` for invalid JSON or files that do not look like RepoTrust JSON reports.
-- Static HTML reports should include severity/category finding filters, expand/collapse controls, and copy buttons for finding ID / `repo-trust explain <id>` while still rendering finding details without JavaScript.
+- Static HTML reports should include a Safe Install section with the pre-run checklist, README install commands found in local scans, safer install patterns, severity/category finding filters, expand/collapse controls, and copy buttons for finding ID / `repo-trust explain <id>` while still rendering finding details without JavaScript.
+- Static HTML finding cards should include terminal-free Korean explanations, original messages, evidence, and recommendations so users can understand findings without running `repo-trust explain`.
 - Product CLI GitHub URL commands default to parse-only without GitHub API access and never clone repositories.
 - Product `--remote` opts into GitHub API read-only metadata.
 - `--parse-only` parses a GitHub URL without GitHub API access and is equivalent to the product default for GitHub URL targets.

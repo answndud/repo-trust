@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from .models import Category, Finding, ScanResult, Severity
+from .rules import install_command_lines
 
 
 def render_safe_install_advice(result: ScanResult, *, locale: str = "en") -> str:
@@ -13,6 +16,7 @@ def render_safe_install_advice(result: ScanResult, *, locale: str = "en") -> str
 def _render_en(result: ScanResult) -> str:
     profile = result.assessment.profiles["install"]
     install_findings = _install_findings(result)
+    readme_commands = _readme_install_commands(result)
     high_findings = [
         finding for finding in install_findings if finding.severity == Severity.HIGH
     ]
@@ -30,6 +34,7 @@ def _render_en(result: ScanResult) -> str:
         "- If any high-risk evidence appears, stop and review the HTML report first.",
         "",
     ]
+    lines.extend(_readme_commands_en(readme_commands))
 
     if high_findings:
         lines.extend(
@@ -67,7 +72,7 @@ def _render_en(result: ScanResult) -> str:
     else:
         lines.extend([profile.summary, ""])
         lines.extend(["Safer install pattern:"])
-        lines.extend(f"- {command}" for command in _safe_commands(result, locale="en"))
+        lines.extend(f"- {command}" for command in safe_commands(result, locale="en"))
         if install_findings:
             lines.extend(["", "Install findings to review:"])
             for finding in install_findings:
@@ -81,6 +86,7 @@ def _render_en(result: ScanResult) -> str:
 def _render_ko(result: ScanResult) -> str:
     profile = result.assessment.profiles["install"]
     install_findings = _install_findings(result)
+    readme_commands = _readme_install_commands(result)
     high_findings = [
         finding for finding in install_findings if finding.severity == Severity.HIGH
     ]
@@ -98,6 +104,7 @@ def _render_ko(result: ScanResult) -> str:
         "- 고위험 근거가 보이면 멈추고 HTML 리포트를 먼저 확인하세요.",
         "",
     ]
+    lines.extend(_readme_commands_ko(readme_commands))
 
     if high_findings:
         lines.extend(
@@ -129,7 +136,7 @@ def _render_ko(result: ScanResult) -> str:
     else:
         lines.extend([_ko_profile_summary(profile.summary), ""])
         lines.extend(["더 안전한 설치 패턴:"])
-        lines.extend(f"- {command}" for command in _safe_commands(result, locale="ko"))
+        lines.extend(f"- {command}" for command in safe_commands(result, locale="ko"))
         if install_findings:
             lines.extend(["", "검토할 설치 finding:"])
             for finding in install_findings:
@@ -159,7 +166,48 @@ def _install_findings(result: ScanResult) -> list[Finding]:
     )
 
 
-def _safe_commands(result: ScanResult, *, locale: str) -> list[str]:
+def readme_install_commands(result: ScanResult) -> list[str]:
+    if (
+        result.target.kind != "local"
+        or not result.target.path
+        or not result.detected_files.readme
+    ):
+        return []
+    readme_path = Path(result.target.path).expanduser() / result.detected_files.readme
+    try:
+        readme_text = readme_path.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    return install_command_lines(readme_text)
+
+
+def _readme_install_commands(result: ScanResult) -> list[str]:
+    return readme_install_commands(result)
+
+
+def _readme_commands_en(commands: list[str]) -> list[str]:
+    if not commands:
+        return []
+    lines = ["README install commands found:"]
+    lines.extend(f"- {command}" for command in commands[:6])
+    if len(commands) > 6:
+        lines.append(f"- ... {len(commands) - 6} more")
+    lines.append("")
+    return lines
+
+
+def _readme_commands_ko(commands: list[str]) -> list[str]:
+    if not commands:
+        return []
+    lines = ["README에서 발견한 설치 명령:"]
+    lines.extend(f"- {command}" for command in commands[:6])
+    if len(commands) > 6:
+        lines.append(f"- ... {len(commands) - 6}개 더 있음")
+    lines.append("")
+    return lines
+
+
+def safe_commands(result: ScanResult, *, locale: str) -> list[str]:
     manifests = set(result.detected_files.dependency_manifests)
     lockfiles = set(result.detected_files.lockfiles)
     commands: list[str] = []

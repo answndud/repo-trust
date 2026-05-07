@@ -210,7 +210,7 @@ def install_safety_rules(detected: DetectedFiles, readme_text: str) -> list[Find
         ]
 
     findings: list[Finding] = []
-    install_commands = _install_command_lines(readme_text)
+    install_commands = install_command_lines(readme_text)
     if not install_commands:
         findings.append(
             Finding(
@@ -376,7 +376,7 @@ def _has_project_purpose(readme_text: str) -> bool:
     return False
 
 
-def _install_command_lines(readme_text: str) -> list[str]:
+def install_command_lines(readme_text: str) -> list[str]:
     commands: list[str] = []
     in_install_section = False
     install_heading_level: int | None = None

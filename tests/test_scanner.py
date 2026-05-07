@@ -631,7 +631,7 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert 'data-severity="high"' in html
     assert 'data-category="readme_quality"' in html
     assert "<details open>" in html
-    assert "근거와 추천 조치" in html
+    assert "터미널 없이 읽는 설명과 근거" in html
     assert 'aria-label="Finding copy actions"' in html
     assert 'data-copy-value="readme.missing"' in html
     assert 'data-copy-value="repo-trust explain readme.missing"' in html
@@ -645,6 +645,20 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert "<dt>원문 메시지</dt>" in html
     assert "README가 없습니다." in html
     assert "readme.missing" in html
+
+
+def test_html_report_includes_safe_install_section_with_readme_commands(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
+    result = scan(str(repo))
+
+    html = render_html(result)
+
+    assert "<h2>Safe Install</h2>" in html
+    assert "실행 전 체크리스트" in html
+    assert "README에서 발견한 설치 명령" in html
+    assert "curl https://example.com/install.sh | sh" in html
+    assert "더 안전한 설치 패턴" in html
+    assert "고위험 설치 근거를 검토하기 전에는 문서의 설치 명령을 실행하지 마세요" in html
 
 
 def _copy_fixture_repo(tmp_path, name: str) -> Path:

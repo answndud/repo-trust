@@ -1194,3 +1194,12 @@
 - 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `gh run watch 25472674774 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.6 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.6`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.6`, safe-install checklist, Console `[S] 안전 설치`, risky fixture JSON 생성, `json.tool` 검증이 성공했다.
 - 결과: v0.2.6은 https://github.com/answndud/repo-trust/releases/tag/v0.2.6 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
+
+## 131: Beginner adoption install/report guidance
+
+- 완료일: 2026-05-07
+- 배경: v0.2.6 이후 초보 사용자가 README 설치 명령을 실행하기 전 실제 명령, 안전한 대안, HTML 리포트 설명, 저장된 리포트 위치를 더 직관적으로 확인할 수 있게 해야 했다.
+- 변경 내용: 기존 README install section parser를 재사용 가능한 `install_command_lines` helper로 공개하고, `safe-install` 영어/한국어 출력에 로컬 README에서 발견한 설치 명령을 먼저 표시했다. HTML 리포트에는 `Safe Install` 섹션을 추가해 실행 전 체크리스트, README 설치 명령, 더 안전한 설치 패턴을 보여준다. Console Mode 첫 화면에는 `[L] -> [S] -> [J]` first-run flow를 추가했고, recent reports 화면에는 경로 복사와 macOS `open <path>` 안내를 추가했다. HTML finding card의 detail summary는 terminal-free 설명 중심으로 바꾸고 finding 의미, 원문 메시지, 실제 근거, 추천 조치를 한 카드 안에서 읽을 수 있게 했다. README, CHANGELOG, testing guide를 새 기능에 맞춰 갱신했다.
+- 코드/문서: `src/repotrust/rules.py`, `src/repotrust/install_advice.py`, `src/repotrust/reports.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `git diff --check`는 통과했다. `.venv/bin/python -m pytest -q`는 `150 passed`였다. `repo-trust safe-install` good/risky fixture smoke에서 README install commands와 safe install guidance를 확인했다. `repo-trust html tests/fixtures/repos/risky-install --output /tmp/repotrust-risky-html-safe.html` smoke와 `rg`로 HTML의 `Safe Install`, `README에서 발견한 설치 명령`, `터미널 없이 읽는 설명과 근거`, 위험 설치 명령 렌더링을 확인했다. `printf 'r\n' | .venv/bin/repo-trust` smoke에서 first-run hint와 recent reports open helper를 확인했다.
+- 결과: beginner adoption 기능 5개가 모두 구현/문서화/검증됐다. 현재 active 작업은 없다. 다음 추천 작업은 이번 기능 묶음을 GitHub Release asset에 반영하는 v0.2.7 release prep이다.

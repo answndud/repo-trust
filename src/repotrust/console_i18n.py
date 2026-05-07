@@ -8,6 +8,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         "brand_title": "REPO-TRUST",
         "console_title": "RepoTrust",
         "tagline": "Offline-first trust checks before installing a repository.",
+        "first_run_hint": "First run: [L] scan local repo -> [S] safe install -> [J] export JSON.",
         "mission_label": "Mission",
         "mission": (
             "Decide whether a repository is safe enough to install, depend on, "
@@ -36,6 +37,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         "input_controls": "[B] Back",
         "recent_count": "Recent: {count} reports",
         "recent_reports_title": "Recent Reports",
+        "recent_reports_open_hint": "Open helper: copy a path below, or run `open <path>` on macOS.",
         "recent_json_reports_title": "Recent JSON Reports",
         "no_saved_reports": (
             "No saved reports yet. HTML and JSON commands write to result/ by default."
@@ -76,6 +78,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         "brand_title": "REPO-TRUST",
         "console_title": "RepoTrust",
         "tagline": "설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다.",
+        "first_run_hint": "처음이면: [L] 로컬 검사 -> [S] 안전 설치 -> [J] JSON 저장.",
         "mission_label": "목적",
         "mission": (
             "저장소를 설치하거나 의존성으로 추가하거나 AI agent에게 맡겨도 되는지 "
@@ -104,6 +107,7 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
         "input_controls": "[B] 뒤로",
         "recent_count": "최근 리포트: {count}개",
         "recent_reports_title": "최근 리포트",
+        "recent_reports_open_hint": "열기 안내: 아래 경로를 복사하거나 macOS에서는 `open <경로>`를 실행하세요.",
         "recent_json_reports_title": "최근 JSON 리포트",
         "no_saved_reports": (
             "아직 저장된 리포트가 없습니다. HTML/JSON 명령은 기본적으로 result/에 저장됩니다."

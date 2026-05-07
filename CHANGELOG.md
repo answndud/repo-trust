@@ -4,7 +4,16 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
-No changes yet.
+### Added
+
+- `safe-install` now lists README install commands found during local scans before showing install advice.
+- Static HTML reports now include a `Safe Install` section with a pre-run checklist, README install commands, and safer install patterns.
+- Console Mode now shows a first-run path from local scan to safe install advice to JSON export.
+- Console Mode recent reports now include a path-copy/open helper for saved report files.
+
+### Changed
+
+- Static HTML finding cards now include terminal-free Korean explanations, evidence, and recommendations directly in the report.
 
 ## v0.2.6 - 2026-05-07
 

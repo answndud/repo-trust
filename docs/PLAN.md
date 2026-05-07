@@ -14,20 +14,22 @@
 
 ## 현재 목표
 
-현재 active 작업 없음
+현재 active 작업 없음.
 
 ## 현재 우선순위
 
-현재 active 작업 없음
+현재 active 작업 없음.
 
 ## In Progress
 
-현재 active 작업 없음
+현재 active 작업 없음.
 
 ## Pending
 
-현재 active 작업 없음
+현재 pending 작업 없음.
 
 ## 다음 실행 순서
 
-현재 active 작업 없음
+1. v0.2.7 release prep로 이번 beginner adoption 기능 묶음을 공개 release asset에 반영한다.
+2. Release prep에서 version bump, CHANGELOG release section, build, clean wheel smoke, self-scan을 진행한다.
+3. 사용자가 승인하면 push/tag/GitHub Release publish를 진행한다.
