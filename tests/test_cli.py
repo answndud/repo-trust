@@ -152,6 +152,8 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert "[J]  Export JSON" in stderr
     assert "[S]  Safe Install" in stderr
     assert "Advice before running install commands" in stderr
+    assert "[T]  Tutorial" in stderr
+    assert "Copyable first-run commands" in stderr
     assert "[M]  Compare JSON" in stderr
     assert "Create before/after HTML report" in stderr
     assert "Recent:" in stderr
@@ -180,6 +182,8 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "[J]  JSON 내보내기" in stderr
     assert "[S]  안전 설치" in stderr
     assert "설치 전 다음 단계 안내" in stderr
+    assert "[T]  튜토리얼" in stderr
+    assert "처음 따라 할 명령 보기" in stderr
     assert "[M]  JSON 비교" in stderr
     assert "개선 전/후 HTML 만들기" in stderr
     assert "최근 리포트:" in stderr
@@ -224,6 +228,32 @@ def test_direct_cli_safe_install_suggests_python_virtualenv_for_good_fixture():
     assert "python3 -m venv .venv" in result.stdout
     assert ".venv/bin/python -m pip install -e ." in result.stdout
     assert "Do not run the README install commands yet." not in result.stdout
+
+
+def test_direct_cli_tutorial_outputs_copyable_first_run_commands():
+    result = runner.invoke(direct_app, ["tutorial"], prog_name="repo-trust")
+
+    assert result.exit_code == 0
+    assert result.stderr == ""
+    assert "RepoTrust Beginner Tutorial" in result.stdout
+    assert "repo-trust html ." in result.stdout
+    assert "repo-trust safe-install ." in result.stdout
+    assert "repo-trust json ." in result.stdout
+    assert "repo-trust check https://github.com/owner/repo" in result.stdout
+    assert "[L] local scan, [S] safe install, then [J] export JSON" in result.stdout
+
+
+def test_direct_kr_cli_tutorial_outputs_korean_first_run_commands():
+    result = runner.invoke(direct_kr_app, ["tutorial"], prog_name="repo-trust-kr")
+
+    assert result.exit_code == 0
+    assert result.stderr == ""
+    assert "RepoTrust 초보자 튜토리얼" in result.stdout
+    assert "repo-trust-kr html ." in result.stdout
+    assert "repo-trust-kr safe-install ." in result.stdout
+    assert "repo-trust-kr json ." in result.stdout
+    assert "repo-trust-kr check https://github.com/owner/repo" in result.stdout
+    assert "[L] 로컬 검사, [S] 안전 설치, [J] JSON 저장" in result.stdout
 
 
 def test_direct_cli_safe_install_explains_parse_only_evidence_gap():
@@ -737,6 +767,18 @@ def test_direct_cli_interactive_safe_install_workflow():
     assert "README install commands found:" in stderr
     assert "Do not run the README install commands yet." in stderr
     assert "install.risky.shell_pipe_install" in stderr
+
+
+def test_direct_cli_interactive_tutorial_workflow():
+    result = runner.invoke(direct_app, [], input="t\n", prog_name="repo-trust")
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "Selected: Beginner tutorial" in stderr
+    assert "Running analysis..." in stderr
+    assert "RepoTrust Beginner Tutorial" in stderr
+    assert "repo-trust html ." in stderr
+    assert "repo-trust safe-install ." in stderr
 
 
 def test_direct_kr_cli_interactive_safe_install_workflow():

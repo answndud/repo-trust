@@ -68,12 +68,12 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 
 | 방식 | 명령 | 추천 상황 | 결과 |
 | --- | --- | --- | --- |
-| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 검사, 안전 설치 안내, JSON 저장, JSON 비교 workflow 선택 |
-| Command Mode | `repo-trust html/json/check/safe-install/explain/compare <대상, finding ID, 리포트>` | 반복 실행, 자동화, 문서화할 때 | HTML/JSON 파일, 터미널 대시보드, 안전 설치 안내, finding 설명, 리포트 비교 |
+| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 튜토리얼, 검사, 안전 설치 안내, JSON 저장, JSON 비교 workflow 선택 |
+| Command Mode | `repo-trust tutorial/html/json/check/safe-install/explain/compare <대상, finding ID, 리포트>` | 반복 실행, 자동화, 문서화할 때 | 튜토리얼, HTML/JSON 파일, 터미널 대시보드, 안전 설치 안내, finding 설명, 리포트 비교 |
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
-차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`와 `safe-install`은 두 방식 모두 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
+차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[T]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`, `safe-install`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
 ## Console Mode
 
@@ -99,6 +99,7 @@ L  로컬 저장소    파일 근거까지 로컬 검사
 C  빠른 점검      즉시 요약 보기
 J  JSON 내보내기  기계가 읽는 리포트 저장
 S  안전 설치      설치 전 다음 단계 안내
+T  튜토리얼       처음 따라 할 명령 보기
 M  JSON 비교      개선 전/후 HTML 만들기
 ────────────────────────────────────
 최근 리포트: 3개
@@ -134,6 +135,17 @@ m
 ## Command Mode
 
 Command Mode는 명령을 한 줄로 직접 입력하는 방식입니다. 자동화하거나 같은 검사를 반복할 때 적합합니다.
+
+### 처음 따라 할 명령 보기
+
+설치 직후 무엇부터 실행해야 할지 모르겠다면 tutorial을 먼저 보세요. 실제 검사를 실행하지 않고, 로컬 검사, 안전 설치 안내, JSON 저장, GitHub URL quick check 순서의 copyable command만 보여줍니다.
+
+**입력할 명령**
+
+```bash
+repo-trust-kr tutorial
+repo-trust tutorial
+```
 
 ### GitHub URL을 HTML로 저장
 

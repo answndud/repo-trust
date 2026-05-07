@@ -1230,3 +1230,12 @@
 - 코드/문서: `src/repotrust/dashboard.py`, `src/repotrust/reports.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_scanner.py -k html_report -q`는 `3 passed, 32 deselected`였다. `.venv/bin/python -m pytest tests/test_cli.py -k "html_github_url_defaults or json_writes_file_with_korean_status or interactive_local_html or interactive_github_shortcut" -q`는 `5 passed, 72 deselected`였다. `git diff --check`는 통과했고, `.venv/bin/python -m pytest -q`는 `151 passed`였다. CLI smoke에서 저장된 HTML/JSON 리포트의 `Open with: open <path>` / `열기 명령: open <경로>` 안내를 확인했다. HTML smoke에서 `Next safest command`와 `repo-trust explain install.risky.process_substitution_shell` 렌더링을 확인했다.
 - 결과: 리포트를 만든 직후 사용자가 다음 안전 행동과 파일 열기 명령을 더 쉽게 찾을 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 sample report gallery 또는 beginner tutorial command다.
+
+## 135: Beginner tutorial command
+
+- 완료일: 2026-05-07
+- 배경: 설치 직후 초보 사용자가 어떤 명령부터 실행해야 할지 README 전체를 읽기 전에 바로 확인할 수 있는 copyable tutorial entrypoint가 필요했다.
+- 변경 내용: `repo-trust tutorial` / `repo-trust-kr tutorial` 명령을 추가했다. 새 tutorial renderer는 실제 scan이나 파일 write 없이 로컬 HTML 검사, safe-install, JSON 저장, API-free GitHub URL quick check, Console Mode 선택 순서를 영어/한국어로 보여준다. Console Mode에는 `[T] Tutorial` / `[T] 튜토리얼` workflow를 추가했고, localized help, README, CHANGELOG, testing guide를 갱신했다.
+- 코드/문서: `src/repotrust/tutorial.py`, `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "tutorial or root_starts" -q`는 `5 passed, 75 deselected`였다. `git diff --check`는 통과했고, `.venv/bin/python -m pytest -q`는 `154 passed`였다. Smoke에서 `repo-trust tutorial`, `repo-trust-kr tutorial`, Console `[T] 튜토리얼` 출력이 copyable first-run commands를 보여주는 것을 확인했다.
+- 결과: 사용자는 설치 직후 `tutorial` 명령이나 Console `[T]`로 첫 로컬 검사부터 안전 설치 확인, JSON 저장까지의 최소 경로를 바로 볼 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 sample report gallery다.

@@ -29,6 +29,7 @@ from .models import ScanResult
 from .reports import render_report
 from .scanner import ScanInputError, scan as scan_target
 from .targets import parse_target
+from .tutorial import render_tutorial
 
 app = typer.Typer(
     help="Evaluate repository trust signals and generate reports.",
@@ -369,6 +370,24 @@ def check(
     )
 
 
+@direct_app.command("tutorial", add_help_option=False)
+@direct_kr_app.command("tutorial", add_help_option=False)
+def tutorial(
+    ctx: typer.Context,
+    help_requested: Annotated[
+        bool,
+        typer.Option(
+            "--help",
+            callback=_help_callback("tutorial"),
+            help=HELP_OPTION_HELP,
+            is_eager=True,
+        ),
+    ] = False,
+) -> None:
+    """Print a beginner tutorial with copyable commands."""
+    typer.echo(render_tutorial(locale=_product_locale(ctx)), nl=False)
+
+
 @direct_app.command("safe-install", add_help_option=False)
 @direct_kr_app.command("safe-install", add_help_option=False)
 def safe_install(
@@ -636,6 +655,9 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
         return
     if workflow.workflow_kind == "safe_install":
         _run_console_safe_install_workflow(workflow)
+        return
+    if workflow.workflow_kind == "tutorial":
+        status_console.print(render_tutorial(locale=workflow.locale), markup=False)
         return
 
     _run_product_scan(

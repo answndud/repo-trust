@@ -17,6 +17,7 @@ Commands:
   json   Write a JSON trust report.
   check  Inspect a target and print a terminal dashboard.
   safe-install Print install advice without running install commands.
+  tutorial Print a beginner tutorial with copyable commands.
   gate   Write JSON and fail when policy requirements are not met.
   explain Explain a finding ID.
   compare Compare two JSON reports.
@@ -38,6 +39,7 @@ Console Mode:
   json   JSON 신뢰 리포트를 저장합니다.
   check  파일 저장 없이 터미널 대시보드로 검사합니다.
   safe-install 설치 명령을 실행하지 않고 안전한 다음 단계를 안내합니다.
+  tutorial 초보자가 처음 따라 할 명령을 보여줍니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
   explain finding ID의 의미와 추천 조치를 설명합니다.
   compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
@@ -173,6 +175,22 @@ Options:
   --remote       GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only   GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --help         영어 또는 한국어 도움말을 선택해 봅니다.
+""",
+    },
+    "tutorial": {
+        "en": """Usage: repo-trust tutorial [OPTIONS]
+
+Print a beginner tutorial with copyable commands.
+
+Options:
+  --help  Choose English or Korean help and exit.
+""",
+        "ko": """사용법: repo-trust tutorial [옵션]
+
+초보자가 처음 따라 할 명령을 보여줍니다.
+
+옵션:
+  --help  영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },
     "gate": {

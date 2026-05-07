@@ -28,4 +28,4 @@
 
 ## 다음 액션
 
-다음 추천 작업: sample report gallery 또는 beginner tutorial command.
+다음 추천 작업: sample report gallery.

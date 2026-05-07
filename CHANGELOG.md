@@ -8,6 +8,8 @@ All notable changes to RepoTrust are documented here.
 
 - Static HTML Safe Install sections now highlight a `Next safest command` before the longer checklist.
 - Saved report dashboards now show an `open <path>` helper under the report path.
+- `repo-trust tutorial` / `repo-trust-kr tutorial` now print copyable first-run commands.
+- Console Mode now includes `[T] Tutorial` / `[T] 튜토리얼`.
 
 ## v0.2.7 - 2026-05-07
 
