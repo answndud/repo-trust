@@ -1257,3 +1257,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `git diff --check`는 통과했다. `.venv/bin/python -m pytest -q`는 `157 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.8/dist`는 `repotrust-0.2.8.tar.gz`와 `repotrust-0.2.8-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version `0.2.8`, `tutorial`, `samples`, Console `[P] Samples`, `safe-install`, fixture JSON 생성, `json.tool`을 확인했다. Self-scan JSON은 grade `A`, high confidence, full coverage, medium/high finding 0개였다.
 - 결과: v0.2.8 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. GitHub Release publish는 명시 승인 대기 상태다.
+
+## 138: v0.2.8 GitHub Release publish
+
+- 완료일: 2026-05-07
+- 배경: v0.2.8 release candidate가 전체 테스트, build, clean wheel smoke, self-scan을 통과했고 사용자가 다음 작업 진행을 요청했으므로 GitHub Release로 공개해야 했다.
+- 변경 내용: release prep commit `b100aa3`까지 origin/main에 push했다. 첫 GitHub Actions `ci` run `25477613123`은 sample gallery stderr의 긴 경로가 Rich 터미널 폭에 따라 줄바꿈되면서 파일명 substring assertion이 깨져 실패했다. 기능 코드는 유지하고 `tests/test_cli.py` assertion을 줄바꿈에 흔들리지 않도록 안정화한 commit `d8d3ad3`를 push했다. GitHub Actions `ci` run `25477688302` 통과를 확인한 뒤 annotated tag `v0.2.8`을 생성/push했고, GitHub Release `RepoTrust v0.2.8`을 publish했다. Release asset으로 `repotrust-0.2.8-py3-none-any.whl`과 `repotrust-0.2.8.tar.gz`를 업로드했다.
+- 코드/문서: `tests/test_cli.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py::test_direct_cli_samples_writes_good_and_risky_gallery -q`는 `1 passed`였다. `git diff --check && .venv/bin/python -m pytest -q`는 `157 passed`였다. `gh run watch 25477688302 --repo answndud/repo-trust --exit-status`는 성공했다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.8/dist`는 최신 commit 기준 wheel/sdist를 생성했다. `gh release view v0.2.8 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.8`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.8`, `tutorial`, `samples`, sample JSON `json.tool`, `safe-install`, fixture JSON `json.tool`, Console `[P] Samples`가 성공했다.
+- 결과: v0.2.8은 https://github.com/answndud/repo-trust/releases/tag/v0.2.8 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다. 다음 추천 작업은 `repo-trust next-steps <target>` 또는 `fix-plan` 계열의 초보자용 조치 계획 기능이다.

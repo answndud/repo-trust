@@ -14,49 +14,36 @@
 
 ## 현재 목표
 
-v0.2.8 publish
+현재 active 작업 없음.
 
 ## 현재 우선순위
 
-1. Local `main`의 v0.2.8 commits를 origin에 push한다.
-2. GitHub Actions `ci` 통과를 확인한다.
-3. Annotated tag `v0.2.8`와 GitHub Release를 만들고 wheel/sdist asset을 업로드한다.
-4. Release URL clean install smoke를 수행한다.
+현재 active 작업 없음.
 
 ## In Progress
 
-- status: in_progress
-- goal: v0.2.8 GitHub Release를 공개하고 release asset 설치를 검증한다.
-- scope:
-  - `main` push.
-  - GitHub Actions `ci` run watch.
-  - annotated tag `v0.2.8` 생성/push.
-  - GitHub Release `RepoTrust v0.2.8` 생성.
-  - `/tmp/repotrust-release-v0.2.8/dist` wheel/sdist asset upload.
-  - GitHub Release wheel URL clean install smoke.
-  - 작업 상태 문서 archive와 publish 기록 commit.
-- non-goals:
-  - PyPI/TestPyPI 배포는 하지 않는다.
-  - v0.2.8 기능 변경은 하지 않는다.
-- acceptance criteria:
-  - origin/main이 local main commit을 포함한다.
-  - GitHub Actions `ci`가 성공한다.
-  - `gh release view v0.2.8`에서 draft false, prerelease false, wheel/sdist asset을 확인한다.
-  - GitHub Release wheel URL로 clean install한 `repo-trust`, `repo-trust-kr`, `repotrust`가 version `0.2.8`을 출력한다.
-  - release URL smoke에서 `tutorial`, `samples`, `safe-install`, fixture JSON, `json.tool`이 통과한다.
-- verification commands:
-  - `git push origin main`
-  - `gh run watch <run-id> --repo answndud/repo-trust --exit-status`
-  - `gh release view v0.2.8 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`
-- next action: `main` push 후 CI run을 확인한다.
+현재 active 작업 없음.
 
 ## Pending
 
-현재 pending 작업 없음.
+- status: pending
+- goal: 초보 사용자가 scan 결과를 본 뒤 바로 실행할 수 있는 `fix-plan` 또는 `next-steps` 기능을 추가한다.
+- scope:
+  - JSON/HTML/terminal report의 findings를 기반으로 우선순위별 조치 목록을 생성한다.
+  - `repo-trust next-steps <target>` 또는 기존 `explain`/`safe-install`과 연결되는 copyable 명령을 제공한다.
+  - README에 "위험 리포트를 받았을 때 무엇을 해야 하나" 초보자 가이드를 추가한다.
+- non-goals:
+  - 자동 수정 적용은 하지 않는다.
+  - 외부 API나 vulnerability DB 조회는 하지 않는다.
+- acceptance criteria:
+  - 좋은 fixture는 짧은 확인 checklist를 보여준다.
+  - risky fixture는 high severity install finding을 먼저 멈추게 하고, 그 다음 license/CI/security policy 순서로 설명한다.
+  - 영어/한국어 CLI와 README 가이드가 모두 갱신된다.
+- verification commands:
+  - `.venv/bin/python -m pytest -q`
 
 ## 다음 실행 순서
 
-1. `main` push와 GitHub Actions 확인.
-2. Tag/release/asset upload.
-3. Release URL clean install smoke.
-4. Archive와 publish 기록 commit/push.
+1. 다음 작업을 시작하면 pending의 `next-steps` 기능을 In Progress로 승격한다.
+2. CLI 출력과 README 초보자 가이드를 함께 구현한다.
+3. fixture 기반 테스트와 smoke를 추가한다.
