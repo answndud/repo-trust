@@ -27,23 +27,24 @@
 ## Pending
 
 - status: pending
-- goal: HTML 리포트와 저장된 JSON 리포트에서도 `next-steps` 흐름을 이어갈 수 있게 한다.
+- goal: v0.2.9 release prep
 - scope:
-  - HTML 리포트에 `Next Steps` 섹션 또는 action block을 추가한다.
-  - 저장된 JSON 리포트를 다시 스캔하지 않고 읽어 `next-steps`를 출력하는 command option 또는 별도 command를 검토한다.
-  - README에 "저장된 리포트에서 다음 조치 이어가기" 가이드를 추가한다.
+  - `next-steps` command와 HTML/JSON next-steps integration을 patch release로 정리한다.
+  - package/runtime version, README install URL, CLI version tests, CHANGELOG를 `0.2.9`에 맞춘다.
+  - build, clean wheel smoke, self-scan을 수행한다.
 - non-goals:
-  - 자동 수정 적용은 하지 않는다.
-  - 외부 API, secret key, vulnerability DB 조회는 하지 않는다.
+  - PyPI/TestPyPI 배포는 하지 않는다.
+  - 추가 기능 구현은 release prep 범위에 포함하지 않는다.
 - acceptance criteria:
-  - HTML 리포트에서 high severity install finding 다음에 license/CI/security policy 순서의 action이 보인다.
-  - 저장된 JSON report workflow가 재스캔 없이 동작하거나, 미지원이면 의도적으로 문서화된다.
-  - tests와 README가 함께 갱신된다.
+  - 전체 테스트, build, clean wheel smoke, self-scan이 통과한다.
+  - release candidate 문서가 `docs/COMPLETED.md`에 archive된다.
+  - publish는 별도 승인 전까지 진행하지 않는다.
 - verification commands:
-  - `.venv/bin/python -m pytest -q`
+  - `git diff --check && .venv/bin/python -m pytest -q`
+  - `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.9/dist`
 
 ## 다음 실행 순서
 
-1. 다음 작업을 시작하면 pending의 HTML/JSON next-steps integration을 In Progress로 승격한다.
-2. HTML report renderer와 JSON report reuse 가능성을 먼저 확인한다.
-3. 구현 후 fixture 기반 테스트와 전체 테스트를 실행한다.
+1. 다음 작업을 시작하면 v0.2.9 release prep을 In Progress로 승격한다.
+2. version/README/CHANGELOG/tests를 `0.2.9`에 맞춘다.
+3. build와 clean wheel smoke 후 publish 승인 대기 상태로 정리한다.

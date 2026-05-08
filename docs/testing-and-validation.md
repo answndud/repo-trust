@@ -39,6 +39,8 @@ printf 'q\n' | .venv/bin/repo-trust-kr
 .venv/bin/repo-trust check .
 .venv/bin/repo-trust safe-install .
 .venv/bin/repo-trust next-steps .
+.venv/bin/repo-trust json tests/fixtures/repos/risky-install --output /tmp/repotrust-risky.json
+.venv/bin/repo-trust next-steps --from-json /tmp/repotrust-risky.json
 .venv/bin/repo-trust explain install.risky.uses_sudo
 .venv/bin/repo-trust-kr check .
 .venv/bin/repo-trust-kr safe-install tests/fixtures/repos/risky-install
@@ -89,11 +91,12 @@ Expected behavior:
 - `repo-trust samples` and `repo-trust-kr samples` generate good/risky sample HTML and JSON reports that are valid local reports and do not require test fixtures.
 - `repo-trust safe-install <target>` prints install advice without executing repository install commands. It should include README install commands found in local scans and a short pre-run checklist. Risky install fixtures should block README command execution, good Python fixtures should suggest a virtualenv install pattern, and GitHub parse-only targets should explain the evidence gap.
 - `repo-trust next-steps <target>` prints a prioritized beginner action plan. Good fixtures should show a short checklist, and risky fixtures should stop README install command execution before license, CI, and security policy review.
+- `repo-trust next-steps --from-json <report.json>` should read a saved RepoTrust JSON report without rescanning the repository.
 - `repo-trust compare <old.json> <new.json>` compares saved JSON reports without scanning and shows score, grade, verdict, added findings, resolved findings, severity changes, and persisting finding count.
 - `repo-trust compare <old.json> <new.json> --format html/markdown --output <path>` writes a shareable comparison file and prints the saved path on stderr.
 - HTML comparison reports should include an outcome summary, Improvements/New issues/Severity changes/Still remaining sections, and copy buttons for finding ID / `repo-trust explain <id>`.
 - `repo-trust compare` exits with code `1` for invalid JSON or files that do not look like RepoTrust JSON reports.
-- Static HTML reports should include a Safe Install section with a highlighted `Next safest command`, the pre-run checklist, README install commands found in local scans, safer install patterns, severity/category finding filters, expand/collapse controls, and copy buttons for finding ID / `repo-trust explain <id>` while still rendering finding details without JavaScript.
+- Static HTML reports should include a Safe Install section with a highlighted `Next safest command`, a `Next Steps` section with the same action order as `repo-trust next-steps`, the pre-run checklist, README install commands found in local scans, safer install patterns, severity/category finding filters, expand/collapse controls, and copy buttons for finding ID / `repo-trust explain <id>` while still rendering finding details without JavaScript.
 - Static HTML finding cards should include terminal-free Korean explanations, original messages, evidence, and recommendations so users can understand findings without running `repo-trust explain`.
 - Product CLI GitHub URL commands default to parse-only without GitHub API access and never clone repositories.
 - Product `--remote` opts into GitHub API read-only metadata.

@@ -292,6 +292,7 @@ def render_html(result: ScanResult) -> str:
         f"          <li>{html.escape(action)}</li>" for action in assessment.next_actions
     )
     safe_install_section = _safe_install_html(result)
+    next_steps_section = _next_steps_html(result)
     findings = "\n".join(
         _finding_html(finding) for finding in sorted(result.findings, key=_finding_sort_key)
     )
@@ -330,6 +331,7 @@ def render_html(result: ScanResult) -> str:
     .next-command code {{ display: inline-block; background: #ffffff; border: 1px solid #c7e5df; padding: 6px 8px; }}
     .command-list {{ display: grid; gap: 8px; padding-left: 0; list-style: none; }}
     .command-list li {{ border: 1px solid #e3e8ef; border-radius: 6px; background: #ffffff; padding: 8px 10px; }}
+    .next-steps-plan {{ border: 1px solid #d8e5f3; border-left: 4px solid #2563eb; border-radius: 8px; background: #f7fbff; padding: 14px; white-space: pre-wrap; overflow-wrap: anywhere; font: 0.94rem/1.56 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
     .score {{ display: flex; align-items: baseline; gap: 12px; margin: 8px 0 12px; }}
     .score strong {{ font-size: 2.5rem; color: #0f172a; }}
     .score span {{ color: var(--muted); font-weight: 700; }}
@@ -440,6 +442,8 @@ def render_html(result: ScanResult) -> str:
       </section>
 
 {safe_install_section}
+
+{next_steps_section}
 
       <h2>Purpose Profiles</h2>
       <p>같은 finding을 설치, dependency 채택, AI agent 위임 목적별로 다시 읽은 판단입니다.</p>
@@ -596,6 +600,18 @@ def _safe_install_html(result: ScanResult) -> str:
         <ul class="command-list">
 {safe_pattern_items}
         </ul>
+      </section>
+"""
+
+
+def _next_steps_html(result: ScanResult) -> str:
+    from .next_steps import render_next_steps
+
+    plan = render_next_steps(result, locale="ko")
+    return f"""      <h2>Next Steps</h2>
+      <section class="section-panel" aria-label="Next Steps">
+        <p>리포트의 finding을 실행 순서로 다시 정리한 초보자용 조치 계획입니다. 자동 수정이나 외부 API 조회 없이 현재 리포트 근거만 사용합니다.</p>
+        <pre class="next-steps-plan">{html.escape(plan)}</pre>
       </section>
 """
 

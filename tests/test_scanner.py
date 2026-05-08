@@ -664,6 +664,23 @@ def test_html_report_includes_safe_install_section_with_readme_commands(tmp_path
     assert "고위험 설치 근거를 검토하기 전에는 문서의 설치 명령을 실행하지 마세요" in html
 
 
+def test_html_report_includes_next_steps_plan_with_priority_order(tmp_path):
+    repo = _copy_fixture_repo(tmp_path, "risky-install")
+    result = scan(str(repo))
+
+    html = render_html(result)
+
+    assert "<h2>Next Steps</h2>" in html
+    assert "RepoTrust 다음 조치" in html
+    assert "1. 중단: 아직 README 설치 명령을 실행하지 마세요." in html
+    assert "License 확인" in html
+    assert "CI 확인" in html
+    assert "보안 정책 확인" in html
+    assert html.index("1. 중단") < html.index("License 확인")
+    assert html.index("License 확인") < html.index("CI 확인")
+    assert html.index("CI 확인") < html.index("보안 정책 확인")
+
+
 def test_html_report_highlights_first_safe_command_for_clean_fixture(tmp_path):
     repo = _copy_fixture_repo(tmp_path, "good-python")
     result = scan(str(repo))

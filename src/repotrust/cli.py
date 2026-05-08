@@ -25,7 +25,7 @@ from .dashboard import print_assessment_dashboard, print_command_header, print_l
 from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
 from .install_advice import render_safe_install_advice
-from .models import ScanResult
+from .models import Category, DetectedFiles, Finding, ScanResult, Score, Severity, Target
 from .next_steps import render_next_steps
 from .reports import render_report
 from .sample_gallery import render_sample_gallery_summary, write_sample_gallery
@@ -464,7 +464,10 @@ def safe_install(
 @direct_kr_app.command("next-steps", add_help_option=False)
 def next_steps(
     ctx: typer.Context,
-    target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
+    target: Annotated[
+        str | None,
+        typer.Argument(help="Local path or GitHub URL to inspect."),
+    ] = None,
     help_requested: Annotated[
         bool,
         typer.Option(
@@ -477,6 +480,10 @@ def next_steps(
     config: Annotated[
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
+    ] = None,
+    from_json: Annotated[
+        Path | None,
+        typer.Option("--from-json", help="Read an existing RepoTrust JSON report without rescanning."),
     ] = None,
     parse_only: Annotated[
         bool,
@@ -494,6 +501,20 @@ def next_steps(
     ] = False,
 ) -> None:
     """Print a beginner action plan from the scan findings."""
+    if target is None and from_json is None:
+        raise typer.BadParameter("Pass TARGET or --from-json REPORT.json.")
+    if target is not None and from_json is not None:
+        raise typer.BadParameter("TARGET cannot be combined with --from-json.")
+    if from_json is not None:
+        try:
+            result = _scan_result_from_report_json(_load_report_json(from_json))
+        except ValueError as exc:
+            status_console.print(str(exc))
+            raise typer.Exit(code=1) from exc
+        typer.echo(render_next_steps(result, locale=_product_locale(ctx)), nl=False)
+        return
+
+    assert target is not None
     parsed_target = parse_target(target)
     remote_scan = _resolve_product_remote(
         parsed_target_kind=parsed_target.kind,
@@ -1015,3 +1036,32 @@ def _load_report_json(path: Path) -> dict:
     if not isinstance(data.get("findings"), list):
         raise ValueError(f"Invalid RepoTrust findings list: {path}")
     return data
+
+
+def _scan_result_from_report_json(data: dict) -> ScanResult:
+    try:
+        target_data = data["target"]
+        detected_data = data["detected_files"]
+        score_data = data["score"]
+        findings_data = data["findings"]
+        generated_at = data["generated_at"]
+    except KeyError as exc:
+        raise ValueError(f"Invalid RepoTrust JSON report shape: missing {exc.args[0]}") from exc
+
+    return ScanResult(
+        target=Target(**target_data),
+        detected_files=DetectedFiles(**detected_data),
+        findings=[
+            Finding(
+                id=finding["id"],
+                category=Category(finding["category"]),
+                severity=Severity(finding["severity"]),
+                message=finding["message"],
+                evidence=finding["evidence"],
+                recommendation=finding["recommendation"],
+            )
+            for finding in findings_data
+        ],
+        score=Score(**score_data),
+        generated_at=generated_at,
+    )

@@ -1275,3 +1275,12 @@
 - 코드/문서: `src/repotrust/next_steps.py`, `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "next_steps or root_starts or help_shows_product" -q`는 `7 passed, 80 deselected`였다. Smoke에서 `repo-trust next-steps` good/risky fixture, `repo-trust-kr next-steps` risky fixture, Console `[N]` workflow를 확인했다. `git diff --check && .venv/bin/python -m pytest -q`는 `161 passed`였다.
 - 결과: 초보 사용자는 HTML/JSON 리포트를 따로 열기 전에 `next-steps`로 실행 중단, adoption risk 검토, copyable `safe-install`/`html`/`explain` 명령을 한 화면에서 확인할 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 HTML/JSON next-steps integration이다.
+
+## 140: HTML/JSON next-steps integration
+
+- 완료일: 2026-05-08
+- 배경: `next-steps`가 터미널/콘솔에서만 보이면 HTML 리포트를 공유받은 사용자가 같은 조치 순서를 바로 읽기 어렵고, 이미 저장한 JSON 리포트도 다시 스캔해야 했다.
+- 변경 내용: static HTML 리포트에 `Next Steps` 섹션을 추가해 터미널 `next-steps`와 같은 action order를 보여준다. `repo-trust next-steps --from-json <report.json>` / `repo-trust-kr next-steps --from-json <report.json>` 옵션을 추가해 저장된 RepoTrust JSON 리포트를 재스캔 없이 읽어 action plan을 출력한다. `--from-json` help, README, CHANGELOG, testing guide, PLAN/PROGRESS/COMPLETED를 갱신했다.
+- 코드/문서: `src/repotrust/reports.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "next_steps" tests/test_scanner.py -k "next_steps or safe_install_section" -q`는 `7 passed, 117 deselected`였다. Smoke에서 `repo-trust next-steps --from-json /tmp/repotrust-next-steps-risky.json`, HTML `Next Steps` section grep, `repo-trust next-steps --help` Korean help를 확인했다. `git diff --check && .venv/bin/python -m pytest -q`는 `163 passed`였다.
+- 결과: 사용자는 HTML 리포트 안에서 바로 다음 조치 순서를 읽을 수 있고, 저장된 JSON 리포트는 재스캔 없이 `next-steps`로 이어갈 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 v0.2.9 release prep이다.

@@ -7,7 +7,9 @@ All notable changes to RepoTrust are documented here.
 ### Added
 
 - `repo-trust next-steps <target>` / `repo-trust-kr next-steps <target>` now print a beginner action plan from scan findings.
+- `repo-trust next-steps --from-json <report.json>` now reads saved RepoTrust JSON reports without rescanning.
 - Console Mode now includes `[N] Next Steps` / `[N] 다음 조치` for the same prioritized action plan.
+- Static HTML reports now include a `Next Steps` section with the same action order.
 
 ## v0.2.8 - 2026-05-07
 

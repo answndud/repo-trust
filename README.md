@@ -234,7 +234,7 @@ repo-trust safe-install https://github.com/openai/codex
 
 ### 위험 리포트를 받은 뒤 다음 조치 보기
 
-리포트의 finding을 하나씩 해석하기 어렵다면 `next-steps`를 실행하세요. RepoTrust가 저장소를 다시 검사한 뒤, 초보자가 바로 따라 할 수 있는 순서로 조치 계획을 보여줍니다. 고위험 설치 finding이 있으면 README 설치 명령을 먼저 멈추게 하고, 그 다음 license, CI, security policy 같은 adoption risk를 순서대로 정리합니다.
+리포트의 finding을 하나씩 해석하기 어렵다면 `next-steps`를 실행하세요. RepoTrust가 저장소를 검사한 뒤, 초보자가 바로 따라 할 수 있는 순서로 조치 계획을 보여줍니다. 고위험 설치 finding이 있으면 README 설치 명령을 먼저 멈추게 하고, 그 다음 license, CI, security policy 같은 adoption risk를 순서대로 정리합니다. HTML 리포트에도 같은 `Next Steps` 섹션이 들어갑니다.
 
 **입력할 명령**
 
@@ -243,7 +243,16 @@ repo-trust next-steps tests/fixtures/repos/risky-install
 repo-trust-kr next-steps tests/fixtures/repos/good-python
 ```
 
-좋은 저장소에서는 짧은 확인 checklist와 `safe-install`, `html` 명령을 보여줍니다. 위험 저장소에서는 `repo-trust explain <finding-id>` 명령도 함께 보여주므로, HTML 리포트에서 본 finding을 터미널에서 바로 풀어 읽을 수 있습니다. 이 기능은 자동 수정을 하지 않고, 외부 API나 secret key 없이 로컬 검사 결과만 사용합니다.
+좋은 저장소에서는 짧은 확인 checklist와 `safe-install`, `html` 명령을 보여줍니다. 위험 저장소에서는 `repo-trust explain <finding-id>` 명령도 함께 보여주므로, HTML 리포트에서 본 finding을 터미널에서 바로 풀어 읽을 수 있습니다.
+
+이미 저장한 JSON 리포트에서 이어서 보고 싶다면 `--from-json`을 사용하세요. 이 방식은 저장소를 다시 검사하지 않고 JSON 파일만 읽습니다.
+
+```bash
+repo-trust json tests/fixtures/repos/risky-install --output /tmp/risky.json
+repo-trust next-steps --from-json /tmp/risky.json
+```
+
+이 기능은 자동 수정을 하지 않고, 외부 API나 secret key 없이 리포트 근거만 사용합니다.
 
 ### JSON 리포트 비교
 

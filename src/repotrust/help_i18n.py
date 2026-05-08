@@ -182,31 +182,33 @@ Options:
 """,
     },
     "next-steps": {
-        "en": """Usage: repo-trust next-steps [OPTIONS] TARGET
+        "en": """Usage: repo-trust next-steps [OPTIONS] [TARGET]
 
 Print a beginner action plan from scan findings.
 
 Arguments:
-  TARGET  Local path or GitHub URL to inspect.
+  TARGET  Local path or GitHub URL to inspect. Omit when using --from-json.
 
 Options:
-  --config PATH  Load an explicit repotrust.toml policy file.
-  --remote       For GitHub URLs, call the GitHub API for read-only metadata.
-  --parse-only   For GitHub URLs, force URL-only mode without the GitHub API.
-  --help         Choose English or Korean help and exit.
+  --from-json PATH  Read an existing RepoTrust JSON report without rescanning.
+  --config PATH     Load an explicit repotrust.toml policy file.
+  --remote          For GitHub URLs, call the GitHub API for read-only metadata.
+  --parse-only      For GitHub URLs, force URL-only mode without the GitHub API.
+  --help            Choose English or Korean help and exit.
 """,
-        "ko": """사용법: repo-trust next-steps [옵션] 대상
+        "ko": """사용법: repo-trust next-steps [옵션] [대상]
 
 검사 결과에서 초보자용 다음 조치 계획을 보여줍니다.
 
 인자:
-  대상  검사할 로컬 경로 또는 GitHub URL입니다.
+  대상  검사할 로컬 경로 또는 GitHub URL입니다. --from-json을 쓸 때는 생략합니다.
 
 옵션:
-  --config PATH  repotrust.toml 정책 파일을 직접 지정합니다.
-  --remote       GitHub URL에서 GitHub API read-only metadata를 조회합니다.
-  --parse-only   GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
-  --help         영어 또는 한국어 도움말을 선택해 봅니다.
+  --from-json PATH  저장된 RepoTrust JSON 리포트를 재스캔 없이 읽습니다.
+  --config PATH     repotrust.toml 정책 파일을 직접 지정합니다.
+  --remote          GitHub URL에서 GitHub API read-only metadata를 조회합니다.
+  --parse-only      GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
+  --help            영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },
     "tutorial": {

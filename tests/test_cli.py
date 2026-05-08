@@ -273,6 +273,33 @@ def test_direct_cli_next_steps_has_short_good_fixture_checklist():
     assert "repo-trust html tests/fixtures/repos/good-python" in result.stdout
 
 
+def test_direct_cli_next_steps_reads_saved_json_without_rescanning(tmp_path, monkeypatch):
+    report = tmp_path / "risky.json"
+    json_result = runner.invoke(
+        direct_app,
+        ["json", "tests/fixtures/repos/risky-install", "--output", str(report)],
+        prog_name="repo-trust",
+    )
+    assert json_result.exit_code == 0
+
+    def fail_scan(*args, **kwargs):
+        raise AssertionError("next-steps --from-json should not rescan")
+
+    monkeypatch.setattr("repotrust.cli.scan_target", fail_scan)
+
+    result = runner.invoke(
+        direct_app,
+        ["next-steps", "--from-json", str(report)],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "RepoTrust Next Steps" in result.stdout
+    assert "1. Stop: do not run the README install commands yet." in result.stdout
+    assert "Review license" in result.stdout
+    assert "repo-trust explain install.risky.shell_pipe_install" in result.stdout
+
+
 def test_direct_kr_cli_next_steps_outputs_korean_action_plan():
     result = runner.invoke(
         direct_kr_app,

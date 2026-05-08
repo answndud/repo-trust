@@ -28,4 +28,4 @@
 
 ## 다음 액션
 
-다음 추천 작업: HTML/JSON next-steps integration.
+다음 추천 작업: v0.2.9 release prep.
