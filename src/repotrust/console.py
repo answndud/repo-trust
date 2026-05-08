@@ -327,6 +327,22 @@ def _prompt_workflow(
             workflow_kind="safe_install",
             locale=locale,
         )
+    if choice == "n":
+        _print_selected(console=console, label=str(text["selected_next_steps"]))
+        target = _ask_value(
+            console=console,
+            prompt=str(text["any_target_prompt"]),
+            default=".",
+            default_hint=str(text["default_hint"]),
+            controls=str(text["input_controls"]),
+        )
+        if target == BACK:
+            return None
+        return ConsoleWorkflow(
+            target=target,
+            workflow_kind="next_steps",
+            locale=locale,
+        )
     if choice == "t":
         _print_selected(console=console, label=str(text["selected_tutorial"]))
         return ConsoleWorkflow(
@@ -359,7 +375,7 @@ def _prompt_workflow(
 
 
 def _ask_menu_choice(*, console: Console, text: ConsoleText) -> str:
-    choices = {"g", "l", "c", "j", "s", "t", "p", "m", "r", "?", "q"}
+    choices = {"g", "l", "c", "j", "s", "n", "t", "p", "m", "r", "?", "q"}
     while True:
         value = _input_command(console, prompt=f"[cyan]→[/] {text['select_prompt']} ").strip() or "1"
         normalized = _normalize_menu_choice(value)

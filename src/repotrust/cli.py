@@ -26,6 +26,7 @@ from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
 from .install_advice import render_safe_install_advice
 from .models import ScanResult
+from .next_steps import render_next_steps
 from .reports import render_report
 from .sample_gallery import render_sample_gallery_summary, write_sample_gallery
 from .scanner import ScanInputError, scan as scan_target
@@ -459,6 +460,50 @@ def safe_install(
     typer.echo(render_safe_install_advice(result, locale=_product_locale(ctx)), nl=False)
 
 
+@direct_app.command("next-steps", add_help_option=False)
+@direct_kr_app.command("next-steps", add_help_option=False)
+def next_steps(
+    ctx: typer.Context,
+    target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
+    help_requested: Annotated[
+        bool,
+        typer.Option(
+            "--help",
+            callback=_help_callback("next-steps"),
+            help=HELP_OPTION_HELP,
+            is_eager=True,
+        ),
+    ] = False,
+    config: Annotated[
+        Path | None,
+        typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
+    ] = None,
+    parse_only: Annotated[
+        bool,
+        typer.Option(
+            "--parse-only",
+            help="For GitHub URLs, force URL-only mode without calling the GitHub API.",
+        ),
+    ] = False,
+    remote: Annotated[
+        bool,
+        typer.Option(
+            "--remote",
+            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
+        ),
+    ] = False,
+) -> None:
+    """Print a beginner action plan from the scan findings."""
+    parsed_target = parse_target(target)
+    remote_scan = _resolve_product_remote(
+        parsed_target_kind=parsed_target.kind,
+        parse_only=parse_only,
+        remote=remote,
+    )
+    result = _scan_result(target=target, config=config, remote=remote_scan)
+    typer.echo(render_next_steps(result, locale=_product_locale(ctx)), nl=False)
+
+
 @direct_app.command("gate", add_help_option=False)
 @direct_kr_app.command("gate", add_help_option=False)
 def gate(
@@ -683,6 +728,9 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
     if workflow.workflow_kind == "safe_install":
         _run_console_safe_install_workflow(workflow)
         return
+    if workflow.workflow_kind == "next_steps":
+        _run_console_next_steps_workflow(workflow)
+        return
     if workflow.workflow_kind == "tutorial":
         status_console.print(render_tutorial(locale=workflow.locale), markup=False)
         return
@@ -746,6 +794,19 @@ def _run_console_safe_install_workflow(workflow: ConsoleWorkflow) -> None:
     )
     status_console.print(
         render_safe_install_advice(result, locale=workflow.locale),
+        end="",
+        markup=False,
+    )
+
+
+def _run_console_next_steps_workflow(workflow: ConsoleWorkflow) -> None:
+    result = _scan_result(
+        target=workflow.target,
+        config=None,
+        remote=workflow.remote,
+    )
+    status_console.print(
+        render_next_steps(result, locale=workflow.locale),
         end="",
         markup=False,
     )

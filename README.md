@@ -68,12 +68,12 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 
 | 방식 | 명령 | 추천 상황 | 결과 |
 | --- | --- | --- | --- |
-| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 튜토리얼, 샘플 리포트, 검사, 안전 설치 안내, JSON 저장, JSON 비교 workflow 선택 |
-| Command Mode | `repo-trust tutorial/samples/html/json/check/safe-install/explain/compare <대상, finding ID, 리포트>` | 반복 실행, 자동화, 문서화할 때 | 튜토리얼, 샘플 리포트, HTML/JSON 파일, 터미널 대시보드, 안전 설치 안내, finding 설명, 리포트 비교 |
+| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 튜토리얼, 샘플 리포트, 검사, 안전 설치 안내, 다음 조치 계획, JSON 저장, JSON 비교 workflow 선택 |
+| Command Mode | `repo-trust tutorial/samples/html/json/check/safe-install/next-steps/explain/compare <대상, finding ID, 리포트>` | 반복 실행, 자동화, 문서화할 때 | 튜토리얼, 샘플 리포트, HTML/JSON 파일, 터미널 대시보드, 안전 설치 안내, 다음 조치 계획, finding 설명, 리포트 비교 |
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
-차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[T]`, `[P]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`, `safe-install`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
+차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[N]`, `[T]`, `[P]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`, `safe-install`, `next-steps`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
 ## Console Mode
 
@@ -99,6 +99,7 @@ L  로컬 저장소    파일 근거까지 로컬 검사
 C  빠른 점검      즉시 요약 보기
 J  JSON 내보내기  기계가 읽는 리포트 저장
 S  안전 설치      설치 전 다음 단계 안내
+N  다음 조치      검사 후 우선순위별 행동 계획
 T  튜토리얼       처음 따라 할 명령 보기
 P  샘플           좋은/위험 리포트 예시 생성
 M  JSON 비교      개선 전/후 HTML 만들기
@@ -230,6 +231,19 @@ repo-trust safe-install https://github.com/openai/codex
 ```
 
 `safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 더 격리된 설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. HTML 리포트의 `Safe Install` 섹션은 `Next safest command`를 맨 위에 따로 보여주므로, 설치 명령을 실행하기 전에 먼저 할 일을 빠르게 확인할 수 있습니다.
+
+### 위험 리포트를 받은 뒤 다음 조치 보기
+
+리포트의 finding을 하나씩 해석하기 어렵다면 `next-steps`를 실행하세요. RepoTrust가 저장소를 다시 검사한 뒤, 초보자가 바로 따라 할 수 있는 순서로 조치 계획을 보여줍니다. 고위험 설치 finding이 있으면 README 설치 명령을 먼저 멈추게 하고, 그 다음 license, CI, security policy 같은 adoption risk를 순서대로 정리합니다.
+
+**입력할 명령**
+
+```bash
+repo-trust next-steps tests/fixtures/repos/risky-install
+repo-trust-kr next-steps tests/fixtures/repos/good-python
+```
+
+좋은 저장소에서는 짧은 확인 checklist와 `safe-install`, `html` 명령을 보여줍니다. 위험 저장소에서는 `repo-trust explain <finding-id>` 명령도 함께 보여주므로, HTML 리포트에서 본 finding을 터미널에서 바로 풀어 읽을 수 있습니다. 이 기능은 자동 수정을 하지 않고, 외부 API나 secret key 없이 로컬 검사 결과만 사용합니다.
 
 ### JSON 리포트 비교
 

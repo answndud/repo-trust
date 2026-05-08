@@ -17,6 +17,7 @@ Commands:
   json   Write a JSON trust report.
   check  Inspect a target and print a terminal dashboard.
   safe-install Print install advice without running install commands.
+  next-steps Print a beginner action plan from scan findings.
   tutorial Print a beginner tutorial with copyable commands.
   samples Write built-in good/risky sample reports.
   gate   Write JSON and fail when policy requirements are not met.
@@ -40,6 +41,7 @@ Console Mode:
   json   JSON 신뢰 리포트를 저장합니다.
   check  파일 저장 없이 터미널 대시보드로 검사합니다.
   safe-install 설치 명령을 실행하지 않고 안전한 다음 단계를 안내합니다.
+  next-steps 검사 결과에서 초보자용 다음 조치 계획을 보여줍니다.
   tutorial 초보자가 처음 따라 할 명령을 보여줍니다.
   samples 좋은/위험 샘플 리포트를 생성합니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
@@ -168,6 +170,34 @@ Options:
         "ko": """사용법: repo-trust safe-install [옵션] 대상
 
 저장소 설치 명령을 실행하지 않고 안전한 다음 단계를 안내합니다.
+
+인자:
+  대상  검사할 로컬 경로 또는 GitHub URL입니다.
+
+옵션:
+  --config PATH  repotrust.toml 정책 파일을 직접 지정합니다.
+  --remote       GitHub URL에서 GitHub API read-only metadata를 조회합니다.
+  --parse-only   GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
+  --help         영어 또는 한국어 도움말을 선택해 봅니다.
+""",
+    },
+    "next-steps": {
+        "en": """Usage: repo-trust next-steps [OPTIONS] TARGET
+
+Print a beginner action plan from scan findings.
+
+Arguments:
+  TARGET  Local path or GitHub URL to inspect.
+
+Options:
+  --config PATH  Load an explicit repotrust.toml policy file.
+  --remote       For GitHub URLs, call the GitHub API for read-only metadata.
+  --parse-only   For GitHub URLs, force URL-only mode without the GitHub API.
+  --help         Choose English or Korean help and exit.
+""",
+        "ko": """사용법: repo-trust next-steps [옵션] 대상
+
+검사 결과에서 초보자용 다음 조치 계획을 보여줍니다.
 
 인자:
   대상  검사할 로컬 경로 또는 GitHub URL입니다.

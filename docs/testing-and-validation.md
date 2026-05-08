@@ -38,9 +38,11 @@ printf 'q\n' | .venv/bin/repo-trust
 printf 'q\n' | .venv/bin/repo-trust-kr
 .venv/bin/repo-trust check .
 .venv/bin/repo-trust safe-install .
+.venv/bin/repo-trust next-steps .
 .venv/bin/repo-trust explain install.risky.uses_sudo
 .venv/bin/repo-trust-kr check .
 .venv/bin/repo-trust-kr safe-install tests/fixtures/repos/risky-install
+.venv/bin/repo-trust-kr next-steps tests/fixtures/repos/risky-install
 .venv/bin/repo-trust-kr explain security.no_policy
 .venv/bin/repo-trust html . --output /tmp/repotrust-report.html
 .venv/bin/repo-trust-kr html . --output /tmp/repotrust-kr-report.html
@@ -68,9 +70,10 @@ Expected behavior:
 - Local paths are scanned without network access.
 - `repo-trust` without a subcommand opens Console Mode with a Kali-style prompt header, primary shortcut actions, and recent reports.
 - In a real TTY, Console Mode uses alternate screen like a pager so previous terminal history is not visible while the menu is open; non-TTY output remains plain for tests and pipes.
-- Console Mode Home should show the first-run hint `[L] scan local repo -> [S] safe install -> [J] export JSON`, eight primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[T]`, `[P]`, `[M]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
+- Console Mode Home should show the first-run hint `[L] scan local repo -> [S] safe install -> [J] export JSON`, nine primary shortcut actions `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[N]`, `[T]`, `[P]`, `[M]`, a compact recent report count, and a controls line for `[R]`, `[?]`, `[Q]`; legacy `1` and `01` should still select the local report workflow.
 - Console Mode should show `Selected:` feedback, GitHub URL example input, `[B] Back` target-input control, and a processing line before the result dashboard.
 - Console Mode JSON export and Safe Install should use a generic repository target prompt so local paths and GitHub URLs are both discoverable.
+- Console Mode Next Steps should use a generic repository target prompt and print the same prioritized action plan as `repo-trust next-steps`.
 - Console Mode Tutorial should show copyable first-run commands without scanning or writing files.
 - Console Mode Samples should generate built-in good/risky HTML and JSON sample reports under `result/` without scanning a target.
 - Console Mode JSON compare should list recent JSON reports, accept a list number or direct path for older/newer JSON report paths, default the output to `repotrust-compare.html`, and write an HTML comparison report under `result/` when the output path is relative.
@@ -85,6 +88,7 @@ Expected behavior:
 - `repo-trust tutorial` and `repo-trust-kr tutorial` print a beginner tutorial with local scan, safe-install, JSON export, and API-free GitHub URL commands without scanning a target.
 - `repo-trust samples` and `repo-trust-kr samples` generate good/risky sample HTML and JSON reports that are valid local reports and do not require test fixtures.
 - `repo-trust safe-install <target>` prints install advice without executing repository install commands. It should include README install commands found in local scans and a short pre-run checklist. Risky install fixtures should block README command execution, good Python fixtures should suggest a virtualenv install pattern, and GitHub parse-only targets should explain the evidence gap.
+- `repo-trust next-steps <target>` prints a prioritized beginner action plan. Good fixtures should show a short checklist, and risky fixtures should stop README install command execution before license, CI, and security policy review.
 - `repo-trust compare <old.json> <new.json>` compares saved JSON reports without scanning and shows score, grade, verdict, added findings, resolved findings, severity changes, and persisting finding count.
 - `repo-trust compare <old.json> <new.json> --format html/markdown --output <path>` writes a shareable comparison file and prints the saved path on stderr.
 - HTML comparison reports should include an outcome summary, Improvements/New issues/Severity changes/Still remaining sections, and copy buttons for finding ID / `repo-trust explain <id>`.

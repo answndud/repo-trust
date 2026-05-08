@@ -4,7 +4,10 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
-No changes yet.
+### Added
+
+- `repo-trust next-steps <target>` / `repo-trust-kr next-steps <target>` now print a beginner action plan from scan findings.
+- Console Mode now includes `[N] Next Steps` / `[N] 다음 조치` for the same prioritized action plan.
 
 ## v0.2.8 - 2026-05-07
 

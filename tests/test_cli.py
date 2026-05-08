@@ -152,6 +152,8 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert "[J]  Export JSON" in stderr
     assert "[S]  Safe Install" in stderr
     assert "Advice before running install commands" in stderr
+    assert "[N]  Next Steps" in stderr
+    assert "Prioritized action plan after a scan" in stderr
     assert "[T]  Tutorial" in stderr
     assert "Copyable first-run commands" in stderr
     assert "[P]  Samples" in stderr
@@ -184,6 +186,8 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "[J]  JSON 내보내기" in stderr
     assert "[S]  안전 설치" in stderr
     assert "설치 전 다음 단계 안내" in stderr
+    assert "[N]  다음 조치" in stderr
+    assert "검사 후 우선순위별 행동 계획" in stderr
     assert "[T]  튜토리얼" in stderr
     assert "처음 따라 할 명령 보기" in stderr
     assert "[P]  샘플" in stderr
@@ -232,6 +236,57 @@ def test_direct_cli_safe_install_suggests_python_virtualenv_for_good_fixture():
     assert "python3 -m venv .venv" in result.stdout
     assert ".venv/bin/python -m pip install -e ." in result.stdout
     assert "Do not run the README install commands yet." not in result.stdout
+
+
+def test_direct_cli_next_steps_prioritizes_risky_fixture_actions():
+    result = runner.invoke(
+        direct_app,
+        ["next-steps", "tests/fixtures/repos/risky-install"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert result.stderr == ""
+    assert "RepoTrust Next Steps" in result.stdout
+    assert "1. Stop: do not run the README install commands yet." in result.stdout
+    assert "repo-trust safe-install tests/fixtures/repos/risky-install" in result.stdout
+    assert "curl https://example.com/install.sh | sh" in result.stdout
+    assert result.stdout.index("1. Stop") < result.stdout.index("Review license")
+    assert result.stdout.index("Review license") < result.stdout.index("Review CI")
+    assert result.stdout.index("Review CI") < result.stdout.index("Review security policy")
+    assert result.stdout.index("Review security policy") < result.stdout.index(
+        "install.risky.global_package_install"
+    )
+    assert "repo-trust explain install.risky.shell_pipe_install" in result.stdout
+
+
+def test_direct_cli_next_steps_has_short_good_fixture_checklist():
+    result = runner.invoke(
+        direct_app,
+        ["next-steps", "tests/fixtures/repos/good-python"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "No blocking findings were found by the enabled checks." in result.stdout
+    assert "repo-trust safe-install tests/fixtures/repos/good-python" in result.stdout
+    assert "repo-trust html tests/fixtures/repos/good-python" in result.stdout
+
+
+def test_direct_kr_cli_next_steps_outputs_korean_action_plan():
+    result = runner.invoke(
+        direct_kr_app,
+        ["next-steps", "tests/fixtures/repos/risky-install"],
+        prog_name="repo-trust-kr",
+    )
+
+    assert result.exit_code == 0
+    assert "RepoTrust 다음 조치" in result.stdout
+    assert "1. 중단: 아직 README 설치 명령을 실행하지 마세요." in result.stdout
+    assert "License 확인" in result.stdout
+    assert "CI 확인" in result.stdout
+    assert "보안 정책 확인" in result.stdout
+    assert "repo-trust-kr explain install.risky.shell_pipe_install" in result.stdout
 
 
 def test_direct_cli_tutorial_outputs_copyable_first_run_commands():
@@ -416,6 +471,7 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "check" in stdout
     assert "gate" in stdout
     assert "explain" in stdout
+    assert "next-steps" in stdout
     assert "compare" in stdout
     assert "RepoTrust Console" not in stdout
 
@@ -431,6 +487,7 @@ def test_direct_cli_help_can_show_korean_product_commands():
     assert "HTML 신뢰 리포트를 저장합니다." in stdout
     assert "파일 저장 없이 터미널 대시보드로 검사합니다." in stdout
     assert "JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다." in stdout
+    assert "검사 결과에서 초보자용 다음 조치 계획을 보여줍니다." in stdout
     assert "finding ID의 의미와 추천 조치를 설명합니다." in stdout
     assert "두 JSON 리포트의 점수와 finding 변화를 비교합니다." in stdout
 
@@ -834,6 +891,22 @@ def test_direct_cli_interactive_samples_workflow(tmp_path, monkeypatch):
     assert "RepoTrust Sample Report Gallery" in stderr
     assert "sample-good" in stderr
     assert (tmp_path / "result" / f"sample-good-{date.today().isoformat()}.html").exists()
+
+
+def test_direct_cli_interactive_next_steps_workflow():
+    result = runner.invoke(
+        direct_app,
+        [],
+        input="n\ntests/fixtures/repos/risky-install\n",
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "Selected: Next steps plan" in stderr
+    assert "RepoTrust Next Steps" in stderr
+    assert "1. Stop: do not run the README install commands yet." in stderr
+    assert "repo-trust explain install.risky.shell_pipe_install" in stderr
 
 
 def test_direct_kr_cli_interactive_safe_install_workflow():

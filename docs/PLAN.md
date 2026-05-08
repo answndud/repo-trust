@@ -27,23 +27,23 @@
 ## Pending
 
 - status: pending
-- goal: 초보 사용자가 scan 결과를 본 뒤 바로 실행할 수 있는 `fix-plan` 또는 `next-steps` 기능을 추가한다.
+- goal: HTML 리포트와 저장된 JSON 리포트에서도 `next-steps` 흐름을 이어갈 수 있게 한다.
 - scope:
-  - JSON/HTML/terminal report의 findings를 기반으로 우선순위별 조치 목록을 생성한다.
-  - `repo-trust next-steps <target>` 또는 기존 `explain`/`safe-install`과 연결되는 copyable 명령을 제공한다.
-  - README에 "위험 리포트를 받았을 때 무엇을 해야 하나" 초보자 가이드를 추가한다.
+  - HTML 리포트에 `Next Steps` 섹션 또는 action block을 추가한다.
+  - 저장된 JSON 리포트를 다시 스캔하지 않고 읽어 `next-steps`를 출력하는 command option 또는 별도 command를 검토한다.
+  - README에 "저장된 리포트에서 다음 조치 이어가기" 가이드를 추가한다.
 - non-goals:
   - 자동 수정 적용은 하지 않는다.
-  - 외부 API나 vulnerability DB 조회는 하지 않는다.
+  - 외부 API, secret key, vulnerability DB 조회는 하지 않는다.
 - acceptance criteria:
-  - 좋은 fixture는 짧은 확인 checklist를 보여준다.
-  - risky fixture는 high severity install finding을 먼저 멈추게 하고, 그 다음 license/CI/security policy 순서로 설명한다.
-  - 영어/한국어 CLI와 README 가이드가 모두 갱신된다.
+  - HTML 리포트에서 high severity install finding 다음에 license/CI/security policy 순서의 action이 보인다.
+  - 저장된 JSON report workflow가 재스캔 없이 동작하거나, 미지원이면 의도적으로 문서화된다.
+  - tests와 README가 함께 갱신된다.
 - verification commands:
   - `.venv/bin/python -m pytest -q`
 
 ## 다음 실행 순서
 
-1. 다음 작업을 시작하면 pending의 `next-steps` 기능을 In Progress로 승격한다.
-2. CLI 출력과 README 초보자 가이드를 함께 구현한다.
-3. fixture 기반 테스트와 smoke를 추가한다.
+1. 다음 작업을 시작하면 pending의 HTML/JSON next-steps integration을 In Progress로 승격한다.
+2. HTML report renderer와 JSON report reuse 가능성을 먼저 확인한다.
+3. 구현 후 fixture 기반 테스트와 전체 테스트를 실행한다.

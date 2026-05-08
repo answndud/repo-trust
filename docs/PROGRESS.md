@@ -28,4 +28,4 @@
 
 ## 다음 액션
 
-다음 추천 작업: `repo-trust next-steps <target>` 또는 `fix-plan` 계열의 초보자용 조치 계획 기능.
+다음 추천 작업: HTML/JSON next-steps integration.

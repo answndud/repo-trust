@@ -1266,3 +1266,12 @@
 - 코드/문서: `tests/test_cli.py`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py::test_direct_cli_samples_writes_good_and_risky_gallery -q`는 `1 passed`였다. `git diff --check && .venv/bin/python -m pytest -q`는 `157 passed`였다. `gh run watch 25477688302 --repo answndud/repo-trust --exit-status`는 성공했다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.8/dist`는 최신 commit 기준 wheel/sdist를 생성했다. `gh release view v0.2.8 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.8`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.8`, `tutorial`, `samples`, sample JSON `json.tool`, `safe-install`, fixture JSON `json.tool`, Console `[P] Samples`가 성공했다.
 - 결과: v0.2.8은 https://github.com/answndud/repo-trust/releases/tag/v0.2.8 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다. 다음 추천 작업은 `repo-trust next-steps <target>` 또는 `fix-plan` 계열의 초보자용 조치 계획 기능이다.
+
+## 139: Beginner next-steps command
+
+- 완료일: 2026-05-08
+- 배경: 초보 사용자가 위험 리포트를 받은 뒤 어떤 finding부터 멈추고 어떤 조치를 이어가야 하는지 터미널에서 바로 확인할 수 있어야 했다.
+- 변경 내용: `repo-trust next-steps <target>` / `repo-trust-kr next-steps <target>` 명령을 추가했다. 새 renderer는 high severity install finding이 있으면 README 설치 명령 실행을 먼저 중단시키고, 그 다음 license, CI, security policy, lockfile, medium install finding 순서로 조치 계획을 보여준다. 좋은 fixture는 `safe-install`과 `html`로 이어지는 짧은 checklist를 출력한다. Console Mode에는 `[N] Next Steps` / `[N] 다음 조치` workflow를 추가했다. localized help, README, CHANGELOG, testing guide, PLAN/PROGRESS/COMPLETED를 갱신했다.
+- 코드/문서: `src/repotrust/next_steps.py`, `src/repotrust/cli.py`, `src/repotrust/console.py`, `src/repotrust/console_i18n.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "next_steps or root_starts or help_shows_product" -q`는 `7 passed, 80 deselected`였다. Smoke에서 `repo-trust next-steps` good/risky fixture, `repo-trust-kr next-steps` risky fixture, Console `[N]` workflow를 확인했다. `git diff --check && .venv/bin/python -m pytest -q`는 `161 passed`였다.
+- 결과: 초보 사용자는 HTML/JSON 리포트를 따로 열기 전에 `next-steps`로 실행 중단, adoption risk 검토, copyable `safe-install`/`html`/`explain` 명령을 한 화면에서 확인할 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 HTML/JSON next-steps integration이다.
