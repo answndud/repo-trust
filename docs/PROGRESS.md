@@ -12,11 +12,11 @@
 
 ## 현재 작업
 
-v0.2.9 publish.
+현재 active 작업 없음.
 
 ## 개발 상태 요약
 
-v0.2.9 release candidate commit `36b2c97`까지 local `main`에 준비되어 있고, `main...origin/main [ahead 3]` 상태다. v0.2.9 local tag와 GitHub Release는 아직 없다.
+현재 active 작업 없음.
 
 ## Blocker
 
@@ -24,8 +24,8 @@ v0.2.9 release candidate commit `36b2c97`까지 local `main`에 준비되어 있
 
 ## 최근 검증
 
-시작 전 확인: local `main` ahead 3, `v0.2.9` local tag 없음, GitHub Release `v0.2.9` 없음.
+최근 완료 작업은 `docs/COMPLETED.md`에 archive했다.
 
 ## 다음 액션
 
-`main`을 origin에 push하고 GitHub Actions `ci` run을 확인한다.
+다음 추천 작업: 현재 active/pending 작업 없음. 새로운 사용자-facing 기능 아이디어를 선정하면 다음 patch release 후보로 진행한다.

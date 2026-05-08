@@ -14,37 +14,15 @@
 
 ## 현재 목표
 
-v0.2.9 publish
+현재 active 작업 없음.
 
 ## 현재 우선순위
 
-1. Local `main`의 v0.2.9 commits를 origin에 push한다.
-2. GitHub Actions `ci` 통과를 확인한다.
-3. Annotated tag `v0.2.9`와 GitHub Release를 만들고 wheel/sdist asset을 업로드한다.
-4. Release URL clean install smoke를 수행한다.
+현재 active 작업 없음.
 
 ## In Progress
 
-- status: in_progress
-- goal: v0.2.9 publish
-- scope:
-  - local `main`의 v0.2.9 commits를 origin에 push한다.
-  - GitHub Actions `ci` 통과를 확인한다.
-  - annotated tag `v0.2.9`와 GitHub Release를 만들고 wheel/sdist asset을 업로드한다.
-  - GitHub Release wheel URL clean install smoke를 수행한다.
-- non-goals:
-  - PyPI/TestPyPI 배포는 하지 않는다.
-  - v0.2.9 기능 변경은 하지 않는다.
-- acceptance criteria:
-  - origin/main이 local main commit을 포함한다.
-  - GitHub Actions `ci`가 성공한다.
-  - `gh release view v0.2.9`에서 draft false, prerelease false, wheel/sdist asset을 확인한다.
-  - GitHub Release wheel URL로 clean install한 `repo-trust`, `repo-trust-kr`, `repotrust`가 version `0.2.9`를 출력한다.
-- verification commands:
-  - `git push origin main`
-  - `gh run watch <run-id> --repo answndud/repo-trust --exit-status`
-  - `gh release view v0.2.9 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`
-- next action: `main` push 후 GitHub Actions `ci` run을 확인한다.
+현재 active 작업 없음.
 
 ## Pending
 
@@ -52,7 +30,5 @@ v0.2.9 publish
 
 ## 다음 실행 순서
 
-1. `main` push와 GitHub Actions 확인.
-2. Tag/release/asset upload.
-3. Release URL clean install smoke.
-4. Archive와 publish 기록 commit/push.
+1. 새로운 사용자-facing 기능이 쌓이면 다음 patch release prep을 계획한다.
+2. 현재는 active/pending 작업 없음.

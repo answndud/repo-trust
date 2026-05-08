@@ -1293,3 +1293,12 @@
 - 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `git diff --check && .venv/bin/python -m pytest -q`는 `163 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.9/dist`는 `repotrust-0.2.9.tar.gz`와 `repotrust-0.2.9-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version `0.2.9`, `next-steps`, `next-steps --from-json`, HTML `Next Steps`, Console `[N] Next Steps`, `safe-install`, fixture JSON 생성, `json.tool`을 확인했다. Self-scan JSON은 grade `A`, high confidence, full coverage, medium/high finding 0개였다.
 - 결과: v0.2.9 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. GitHub Release publish는 명시 승인 대기 상태다.
+
+## 142: v0.2.9 GitHub Release publish
+
+- 완료일: 2026-05-08
+- 배경: v0.2.9 release candidate가 전체 테스트, build, clean wheel smoke, self-scan을 통과했고 사용자가 다음 작업 진행을 요청했으므로 GitHub Release로 공개해야 했다.
+- 변경 내용: `main`의 v0.2.9 commits를 origin에 push하고 GitHub Actions `ci` run `25533221510` 통과를 확인했다. 최신 publish state commit 기준으로 wheel/sdist를 다시 빌드했다. annotated tag `v0.2.9`를 생성해 push했고, GitHub Release `RepoTrust v0.2.9`를 publish했다. Release asset으로 `repotrust-0.2.9-py3-none-any.whl`과 `repotrust-0.2.9.tar.gz`를 업로드했다. 작업 상태 문서를 active/pending 작업 없음으로 정리했다.
+- 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `gh run watch 25533221510 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.9 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.9`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.9`, `next-steps`, `next-steps --from-json`, HTML `Next Steps`, Console `[N] Next Steps`, fixture JSON 생성, `json.tool`이 성공했다.
+- 결과: v0.2.9은 https://github.com/answndud/repo-trust/releases/tag/v0.2.9 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
