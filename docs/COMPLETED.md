@@ -1302,3 +1302,12 @@
 - 코드/문서: `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `gh run watch 25533221510 --repo answndud/repo-trust --exit-status`는 성공했다. `gh release view v0.2.9 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`에서 `v0.2.9`, draft false, prerelease false, wheel/sdist asset uploaded 상태를 확인했다. GitHub Release wheel URL clean install smoke에서 세 entrypoint version `0.2.9`, `next-steps`, `next-steps --from-json`, HTML `Next Steps`, Console `[N] Next Steps`, fixture JSON 생성, `json.tool`이 성공했다.
 - 결과: v0.2.9은 https://github.com/answndud/repo-trust/releases/tag/v0.2.9 에 공개됐고 release asset URL로 설치 가능하다. 현재 active 작업은 없다.
+
+## 143: README Korean onboarding review fixes
+
+- 완료일: 2026-05-08
+- 배경: README가 한국인 사용자 기준의 프로젝트 소개와 가이드로 충분한지 최종 리뷰한 결과, 초보자 흐름에서 release wheel 설치 사용자에게 없는 `tests/fixtures/...` 경로를 안내하고 Windows PowerShell 설치 경로가 빠져 있었다.
+- 변경 내용: README 소개를 한국어 우선으로 재배치하고 secret/API 없이 시작할 수 있음을 첫 화면에 명시했다. `먼저 읽을 곳`과 `5분 시작 가이드`를 추가해 설치, 샘플 리포트, 실제 저장소 검사, 다음 조치 순서를 상단에서 바로 확인할 수 있게 했다. 설치 빠른 시작을 macOS/Linux와 Windows PowerShell로 분리했다. Command Mode 표를 실제 명령 인자 구조별로 분리했다. 일반 사용자 예제의 fixture 경로를 `.` 또는 built-in sample gallery 중심으로 교체하고, fixture는 clone한 개발자용 CI gate 확인 문맥에만 남겼다. 리포트 읽는 법에는 HTML `Next Steps`와 `Safe Install`을 먼저 확인하는 순서를 추가했다. 개발자 editable install 안내는 초보자 흐름을 끊지 않도록 `개발자용 설치` 섹션으로 옮겼다.
+- 코드/문서: `README.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: 문서-only 작업으로 추가 테스트는 만들지 않았다. 이전 README smoke에서 `repo-trust-kr samples --output-dir`, `repo-trust-kr next-steps --from-json`, `repo-trust-kr compare --format html`, `python -m json.tool`이 sample output 기준으로 성공했고, 이번 마무리는 `git diff --stat`과 README diff를 검토했다.
+- 결과: README는 저장소를 clone하지 않은 한국인 초보 사용자도 release wheel 설치 후 샘플 리포트, 다음 조치, 비교 HTML까지 따라 할 수 있는 가이드로 정리됐다. 현재 active 작업은 없다. 다음 추천 작업은 README 문서 개선 변경분 커밋이다.

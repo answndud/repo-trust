@@ -28,4 +28,4 @@
 
 ## 다음 액션
 
-다음 추천 작업: 현재 active/pending 작업 없음. 새로운 사용자-facing 기능 아이디어를 선정하면 다음 patch release 후보로 진행한다.
+다음 추천 작업: README 문서 개선 변경분 커밋.

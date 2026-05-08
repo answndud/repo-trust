@@ -31,4 +31,3 @@
 ## 다음 실행 순서
 
 1. 새로운 사용자-facing 기능이 쌓이면 다음 patch release prep을 계획한다.
-2. 현재는 active/pending 작업 없음.
