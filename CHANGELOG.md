@@ -4,12 +4,24 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
+No changes yet.
+
+## v0.2.9 - 2026-05-08
+
 ### Added
 
 - `repo-trust next-steps <target>` / `repo-trust-kr next-steps <target>` now print a beginner action plan from scan findings.
 - `repo-trust next-steps --from-json <report.json>` now reads saved RepoTrust JSON reports without rescanning.
 - Console Mode now includes `[N] Next Steps` / `[N] 다음 조치` for the same prioritized action plan.
 - Static HTML reports now include a `Next Steps` section with the same action order.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 163 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.9/dist` built `repotrust-0.2.9.tar.gz` and `repotrust-0.2.9-py3-none-any.whl`.
+- Clean wheel install smoke verified `repo-trust`, `repo-trust-kr`, and `repotrust` version `0.2.9`.
+- Clean wheel smoke verified `next-steps`, `next-steps --from-json`, HTML `Next Steps`, Console Mode `[N] Next Steps`, `safe-install`, fixture JSON generation, and JSON `json.tool`.
+- Local self-scan returned grade `A`, high confidence, full coverage, and no medium/high findings.
 
 ## v0.2.8 - 2026-05-07
 

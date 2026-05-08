@@ -27,24 +27,27 @@
 ## Pending
 
 - status: pending
-- goal: v0.2.9 release prep
+- goal: v0.2.9 publish
 - scope:
-  - `next-steps` command와 HTML/JSON next-steps integration을 patch release로 정리한다.
-  - package/runtime version, README install URL, CLI version tests, CHANGELOG를 `0.2.9`에 맞춘다.
-  - build, clean wheel smoke, self-scan을 수행한다.
+  - local `main`의 v0.2.9 commits를 origin에 push한다.
+  - GitHub Actions `ci` 통과를 확인한다.
+  - annotated tag `v0.2.9`와 GitHub Release를 만들고 wheel/sdist asset을 업로드한다.
+  - GitHub Release wheel URL clean install smoke를 수행한다.
 - non-goals:
   - PyPI/TestPyPI 배포는 하지 않는다.
-  - 추가 기능 구현은 release prep 범위에 포함하지 않는다.
+  - v0.2.9 기능 변경은 하지 않는다.
 - acceptance criteria:
-  - 전체 테스트, build, clean wheel smoke, self-scan이 통과한다.
-  - release candidate 문서가 `docs/COMPLETED.md`에 archive된다.
-  - publish는 별도 승인 전까지 진행하지 않는다.
+  - origin/main이 local main commit을 포함한다.
+  - GitHub Actions `ci`가 성공한다.
+  - `gh release view v0.2.9`에서 draft false, prerelease false, wheel/sdist asset을 확인한다.
+  - GitHub Release wheel URL로 clean install한 `repo-trust`, `repo-trust-kr`, `repotrust`가 version `0.2.9`를 출력한다.
 - verification commands:
-  - `git diff --check && .venv/bin/python -m pytest -q`
-  - `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.9/dist`
+  - `git push origin main`
+  - `gh run watch <run-id> --repo answndud/repo-trust --exit-status`
+  - `gh release view v0.2.9 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`
 
 ## 다음 실행 순서
 
-1. 다음 작업을 시작하면 v0.2.9 release prep을 In Progress로 승격한다.
-2. version/README/CHANGELOG/tests를 `0.2.9`에 맞춘다.
-3. build와 clean wheel smoke 후 publish 승인 대기 상태로 정리한다.
+1. 사용자가 승인하면 v0.2.9 publish를 진행한다.
+2. Publish 단계는 `main` push, GitHub Actions 확인, annotated tag `v0.2.9`, GitHub Release 생성, wheel/sdist asset upload 순서로 진행한다.
+3. Publish 후 GitHub Release wheel URL로 clean install smoke를 다시 확인한다.

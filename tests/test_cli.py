@@ -53,21 +53,21 @@ def test_cli_version():
     result = runner.invoke(app, ["--version"])
 
     assert result.exit_code == 0
-    assert result.stdout.strip() == "repotrust 0.2.8"
+    assert result.stdout.strip() == "repotrust 0.2.9"
 
 
 def test_direct_cli_version():
     result = runner.invoke(direct_app, ["--version"], prog_name="repo-trust")
 
     assert result.exit_code == 0
-    assert result.stdout.strip() == "repo-trust 0.2.8"
+    assert result.stdout.strip() == "repo-trust 0.2.9"
 
 
 def test_direct_kr_cli_version():
     result = runner.invoke(direct_kr_app, ["--version"], prog_name="repo-trust-kr")
 
     assert result.exit_code == 0
-    assert result.stdout.strip() == "repo-trust-kr 0.2.8"
+    assert result.stdout.strip() == "repo-trust-kr 0.2.9"
 
 
 def test_cli_root_without_command_shows_help():
@@ -140,7 +140,7 @@ def test_direct_cli_root_starts_interactive_launcher():
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert "RepoTrust v0.2.8" in stderr
+    assert "RepoTrust v0.2.9" in stderr
     assert "Offline-first trust checks before installing a repository." in stderr
     assert "First run: [L] scan local repo -> [S] safe install -> [J] export JSON." in stderr
     assert "Select action:" in stderr
@@ -174,7 +174,7 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
 
     assert result.exit_code == 0
     assert result.stdout == ""
-    assert "RepoTrust v0.2.8" in stderr
+    assert "RepoTrust v0.2.9" in stderr
     assert "설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다." in stderr
     assert "처음이면: [L] 로컬 검사 -> [S] 안전 설치 -> [J] JSON 저장." in stderr
     assert "작업 선택:" in stderr
@@ -438,7 +438,7 @@ def test_console_mode_uses_alternate_screen_for_real_terminals():
     run_console_mode(
         console=FakeConsole(),
         help_text=lambda: "help",
-        version="0.2.8",
+        version="0.2.9",
         run_workflow=lambda workflow: None,
     )
 
@@ -476,7 +476,7 @@ def test_console_mode_pauses_before_restoring_after_workflow():
     run_console_mode(
         console=FakeConsole(),
         help_text=lambda: "help",
-        version="0.2.8",
+        version="0.2.9",
         run_workflow=lambda workflow: None,
     )
 

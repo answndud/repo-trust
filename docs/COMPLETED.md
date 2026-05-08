@@ -1284,3 +1284,12 @@
 - 코드/문서: `src/repotrust/reports.py`, `src/repotrust/cli.py`, `src/repotrust/help_i18n.py`, `tests/test_cli.py`, `tests/test_scanner.py`, `README.md`, `CHANGELOG.md`, `docs/testing-and-validation.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
 - 검증: `.venv/bin/python -m pytest tests/test_cli.py -k "next_steps" tests/test_scanner.py -k "next_steps or safe_install_section" -q`는 `7 passed, 117 deselected`였다. Smoke에서 `repo-trust next-steps --from-json /tmp/repotrust-next-steps-risky.json`, HTML `Next Steps` section grep, `repo-trust next-steps --help` Korean help를 확인했다. `git diff --check && .venv/bin/python -m pytest -q`는 `163 passed`였다.
 - 결과: 사용자는 HTML 리포트 안에서 바로 다음 조치 순서를 읽을 수 있고, 저장된 JSON 리포트는 재스캔 없이 `next-steps`로 이어갈 수 있다. 현재 active 작업은 없다. 다음 추천 작업은 v0.2.9 release prep이다.
+
+## 141: v0.2.9 release preparation
+
+- 완료일: 2026-05-08
+- 배경: `next-steps` command와 HTML/JSON next-steps integration이 사용자-facing 기능 묶음으로 준비됐으므로 GitHub Release asset으로 공개할 수 있게 patch release candidate로 정리해야 했다.
+- 변경 내용: package version과 runtime version을 `0.2.9`로 올리고 README GitHub Release install URL, Console Mode 예시, CLI version tests를 `0.2.9`에 맞췄다. CHANGELOG에 v0.2.9 section을 추가해 `next-steps`, `next-steps --from-json`, Console `[N]`, HTML `Next Steps` section과 validation 결과를 정리했다. 작업 상태 문서는 active 작업 없음으로 정리하고 v0.2.9 publish를 pending으로 남겼다.
+- 코드/문서: `pyproject.toml`, `src/repotrust/__init__.py`, `tests/test_cli.py`, `README.md`, `CHANGELOG.md`, `docs/PLAN.md`, `docs/PROGRESS.md`, `docs/COMPLETED.md`를 수정했다.
+- 검증: `git diff --check && .venv/bin/python -m pytest -q`는 `163 passed`였다. `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.9/dist`는 `repotrust-0.2.9.tar.gz`와 `repotrust-0.2.9-py3-none-any.whl`을 생성했다. Clean wheel install smoke에서 세 entrypoint version `0.2.9`, `next-steps`, `next-steps --from-json`, HTML `Next Steps`, Console `[N] Next Steps`, `safe-install`, fixture JSON 생성, `json.tool`을 확인했다. Self-scan JSON은 grade `A`, high confidence, full coverage, medium/high finding 0개였다.
+- 결과: v0.2.9 release candidate는 로컬 검증과 clean wheel smoke를 통과했다. GitHub Release publish는 명시 승인 대기 상태다.
