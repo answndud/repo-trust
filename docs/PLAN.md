@@ -14,19 +14,18 @@
 
 ## 현재 목표
 
-현재 active 작업 없음.
+v0.2.9 publish
 
 ## 현재 우선순위
 
-현재 active 작업 없음.
+1. Local `main`의 v0.2.9 commits를 origin에 push한다.
+2. GitHub Actions `ci` 통과를 확인한다.
+3. Annotated tag `v0.2.9`와 GitHub Release를 만들고 wheel/sdist asset을 업로드한다.
+4. Release URL clean install smoke를 수행한다.
 
 ## In Progress
 
-현재 active 작업 없음.
-
-## Pending
-
-- status: pending
+- status: in_progress
 - goal: v0.2.9 publish
 - scope:
   - local `main`의 v0.2.9 commits를 origin에 push한다.
@@ -45,9 +44,15 @@
   - `git push origin main`
   - `gh run watch <run-id> --repo answndud/repo-trust --exit-status`
   - `gh release view v0.2.9 --repo answndud/repo-trust --json tagName,isDraft,isPrerelease,url,assets`
+- next action: `main` push 후 GitHub Actions `ci` run을 확인한다.
+
+## Pending
+
+현재 pending 작업 없음.
 
 ## 다음 실행 순서
 
-1. 사용자가 승인하면 v0.2.9 publish를 진행한다.
-2. Publish 단계는 `main` push, GitHub Actions 확인, annotated tag `v0.2.9`, GitHub Release 생성, wheel/sdist asset upload 순서로 진행한다.
-3. Publish 후 GitHub Release wheel URL로 clean install smoke를 다시 확인한다.
+1. `main` push와 GitHub Actions 확인.
+2. Tag/release/asset upload.
+3. Release URL clean install smoke.
+4. Archive와 publish 기록 commit/push.
