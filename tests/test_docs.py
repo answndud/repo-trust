@@ -2,6 +2,8 @@ import re
 from dataclasses import fields
 from pathlib import Path
 
+import pytest
+
 from repotrust.finding_catalog import FINDING_REFERENCES
 from repotrust.models import (
     JSON_SCHEMA_VERSION,
@@ -26,11 +28,15 @@ SOURCE_FINDING_ID_RE = re.compile(
 
 
 def test_finding_reference_documents_source_finding_ids():
+    reference_path = Path("docs/finding-reference.md")
+    if not reference_path.exists():
+        pytest.skip("docs/ is intentionally gitignored and may be absent in clean checkouts")
+
     source_text = "\n".join(
         path.read_text(encoding="utf-8")
         for path in Path("src/repotrust").glob("*.py")
     )
-    reference_text = Path("docs/finding-reference.md").read_text(encoding="utf-8")
+    reference_text = reference_path.read_text(encoding="utf-8")
 
     source_ids = set(SOURCE_FINDING_ID_RE.findall(source_text))
     documented_ids = set(DOCUMENTED_FINDING_ID_RE.findall(reference_text))
@@ -45,7 +51,11 @@ def test_finding_catalog_covers_report_explanations_and_titles():
 
 
 def test_json_report_reference_documents_model_fields():
-    reference_text = Path("docs/json-report-reference.md").read_text(encoding="utf-8")
+    reference_path = Path("docs/json-report-reference.md")
+    if not reference_path.exists():
+        pytest.skip("docs/ is intentionally gitignored and may be absent in clean checkouts")
+
+    reference_text = reference_path.read_text(encoding="utf-8")
 
     assert f'`schema_version: "{JSON_SCHEMA_VERSION}"`' in reference_text
 

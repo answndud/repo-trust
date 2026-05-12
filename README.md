@@ -237,7 +237,7 @@ repo-trust json https://github.com/openai/codex
 result/codex-YYYY-MM-DD.json
 ```
 
-JSON 파일은 `schema_version`, `target`, `detected_files`, `findings`, `score`, `assessment`, `generated_at`을 포함합니다. `assessment.profiles`에는 설치, dependency 채택, AI agent 위임 목적별 판단이 들어갑니다. 터미널 대시보드는 stderr로만 출력되므로 JSON 파일 내용과 섞이지 않습니다. 자동화에서 파싱할 key와 compatibility 기준은 [docs/json-report-reference.md](docs/json-report-reference.md)에 정리되어 있습니다.
+JSON 파일은 `schema_version`, `target`, `detected_files`, `findings`, `score`, `assessment`, `generated_at`을 포함합니다. `assessment.profiles`에는 설치, dependency 채택, AI agent 위임 목적별 판단이 들어갑니다. 터미널 대시보드는 stderr로만 출력되므로 JSON 파일 내용과 섞이지 않습니다.
 
 ### Finding ID 설명 보기
 
@@ -591,7 +591,7 @@ CLI 옵션이 config보다 우선합니다. `policy.profiles`는 `install`, `dep
 
 `rules.disabled`는 지정한 finding ID를 리포트와 점수 계산에서 제외합니다. `severity_overrides`는 finding ID별 severity를 `info`, `low`, `medium`, `high` 중 하나로 바꾼 뒤 점수와 assessment를 다시 계산합니다. config 자동 탐지와 중앙 조직 policy server는 아직 지원하지 않습니다.
 
-정책에서 사용할 finding ID와 예외 처리 기준은 [docs/finding-reference.md](docs/finding-reference.md)에 정리되어 있습니다. JSON report를 직접 파싱하는 도구는 [docs/json-report-reference.md](docs/json-report-reference.md)를 기준으로 구현하세요.
+정책에서 사용할 finding ID는 리포트와 `repo-trust explain <finding-id>` 출력의 설명을 기준으로 검토하세요. JSON report를 직접 파싱하는 도구는 `schema_version`을 먼저 확인하고 필요한 key만 보수적으로 읽는 방식으로 구현하세요.
 
 ## RepoTrust가 보는 신뢰 신호
 
