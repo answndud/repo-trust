@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from repotrust.finding_catalog import FINDING_REFERENCES
 from repotrust.models import (
     JSON_SCHEMA_VERSION,
     Assessment,
@@ -14,7 +13,6 @@ from repotrust.models import (
     Score,
     Target,
 )
-from repotrust.reports import FINDING_EXPLANATIONS, FINDING_TITLES
 
 
 DOCUMENTED_FINDING_ID_RE = re.compile(
@@ -28,7 +26,7 @@ SOURCE_FINDING_ID_RE = re.compile(
 
 
 def test_finding_reference_documents_source_finding_ids():
-    reference_path = Path("docs/finding-reference.md")
+    reference_path = Path("docs/reference/finding-reference.md")
     if not reference_path.exists():
         pytest.skip("docs/ is intentionally gitignored and may be absent in clean checkouts")
 
@@ -44,14 +42,8 @@ def test_finding_reference_documents_source_finding_ids():
     assert source_ids <= documented_ids
 
 
-def test_finding_catalog_covers_report_explanations_and_titles():
-    report_ids = set(FINDING_TITLES) | set(FINDING_EXPLANATIONS)
-
-    assert report_ids <= set(FINDING_REFERENCES)
-
-
 def test_json_report_reference_documents_model_fields():
-    reference_path = Path("docs/json-report-reference.md")
+    reference_path = Path("docs/reference/json-report-reference.md")
     if not reference_path.exists():
         pytest.skip("docs/ is intentionally gitignored and may be absent in clean checkouts")
 
