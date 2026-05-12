@@ -654,13 +654,14 @@ def test_html_report_includes_safe_install_section_with_readme_commands(tmp_path
     html = render_html(result)
 
     assert "<h2>Safe Install</h2>" in html
-    assert "Next safest command" in html
+    assert "Next isolated step" in html
     assert "설치 대신 먼저 이 finding을 확인하세요." in html
     assert "repo-trust explain install.risky.process_substitution_shell" in html
     assert "실행 전 체크리스트" in html
     assert "README에서 발견한 설치 명령" in html
     assert "curl https://example.com/install.sh | sh" in html
-    assert "더 안전한 설치 패턴" in html
+    assert "격리된 검토/설치 패턴" in html
+    assert "source install은 코드 실행으로 보고 먼저 격리 환경에서 검토하세요." in html
     assert "고위험 설치 근거를 검토하기 전에는 문서의 설치 명령을 실행하지 마세요" in html
 
 
@@ -687,8 +688,8 @@ def test_html_report_highlights_first_safe_command_for_clean_fixture(tmp_path):
 
     html = render_html(result)
 
-    assert "Next safest command" in html
-    assert "설치가 필요하다면 이 명령부터 시작하세요." in html
+    assert "Next isolated step" in html
+    assert "설치가 필요하다면 이 격리 단계부터 시작하세요." in html
     assert "python3 -m venv .venv" in html
 
 

@@ -264,7 +264,7 @@ repo-trust-kr safe-install .
 repo-trust safe-install https://github.com/openai/codex
 ```
 
-`safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 더 격리된 설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. HTML 리포트의 `Safe Install` 섹션은 `Next safest command`를 맨 위에 따로 보여주므로, 설치 명령을 실행하기 전에 먼저 할 일을 빠르게 확인할 수 있습니다.
+`safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 source install도 코드 실행으로 보고, 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 격리된 검토/설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. HTML 리포트의 `Safe Install` 섹션은 `Next isolated step`을 맨 위에 따로 보여주므로, 설치 명령을 실행하기 전에 먼저 할 일을 빠르게 확인할 수 있습니다.
 
 ### 위험 리포트를 받은 뒤 다음 조치 보기
 
@@ -458,7 +458,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다. 실제 tok
 | 목적별 판단 | 설치, dependency 채택, AI agent 위임 관점의 별도 verdict |
 | 다음 행동 | 지금 바로 실행할 후속 조치 |
 | HTML `Next Steps` | 위험 finding을 어떤 순서로 확인하고 멈출지 |
-| HTML `Safe Install` | README 설치 명령을 실행해도 되는지와 더 안전한 대안 |
+| HTML `Safe Install` | README 설치 명령을 실행해도 되는지와 격리된 검토/설치 대안 |
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
@@ -466,7 +466,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다. 실제 tok
 
 1. 터미널의 `RESULT`와 `이유`/`WHY`에서 최종 판단과 상위 위험을 확인합니다.
 2. HTML 리포트를 만들었다면 `Next Steps`를 먼저 보고, 설치를 멈춰야 하는지 판단합니다.
-3. README의 설치 명령을 복사하기 전에는 `Safe Install`의 `Next safest command`와 체크리스트를 확인합니다.
+3. README의 설치 명령을 복사하기 전에는 `Safe Install`의 `Next isolated step`과 체크리스트를 확인합니다.
 4. 더 자세한 근거가 필요하면 `Prioritized Findings` 또는 JSON의 `findings` 배열을 확인합니다.
 5. finding card의 `ID 복사`와 `explain 명령 복사` 버튼으로 `repo-trust explain <finding-id>` 설명을 이어서 봅니다.
 

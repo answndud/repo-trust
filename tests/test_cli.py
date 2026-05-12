@@ -231,8 +231,10 @@ def test_direct_cli_safe_install_suggests_python_virtualenv_for_good_fixture():
     assert result.exit_code == 0
     assert "Install verdict: usable_by_current_checks" in result.stdout
     assert "Before you run anything:" in result.stdout
+    assert "Treat source installs as code execution" in result.stdout
     assert "README install commands found:" in result.stdout
     assert "pip install good-python-project" in result.stdout
+    assert "Isolated review/install pattern:" in result.stdout
     assert "python3 -m venv .venv" in result.stdout
     assert ".venv/bin/python -m pip install -e ." in result.stdout
     assert "Do not run the README install commands yet." not in result.stdout
@@ -360,7 +362,7 @@ def test_direct_cli_samples_writes_good_and_risky_gallery(tmp_path):
     assert good_html.name in result.stderr.replace("\n", "")
     for path in [good_html, good_json, risky_html, risky_json]:
         assert path.exists()
-    assert "Next safest command" in risky_html.read_text(encoding="utf-8")
+    assert "Next isolated step" in risky_html.read_text(encoding="utf-8")
     assert json.loads(good_json.read_text(encoding="utf-8"))["score"]["grade"] == "A"
     assert json.loads(risky_json.read_text(encoding="utf-8"))["score"]["grade"] == "F"
 

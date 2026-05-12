@@ -30,7 +30,8 @@ def _render_en(result: ScanResult) -> str:
         "",
         "Before you run anything:",
         "- Confirm the command came from the repository README or trusted release notes.",
-        "- Prefer the isolated pattern below over global, sudo, or shell-pipe installs.",
+        "- Treat source installs as code execution; review them in an isolated environment first.",
+        "- Prefer the isolated review pattern below over global, sudo, or shell-pipe installs.",
         "- If any high-risk evidence appears, stop and review the HTML report first.",
         "",
     ]
@@ -71,7 +72,7 @@ def _render_en(result: ScanResult) -> str:
         )
     else:
         lines.extend([profile.summary, ""])
-        lines.extend(["Safer install pattern:"])
+        lines.extend(["Isolated review/install pattern:"])
         lines.extend(f"- {command}" for command in safe_commands(result, locale="en"))
         if install_findings:
             lines.extend(["", "Install findings to review:"])
@@ -100,7 +101,8 @@ def _render_ko(result: ScanResult) -> str:
         "",
         "실행 전 체크리스트:",
         "- 명령이 저장소 README나 신뢰할 수 있는 release notes에서 나온 것인지 확인하세요.",
-        "- 전역 설치, sudo, shell pipe보다 아래의 격리된 설치 패턴을 우선하세요.",
+        "- source install은 코드 실행으로 보고 먼저 격리 환경에서 검토하세요.",
+        "- 전역 설치, sudo, shell pipe보다 아래의 격리된 검토/설치 패턴을 우선하세요.",
         "- 고위험 근거가 보이면 멈추고 HTML 리포트를 먼저 확인하세요.",
         "",
     ]
@@ -135,7 +137,7 @@ def _render_ko(result: ScanResult) -> str:
         )
     else:
         lines.extend([_ko_profile_summary(profile.summary), ""])
-        lines.extend(["더 안전한 설치 패턴:"])
+        lines.extend(["격리된 검토/설치 패턴:"])
         lines.extend(f"- {command}" for command in safe_commands(result, locale="ko"))
         if install_findings:
             lines.extend(["", "검토할 설치 finding:"])

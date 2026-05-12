@@ -580,7 +580,7 @@ def _safe_install_html(result: ScanResult) -> str:
       <section class="section-panel" aria-label="Safe Install">
         <p class="profile-verdict" style="color: {_verdict_color(profile.verdict)};">{html.escape(_assessment_label(profile.verdict))}</p>
         <p>{html.escape(_install_profile_summary_ko(profile.summary))}</p>
-        <h3>Next safest command</h3>
+        <h3>Next isolated step</h3>
         <div class="next-command">
           <p><strong>{html.escape(next_command_label)}</strong></p>
           <p><code>{html.escape(next_command)}</code></p>
@@ -589,14 +589,15 @@ def _safe_install_html(result: ScanResult) -> str:
         <h3>실행 전 체크리스트</h3>
         <ul class="next-steps">
           <li>명령이 저장소 README나 신뢰할 수 있는 release notes에서 나온 것인지 확인하세요.</li>
-          <li>전역 설치, sudo, shell pipe보다 격리된 설치 패턴을 우선하세요.</li>
+          <li>source install은 코드 실행으로 보고 먼저 격리 환경에서 검토하세요.</li>
+          <li>전역 설치, sudo, shell pipe보다 격리된 검토/설치 패턴을 우선하세요.</li>
           <li>고위험 근거가 보이면 멈추고 HTML 리포트의 install finding을 먼저 확인하세요.</li>
         </ul>
         <h3>README에서 발견한 설치 명령</h3>
         <ul class="command-list">
 {readme_items}
         </ul>
-        <h3>더 안전한 설치 패턴</h3>
+        <h3>격리된 검토/설치 패턴</h3>
         <ul class="command-list">
 {safe_pattern_items}
         </ul>
@@ -631,9 +632,9 @@ def _next_safe_command(
         )
     if safe_pattern_commands:
         return (
-            "설치가 필요하다면 이 명령부터 시작하세요.",
+            "설치가 필요하다면 이 격리 단계부터 시작하세요.",
             safe_pattern_commands[0],
-            "README 명령을 그대로 복사하기 전에 격리된 환경을 먼저 만드는 흐름입니다.",
+            "README 명령이나 source install을 그대로 실행하기 전에 격리된 환경을 먼저 만드는 흐름입니다.",
         )
     return (
         "먼저 리포트 근거를 확인하세요.",
