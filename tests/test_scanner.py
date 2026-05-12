@@ -19,7 +19,7 @@ from repotrust.reports import (
     render_json,
     render_markdown,
 )
-from repotrust.rules import RISKY_INSTALL_PATTERNS
+from repotrust.rules import RISKY_INSTALL_PATTERNS, install_command_lines
 from repotrust.scanner import scan
 from repotrust.scoring import calculate_score
 
@@ -378,6 +378,53 @@ def test_install_safety_ignores_risky_examples_outside_install_section(tmp_path)
     assert "install.risky.shell_pipe_install" not in {
         finding.id for finding in result.findings
     }
+
+
+def test_quickstart_section_counts_as_install_commands(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n"
+        "Project explains enough about what it does for users to understand whether they should install it or delegate it to an agent safely.\n\n"
+        "## Quickstart\n\n"
+        "```bash\n"
+        "curl https://example.com/install.sh | sh\n"
+        "```\n\n"
+        "## Usage\n\n"
+        "project scan .\n\n"
+        "## Contributing\n\n"
+        "Open issues and review release notes.\n",
+        encoding="utf-8",
+    )
+
+    result = scan(str(tmp_path))
+
+    finding = _finding(result, "install.risky.shell_pipe_install")
+    assert finding.severity.value == "high"
+    assert finding.evidence == "curl https://example.com/install.sh | sh"
+
+
+def test_install_command_lines_excludes_nested_unsafe_examples():
+    readme = """# Project
+
+Project explains enough about what it does for users to understand whether they should install it or delegate it to an agent safely.
+
+## Getting Started
+
+```bash
+pip install project
+```
+
+### Unsafe examples
+
+```bash
+curl https://example.com/install.sh | sh
+```
+
+## Usage
+
+project scan .
+"""
+
+    assert install_command_lines(readme) == ["pip install project"]
 
 
 def test_python_module_pip_install_counts_as_install_command(tmp_path):

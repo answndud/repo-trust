@@ -13,7 +13,17 @@ except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
 from .models import Category, DetectedFiles, Finding, Severity
 
 
-INSTALL_SECTION_RE = re.compile(r"^#{1,6}\s+.*\b(install|installation|setup)\b", re.I | re.M)
+INSTALL_SECTION_RE = re.compile(
+    r"^#{1,6}\s+.*\b("
+    r"install|installation|setup|quickstart|quick start|getting started|"
+    r"run locally|local development"
+    r")\b",
+    re.I | re.M,
+)
+INSTALL_EXCLUDED_SECTION_RE = re.compile(
+    r"\b(unsafe|anti[- ]?pattern|do not run|bad examples?|troubleshooting)\b",
+    re.I,
+)
 USAGE_SECTION_RE = re.compile(r"^#{1,6}\s+.*\b(usage|quickstart|quick start|example)\b", re.I | re.M)
 MAINTENANCE_RE = re.compile(r"\b(contributing|maintain|support|changelog|release)\b", re.I)
 INSTALL_COMMAND_RE = re.compile(
@@ -399,6 +409,10 @@ def install_command_lines(readme_text: str) -> list[str]:
             ):
                 in_install_section = False
                 install_heading_level = None
+            if in_install_section and INSTALL_EXCLUDED_SECTION_RE.search(title):
+                in_install_section = False
+                install_heading_level = None
+                continue
             if INSTALL_SECTION_RE.search(f"{heading.group(1)} {title}"):
                 in_install_section = True
                 install_heading_level = level
