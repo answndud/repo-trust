@@ -17,7 +17,15 @@ jobs:
           python-version: "3.12"
 
       - name: Install RepoTrust
-        run: python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/repotrust-release
+          gh release download \
+            --repo answndud/repo-trust \
+            --pattern 'repotrust-*-py3-none-any.whl' \
+            --dir /tmp/repotrust-release
+          python -m pip install /tmp/repotrust-release/repotrust-*-py3-none-any.whl
 
       - name: Run RepoTrust gate
         run: repo-trust gate . --config examples/repotrust.toml --output repotrust-report.json

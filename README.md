@@ -521,6 +521,8 @@ repo-trust gate . --config /path/to/repotrust.toml
 2. GitHub Actions를 쓸 경우 `examples/github-actions-repotrust-gate.yml`을 `.github/workflows/repotrust.yml`로 복사할지 결정합니다.
 3. CI 또는 로컬에서 gate를 실행합니다.
 
+GitHub Actions 예시는 `gh release download`로 최신 RepoTrust GitHub Release wheel을 받아 설치합니다. 특정 버전에 고정해야 하는 조직 정책이 있으면 workflow의 install step에 tag를 명시하세요.
+
 ```bash
 repo-trust gate . --config repotrust.toml --output repotrust-report.json
 ```
