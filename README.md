@@ -157,7 +157,7 @@ result/sample-risky-YYYY-MM-DD.json
 
 ### GitHub URL을 HTML로 저장
 
-브라우저에서 읽을 리포트를 만들 때 사용합니다. GitHub URL은 기본적으로 API를 호출하지 않고 URL 형식만 확인합니다. 저장소 파일까지 검사하려면 로컬로 checkout한 폴더를 검사하고, GitHub read-only metadata가 필요할 때만 `--remote`를 명시합니다.
+브라우저에서 읽을 리포트를 만들 때 사용합니다. GitHub URL은 기본적으로 API를 호출하지 않고 URL 형식만 확인합니다. 저장소 파일까지 검사하려면 로컬로 checkout한 폴더를 검사하고, 제한된 GitHub read-only metadata가 필요할 때만 `--remote`를 명시합니다.
 
 **입력할 명령**
 
@@ -358,7 +358,9 @@ repo-trust-kr check https://github.com/openai/codex
 
 이 경우 README, LICENSE, CI 같은 원격 파일은 확인하지 않습니다. 결과에는 `근거 부족`, `기본 정보만 확인`, `확인 못함` 같은 표시가 나올 수 있습니다.
 
-GitHub API read-only metadata까지 확인하고 싶을 때만 `--remote`를 명시합니다. 현재 remote scan은 repository metadata, root contents, README content만 확인합니다. GitHub Actions workflow, Dependabot 설정, `.github/SECURITY.md` 같은 중첩 GitHub 설정까지 판단해야 하면 로컬로 checkout한 뒤 검사하세요. Public repository는 token 없이 시도할 수 있지만 rate limit이나 private repository 접근이 필요하면 `GITHUB_TOKEN`을 환경 변수로 설정합니다.
+GitHub API read-only metadata까지 확인하고 싶을 때만 `--remote`를 명시합니다. 현재 remote scan은 고정된 제한 범위로 유지합니다: repository metadata, root contents, README content만 확인합니다. GitHub Actions workflow, Dependabot 설정, release/tag freshness, commit activity, `.github/SECURITY.md` 같은 중첩 GitHub 설정은 remote scan에 추가하지 않습니다. 이런 신호까지 판단해야 하면 로컬로 checkout한 뒤 검사하세요. Public repository는 token 없이 시도할 수 있지만 rate limit이나 private repository 접근이 필요하면 `GITHUB_TOKEN`을 환경 변수로 설정합니다.
+
+이 경계는 1인 운영용 v1을 작게 유지하기 위한 의도적인 제한입니다. `--remote`는 GitHub의 모든 신뢰 신호를 대신 판단하는 기능이 아니라, URL parse-only보다 조금 더 많은 read-only 근거를 가져오는 보조 경로입니다.
 
 **입력할 명령**
 

@@ -43,6 +43,10 @@ direct_kr_app = typer.Typer(
     invoke_without_command=True,
 )
 status_console = Console(stderr=True)
+REMOTE_OPTION_HELP = (
+    "For GitHub URLs, call the frozen read-only GitHub API scope "
+    "(repository metadata, root contents, README)."
+)
 
 
 class ReportFormat(str, Enum):
@@ -163,7 +167,7 @@ def html_report(
         bool,
         typer.Option(
             "--remote",
-            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
+            help=REMOTE_OPTION_HELP,
         ),
     ] = False,
     fail_under: Annotated[
@@ -231,7 +235,7 @@ def json_report(
         bool,
         typer.Option(
             "--remote",
-            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
+            help=REMOTE_OPTION_HELP,
         ),
     ] = False,
     fail_under: Annotated[
@@ -291,7 +295,7 @@ def check(
         bool,
         typer.Option(
             "--remote",
-            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
+            help=REMOTE_OPTION_HELP,
         ),
     ] = False,
     fail_under: Annotated[
@@ -396,7 +400,7 @@ def safe_install(
         bool,
         typer.Option(
             "--remote",
-            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
+            help=REMOTE_OPTION_HELP,
         ),
     ] = False,
     audit: Annotated[
@@ -460,7 +464,7 @@ def next_steps(
         bool,
         typer.Option(
             "--remote",
-            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
+            help=REMOTE_OPTION_HELP,
         ),
     ] = False,
 ) -> None:
@@ -529,7 +533,7 @@ def gate(
         bool,
         typer.Option(
             "--remote",
-            help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
+            help=REMOTE_OPTION_HELP,
         ),
     ] = False,
     fail_under: Annotated[

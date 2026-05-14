@@ -80,7 +80,7 @@ GitHub metadata까지 보고 싶을 때만 `--remote`를 붙입니다.
 repo-trust-kr check https://github.com/openai/codex --remote
 ```
 
-`--remote`는 read-only GitHub API를 사용합니다. rate limit이나 token 설정의 영향을 받을 수 있습니다.
+`--remote`는 read-only GitHub API를 사용하지만 범위가 고정되어 있습니다. 확인하는 것은 repository metadata, root contents, README content뿐입니다. Actions workflow, Dependabot 설정, release/tag freshness, commit activity, 중첩 `.github/SECURITY.md`까지 봐야 하면 저장소를 로컬로 checkout한 뒤 `repo-trust-kr check .`로 검사하세요. `--remote`는 rate limit이나 token 설정의 영향을 받을 수 있습니다.
 
 ## HTML 리포트 만들기
 

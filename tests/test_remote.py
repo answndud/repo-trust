@@ -101,8 +101,12 @@ def test_remote_success_detects_root_files_and_freezes_endpoint_surface():
     assert result.detected_files.ci_workflows == []
     assert result.detected_files.dependabot is None
     assert result.score.total == 100
-    assert len(transport.requests) == 3
-    assert transport.requests[0][1] == "https://api.github.com/repos/owner/repo"
+    requested_urls = [request[1] for request in transport.requests]
+    assert requested_urls == [
+        "https://api.github.com/repos/owner/repo",
+        "https://api.github.com/repos/owner/repo/contents",
+        "https://api.github.com/repos/owner/repo/readme",
+    ]
     forbidden = [
         "/actions/workflows",
         "dependabot",
@@ -111,7 +115,7 @@ def test_remote_success_detects_root_files_and_freezes_endpoint_surface():
         "/tags",
         "/commits/",
     ]
-    assert all(marker not in request[1] for request in transport.requests for marker in forbidden)
+    assert all(marker not in url for url in requested_urls for marker in forbidden)
 
 
 def test_remote_metadata_flags_affect_project_hygiene_score():

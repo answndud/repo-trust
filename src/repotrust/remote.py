@@ -25,6 +25,8 @@ from .scoring import calculate_score
 
 
 GITHUB_API_BASE_URL = "https://api.github.com"
+# Frozen v1 remote scope. Do not add GitHub endpoints here unless the product
+# deliberately expands beyond the small offline-first CLI boundary.
 README_NAMES = {"README.md", "README.rst", "README.txt", "README"}
 LICENSE_NAMES = {"LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING"}
 SECURITY_NAMES = {"SECURITY.md"}
