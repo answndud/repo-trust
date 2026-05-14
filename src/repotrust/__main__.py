@@ -1,6 +1,5 @@
-from .cli import app
+from .cli import direct_app
 
 
 if __name__ == "__main__":
-    app()
-
+    direct_app()

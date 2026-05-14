@@ -89,7 +89,7 @@ def print_assessment_dashboard(
         console.print(_incomplete_details_text(result, locale=locale))
 
 
-def print_legacy_summary(*, console: Console, result: ScanResult, verbose: bool) -> None:
+def print_scan_summary(*, console: Console, result: ScanResult, verbose: bool) -> None:
     console.print(kali_section("RepoTrust Summary"))
     table = kali_table()
     table.add_column("Metric")

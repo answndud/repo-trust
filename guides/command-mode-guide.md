@@ -232,7 +232,7 @@ repo-trust-kr html . --output reports/current.html
 repo-trust-kr json . --output reports/current.json
 ```
 
-`--format`은 legacy `repotrust scan`에서 쓰는 옵션입니다. 새 사용자는 `repo-trust html`, `repo-trust json`, `repo-trust check`처럼 command를 직접 고르는 방식을 사용하세요.
+`--format`은 사용하지 않습니다. `repo-trust html`, `repo-trust json`, `repo-trust check`처럼 command를 직접 고르는 방식을 사용하세요.
 
 ## 좋은 예시와 나쁜 예시
 

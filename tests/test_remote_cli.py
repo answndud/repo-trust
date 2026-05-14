@@ -1,7 +1,7 @@
 import json
 
 from cli_helpers import plain_output, runner
-from repotrust.cli import app, direct_app, direct_kr_app
+from repotrust.cli import direct_app, direct_kr_app
 from repotrust.models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
 from repotrust.scoring import calculate_score
 
@@ -84,55 +84,6 @@ def test_direct_cli_rejects_invalid_remote_option_combinations(tmp_path):
     assert "GitHub URL" in plain_output(local_remote.stderr)
     assert remote_parse_only.exit_code == 2
     assert "--parse-only" in plain_output(remote_parse_only.stderr)
-
-
-def test_legacy_cli_github_url_without_remote_remains_parse_only():
-    result = runner.invoke(app, ["scan", "https://github.com/owner/repo", "--format", "json"])
-
-    assert result.exit_code == 0
-    data = json.loads(result.stdout)
-    assert data["target"]["kind"] == "github"
-    assert data["target"]["owner"] == "owner"
-    assert [finding["id"] for finding in data["findings"]] == ["target.github_not_fetched"]
-
-
-def test_legacy_cli_remote_failure_keeps_json_stdout_and_summary_stderr(monkeypatch):
-    def fake_scan(target_text, weights=None, remote=False):
-        finding = Finding(
-            id="remote.github_api_error",
-            category=Category.TARGET,
-            severity=Severity.MEDIUM,
-            message="GitHub API returned an unexpected error.",
-            evidence="GitHub API returned HTTP 500.",
-            recommendation="Retry later.",
-        )
-        findings = [finding]
-        return ScanResult(
-            target=Target(
-                raw=target_text,
-                kind="github",
-                host="github.com",
-                owner="owner",
-                repo="repo",
-            ),
-            detected_files=DetectedFiles(),
-            findings=findings,
-            score=calculate_score(findings, weights=weights),
-        )
-
-    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
-
-    result = runner.invoke(
-        app,
-        ["scan", "https://github.com/owner/repo", "--remote", "--format", "json"],
-    )
-
-    assert result.exit_code == 0
-    assert [finding["id"] for finding in json.loads(result.stdout)["findings"]] == [
-        "remote.github_api_error"
-    ]
-    assert "RepoTrust Summary" in result.stderr
-    assert "RepoTrust Summary" not in result.stdout
 
 
 def test_direct_kr_cli_check_github_url_prints_korean_parse_only_status(monkeypatch):

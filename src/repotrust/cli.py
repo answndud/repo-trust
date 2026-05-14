@@ -18,7 +18,7 @@ from .config import (
     RepoTrustConfig,
     load_config,
 )
-from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
+from .dashboard import print_assessment_dashboard, print_command_header, print_scan_summary
 from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text
 from .install_audit import audit_install, render_install_audit
@@ -31,10 +31,6 @@ from .scanner import ScanInputError, scan as scan_target
 from .targets import parse_target
 from .tutorial import render_tutorial
 
-app = typer.Typer(
-    help="Evaluate repository trust signals and generate reports.",
-    invoke_without_command=True,
-)
 direct_app = typer.Typer(
     help="Inspect repository trust signals and write clear local reports.",
     add_completion=False,
@@ -67,83 +63,6 @@ def _help_callback(command: str):
         return value
 
     return callback
-
-
-@app.callback()
-def main(
-    ctx: typer.Context,
-    version: Annotated[
-        bool,
-        typer.Option(
-            "--version",
-            help="Show the RepoTrust version and exit.",
-        ),
-    ] = False,
-) -> None:
-    """Evaluate repository trust signals and generate reports."""
-    if version:
-        typer.echo(f"repotrust {__version__}")
-        raise typer.Exit()
-    if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
-        raise typer.Exit()
-
-
-@app.command()
-def scan(
-    target: Annotated[str, typer.Argument(help="Local path or GitHub URL to scan.")],
-    report_format: Annotated[
-        ReportFormat,
-        typer.Option(
-            "--format",
-            "-f",
-            help="Report format: markdown, json, or html.",
-        ),
-    ] = ReportFormat.MARKDOWN,
-    output: Annotated[
-        Path | None,
-        typer.Option("--output", "-o", help="Write the report to this file."),
-    ] = None,
-    config: Annotated[
-        Path | None,
-        typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
-    ] = None,
-    subdir: Annotated[
-        Path | None,
-        typer.Option("--subdir", help="Scan this relative subdirectory of a local target."),
-    ] = None,
-    remote: Annotated[
-        bool,
-        typer.Option("--remote", help="Use GitHub API remote scan for GitHub URL targets."),
-    ] = False,
-    fail_under: Annotated[
-        int | None,
-        typer.Option("--fail-under", help="Exit with code 1 if total score is below this value."),
-    ] = None,
-    verbose: Annotated[
-        bool,
-        typer.Option("--verbose", "-v", help="Print findings in the terminal summary."),
-    ] = False,
-) -> None:
-    """Scan a repository target."""
-    _print_legacy_scan_deprecation()
-    _run_scan(
-        target=_target_with_subdir(target, subdir),
-        report_format=report_format,
-        output=output,
-        config=config,
-        remote=remote,
-        fail_under=fail_under,
-        verbose=verbose,
-    )
-
-
-def _print_legacy_scan_deprecation() -> None:
-    status_console.print(
-        "[yellow]Deprecated:[/yellow] [bold]repotrust scan[/bold] is a legacy "
-        "compatibility command. Prefer [bold]repo-trust html/json/check[/bold]; "
-        "legacy scan remains available for existing automation for now."
-    )
 
 
 @direct_app.callback()
@@ -802,7 +721,7 @@ def _run_scan(
             locale=dashboard_locale,
         )
     else:
-        print_legacy_summary(console=status_console, result=result, verbose=verbose)
+        print_scan_summary(console=status_console, result=result, verbose=verbose)
 
     failures = _policy_failures(result, loaded_config, fail_under)
     if failures:

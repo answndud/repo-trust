@@ -1,7 +1,7 @@
 import json
 
 from cli_helpers import plain_output, runner
-from repotrust.cli import app, direct_app
+from repotrust.cli import direct_app
 from repotrust.models import Category, DetectedFiles, Finding, ScanResult, Severity, Target
 from repotrust.scoring import calculate_score
 
@@ -51,10 +51,15 @@ def test_cli_config_fail_under_and_cli_override(tmp_path):
     config = tmp_path / "repotrust.toml"
     config.write_text("[policy]\nfail_under = 100\n", encoding="utf-8")
 
-    config_result = runner.invoke(app, ["scan", str(tmp_path), "--config", str(config)])
+    config_result = runner.invoke(
+        direct_app,
+        ["gate", str(tmp_path), "--config", str(config)],
+        prog_name="repo-trust",
+    )
     override_result = runner.invoke(
-        app,
-        ["scan", str(tmp_path), "--config", str(config), "--fail-under", "0"],
+        direct_app,
+        ["gate", str(tmp_path), "--config", str(config), "--fail-under", "0"],
+        prog_name="repo-trust",
     )
 
     assert config_result.exit_code == 1
@@ -68,7 +73,11 @@ def test_cli_config_rejects_removed_policy_surface(tmp_path):
         encoding="utf-8",
     )
 
-    result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json", "--config", str(config)])
+    result = runner.invoke(
+        direct_app,
+        ["json", str(tmp_path), "--config", str(config)],
+        prog_name="repo-trust",
+    )
     stderr = plain_output(result.stderr)
 
     assert result.exit_code == 2
@@ -83,7 +92,11 @@ def test_cli_invalid_policy_does_not_echo_secret_values(tmp_path):
         encoding="utf-8",
     )
 
-    result = runner.invoke(app, ["scan", str(tmp_path), "--config", str(config)])
+    result = runner.invoke(
+        direct_app,
+        ["check", str(tmp_path), "--config", str(config)],
+        prog_name="repo-trust",
+    )
     stderr = plain_output(result.stderr)
 
     assert result.exit_code == 2

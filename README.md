@@ -542,11 +542,11 @@ CLI 옵션이 config보다 우선합니다. config 자동 탐지, category weigh
 - star, fork, watcher 수
 - GitHub App 상태
 
-## 기존 호환 명령
+## 제거된 legacy 명령
 
-기존 개발용 명령인 `repotrust scan`도 기존 자동화를 위해 당분간 계속 동작하지만, 실행 시 deprecation notice를 stderr에 출력합니다. 새 사용자 문서와 공식 예시는 `repo-trust`와 `repo-trust-kr` 기준으로 설명합니다.
+`repotrust scan` legacy command는 제거됐습니다. 새 사용 경로는 `repo-trust`와 `repo-trust-kr`입니다.
 
-| 기존 명령 | 권장 명령 |
+| 제거된 명령 | 현재 명령 |
 | --- | --- |
 | `repotrust scan . --format html --output report.html` | `repo-trust html . --output report.html` |
 | `repotrust scan . --format json --output report.json` | `repo-trust json . --output report.json` |
@@ -587,7 +587,6 @@ python -m pip wheel --no-deps . --wheel-dir /tmp/repotrust-wheelhouse
 python -m pip install /tmp/repotrust-wheelhouse/repotrust-*.whl
 repo-trust --version
 repo-trust-kr --version
-repotrust --version
 ```
 
 dependency를 바꾼 경우에만 lockfile을 갱신합니다.

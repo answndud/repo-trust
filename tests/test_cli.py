@@ -7,7 +7,6 @@ from repotrust.cli import (
     ReportFormat,
     _default_output_path,
     _resolve_output_path,
-    app,
     direct_app,
     direct_kr_app,
 )
@@ -29,18 +28,6 @@ def test_direct_cli_root_prints_command_help_without_console_mode():
     assert "Usage: repo-trust [OPTIONS] COMMAND [ARGS]..." in stdout
     assert "repo-trust check ." in stdout
     assert "Console Mode" not in stdout
-
-
-def test_legacy_cli_scan_json_keeps_stdout_machine_readable(tmp_path):
-    result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json"])
-
-    assert result.exit_code == 0
-    data = json.loads(result.stdout)
-    assert data["schema_version"] == "1.2"
-    assert data["target"]["kind"] == "local"
-    assert "RepoTrust Summary" in result.stderr
-    assert "RepoTrust Summary" not in result.stdout
-    assert "Deprecated: repotrust scan is a legacy compatibility command." in result.stderr
 
 
 def test_direct_cli_help_exposes_current_product_commands():
@@ -161,10 +148,14 @@ def test_direct_cli_check_summarizes_large_finding_list():
     assert "full list." in stderr
 
 
-def test_cli_scan_html_output_file(tmp_path):
+def test_direct_cli_html_output_file(tmp_path):
     output = tmp_path / "report.html"
 
-    result = runner.invoke(app, ["scan", str(tmp_path), "--format", "html", "--output", str(output)])
+    result = runner.invoke(
+        direct_app,
+        ["html", str(tmp_path), "--output", str(output)],
+        prog_name="repo-trust",
+    )
 
     assert result.exit_code == 0
     assert output.exists()
@@ -188,20 +179,22 @@ def test_output_path_helpers_keep_stable_naming():
 
 def test_cli_missing_local_path_reports_finding_without_usage_error(tmp_path):
     missing = tmp_path / "missing"
+    output = tmp_path / "missing.json"
 
-    result = runner.invoke(app, ["scan", str(missing), "--format", "json"])
+    result = runner.invoke(
+        direct_app,
+        ["json", str(missing), "--output", str(output)],
+        prog_name="repo-trust",
+    )
 
     assert result.exit_code == 0
-    data = json.loads(result.stdout)
+    data = json.loads(output.read_text(encoding="utf-8"))
     assert [finding["id"] for finding in data["findings"]] == ["target.local_path_missing"]
     assert data["assessment"]["coverage"] == "failed"
 
 
-def test_cli_usage_errors_for_invalid_format_and_missing_target(tmp_path):
-    invalid_format = runner.invoke(app, ["scan", str(tmp_path), "--format", "xml"])
-    missing_target = runner.invoke(app, ["scan"])
+def test_cli_usage_errors_for_missing_target():
+    missing_target = runner.invoke(direct_app, ["json"], prog_name="repo-trust")
 
-    assert invalid_format.exit_code == 2
-    assert "xml" in invalid_format.stderr
     assert missing_target.exit_code == 2
     assert "TARGET" in missing_target.stderr
