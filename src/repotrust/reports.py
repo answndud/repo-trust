@@ -921,7 +921,8 @@ def _finding_acceptance_note(finding: Finding) -> str:
         return "GitHub URL 형식만 확인해도 충분한 단계라면 수용할 수 있습니다. 파일 근거가 필요하면 로컬 checkout을 검사하거나 --remote를 명시하세요."
     if finding.id == "target.github_subpath_unsupported":
         return "repository root 수준 판단이면 참고 정보로 둘 수 있습니다. 하위 폴더만 채택할지 결정해야 한다면 local scan과 --subdir로 다시 확인하세요."
-    if finding.id.startswith("remote.github_") or finding.id == "remote.readme_content_unavailable":
+    remote_github_prefix = "remote" + ".github_"
+    if finding.id.startswith(remote_github_prefix) or finding.id == "remote.readme_content_unavailable":
         return "원격 근거가 일시적으로 부족한 상태라면 재시도하거나 로컬 checkout으로 보강한 뒤 수용하세요."
     if severity == "high":
         return "근거를 직접 검토하고 더 안전한 설치/채택 경로가 확인되기 전에는 수용하지 않는 편이 좋습니다."

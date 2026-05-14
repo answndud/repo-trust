@@ -30,7 +30,7 @@ PyPI는 사용하지 않습니다. 공식 배포 채널은 GitHub Releases이며
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.9/repotrust-0.2.9-py3-none-any.whl
+python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
 repo-trust-kr
 ```
 
@@ -41,21 +41,21 @@ repo-trust-kr
 ```powershell
 py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.9/repotrust-0.2.9-py3-none-any.whl
+python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
 repo-trust-kr
 ```
 
 PowerShell에서 가상환경 활성화가 막히면 아래처럼 가상환경 안의 실행 파일을 직접 호출해도 됩니다.
 
 ```powershell
-.\.venv\Scripts\python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.9/repotrust-0.2.9-py3-none-any.whl
+.\.venv\Scripts\python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
 .\.venv\Scripts\repo-trust-kr.exe
 ```
 
 wheel 설치가 맞지 않는 환경에서는 같은 release의 source archive를 설치할 수 있습니다.
 
 ```bash
-python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.9/repotrust-0.2.9.tar.gz
+python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10.tar.gz
 ```
 
 ## 5분 시작 가이드
@@ -135,7 +135,7 @@ repo-trust-kr
 **화면 예시**
 
 ```text
-RepoTrust v0.2.9
+RepoTrust v0.2.10
 설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다.
 처음이면: [L] 로컬 검사 -> [S] 안전 설치 -> [N] 다음 조치.
 ────────────────────────────────────

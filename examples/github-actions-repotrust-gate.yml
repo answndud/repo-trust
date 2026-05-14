@@ -17,7 +17,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install RepoTrust
-        run: python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.9/repotrust-0.2.9-py3-none-any.whl
+        run: python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
 
       - name: Run RepoTrust gate
         run: repo-trust gate . --config examples/repotrust.toml --output repotrust-report.json

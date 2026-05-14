@@ -6,6 +6,29 @@ All notable changes to RepoTrust are documented here.
 
 No changes yet.
 
+## v0.2.10 - 2026-05-14
+
+### Added
+
+- `repo-trust init-policy` / `repo-trust-kr init-policy` now create starter `repotrust.toml` and GitHub Actions gate workflow files without overwriting existing files unless `--force` is provided.
+- `repo-trust audit-install <target>` / `repo-trust-kr audit-install <target>` now audit install-time execution surfaces before running repository install commands.
+- Product commands and legacy `repotrust scan` now support `--subdir <path>` for local monorepo package scans.
+
+### Changed
+
+- README install command detection now covers `Quickstart`, `Getting Started`, `Run locally`, and local development sections while ignoring explicitly unsafe example sections.
+- `safe-install` and HTML Safe Install wording now treat Python source/editable installs as code execution that should be reviewed in an isolated environment.
+- Static HTML finding cards now show beginner-oriented risk reason, immediate action, acceptance condition, evidence, and recommendation fields.
+- CI gate examples and generated policy workflows use GitHub Release wheel URLs instead of PyPI-style install commands.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 175 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.2.10/dist` built `repotrust-0.2.10.tar.gz` and `repotrust-0.2.10-py3-none-any.whl`.
+- Clean wheel install smoke verified `repo-trust`, `repo-trust-kr`, and `repotrust` version `0.2.10`.
+- Clean wheel smoke verified `init-policy`, `audit-install`, `--subdir`, HTML finding guidance, `samples`, `safe-install`, `next-steps`, and JSON `json.tool`.
+- Local self-scan returned grade `A`, high confidence, full coverage, and no medium/high findings.
+
 ## v0.2.9 - 2026-05-08
 
 ### Added
