@@ -1659,103 +1659,51 @@ def test_cli_fail_under_overrides_config(tmp_path):
     assert result.exit_code == 0
 
 
-def test_cli_config_weights_affect_score(tmp_path):
+def test_cli_config_rejects_weights_section(tmp_path):
     config = tmp_path / "repotrust.toml"
     config.write_text(
-        """
-[weights]
-readme_quality = 1.0
-install_safety = 0.0
-security_posture = 0.0
-project_hygiene = 0.0
-""",
+        "[weights]\nreadme_quality = 1.0\n",
         encoding="utf-8",
     )
 
     result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json", "--config", str(config)])
+    stderr = plain_output(result.stderr)
 
-    assert result.exit_code == 0
-    data = json.loads(result.stdout)
-    assert data["score"]["total"] == data["score"]["categories"]["readme_quality"]
+    assert result.exit_code == 2
+    assert "--config" in stderr
+    assert "Unknown config section(s): weights" in stderr
 
 
-def test_cli_config_can_disable_findings(monkeypatch, tmp_path):
+def test_cli_config_rejects_rules_section(tmp_path):
     config = tmp_path / "repotrust.toml"
     config.write_text('[rules]\ndisabled = ["security.no_policy"]\n', encoding="utf-8")
 
-    def fake_scan(target_text, weights=None, remote=False):
-        finding = Finding(
-            id="security.no_policy",
-            category=Category.SECURITY_POSTURE,
-            severity=Severity.MEDIUM,
-            message="No security policy file was found.",
-            evidence="No SECURITY.md or .github/SECURITY.md was detected.",
-            recommendation="Add a SECURITY.md file.",
-        )
-        findings = [finding]
-        return ScanResult(
-            target=Target(raw=target_text, kind="local", path=target_text),
-            detected_files=DetectedFiles(),
-            findings=findings,
-            score=calculate_score(findings, weights=weights),
-        )
-
-    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
-
     result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json", "--config", str(config)])
+    stderr = plain_output(result.stderr)
 
-    assert result.exit_code == 0
-    data = json.loads(result.stdout)
-    assert data["findings"] == []
-    assert data["score"]["total"] == 100
+    assert result.exit_code == 2
+    assert "--config" in stderr
+    assert "Unknown config section(s): rules" in stderr
 
 
-def test_cli_config_can_override_finding_severity(monkeypatch, tmp_path):
+def test_cli_config_rejects_severity_overrides_section(tmp_path):
     config = tmp_path / "repotrust.toml"
     config.write_text(
         '[severity_overrides]\n"security.no_policy" = "low"\n',
         encoding="utf-8",
     )
 
-    def fake_scan(target_text, weights=None, remote=False):
-        finding = Finding(
-            id="security.no_policy",
-            category=Category.SECURITY_POSTURE,
-            severity=Severity.MEDIUM,
-            message="No security policy file was found.",
-            evidence="No SECURITY.md or .github/SECURITY.md was detected.",
-            recommendation="Add a SECURITY.md file.",
-        )
-        findings = [finding]
-        return ScanResult(
-            target=Target(raw=target_text, kind="local", path=target_text),
-            detected_files=DetectedFiles(),
-            findings=findings,
-            score=calculate_score(findings, weights=weights),
-        )
-
-    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
-
     result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json", "--config", str(config)])
+    stderr = plain_output(result.stderr)
 
-    assert result.exit_code == 0
-    data = json.loads(result.stdout)
-    assert data["findings"][0]["severity"] == "low"
-    assert data["score"]["categories"]["security_posture"] == 92
+    assert result.exit_code == 2
+    assert "--config" in stderr
+    assert "Unknown config section(s): severity_overrides" in stderr
 
 
-def test_cli_remote_scan_receives_config_weights(monkeypatch, tmp_path):
+def test_cli_remote_scan_does_not_receive_config_weights(monkeypatch, tmp_path):
     config = tmp_path / "repotrust.toml"
-    config.write_text(
-        """
-[weights]
-readme_quality = 1.0
-install_safety = 0.0
-security_posture = 0.0
-project_hygiene = 0.0
-""",
-        encoding="utf-8",
-    )
+    config.write_text("[policy]\nfail_under = 0\n", encoding="utf-8")
     calls = []
 
     def fake_scan(target_text, weights=None, remote=False):
@@ -1789,18 +1737,7 @@ project_hygiene = 0.0
     )
 
     assert result.exit_code == 0
-    assert calls == [
-        (
-            "https://github.com/owner/repo",
-            {
-                "readme_quality": 1.0,
-                "install_safety": 0.0,
-                "security_posture": 0.0,
-                "project_hygiene": 0.0,
-            },
-            True,
-        )
-    ]
+    assert calls == [("https://github.com/owner/repo", None, True)]
 
 
 def test_cli_remote_scan_config_fail_under_is_used(monkeypatch, tmp_path):
@@ -1850,7 +1787,7 @@ def test_cli_invalid_config_exits_with_usage_error(tmp_path):
 
     assert result.exit_code == 2
     assert "--config" in stderr
-    assert "must define exactly" in stderr
+    assert "Unknown config section(s): weights" in stderr
 
 
 def test_cli_invalid_policy_does_not_echo_secret_values(tmp_path):
@@ -1885,31 +1822,12 @@ def test_cli_fail_under(tmp_path):
     assert result.exit_code == 1
 
 
-def test_direct_cli_gate_preserves_json_when_profile_policy_fails(monkeypatch, tmp_path):
+def test_direct_cli_gate_rejects_removed_profile_policy(tmp_path):
     config = tmp_path / "repotrust.toml"
     config.write_text(
         '[policy.profiles]\nagent_delegate = "usable_after_review"\n',
         encoding="utf-8",
     )
-
-    def fake_scan(target_text, weights=None, remote=False):
-        finding = Finding(
-            id="install.npm_lifecycle_script",
-            category=Category.INSTALL_SAFETY,
-            severity=Severity.MEDIUM,
-            message="package.json contains install lifecycle scripts.",
-            evidence="package.json scripts include postinstall.",
-            recommendation="Review install scripts before delegation.",
-        )
-        findings = [finding]
-        return ScanResult(
-            target=Target(raw=target_text, kind="local", path=target_text),
-            detected_files=DetectedFiles(),
-            findings=findings,
-            score=calculate_score(findings, weights=weights),
-        )
-
-    monkeypatch.setattr("repotrust.cli.scan_target", fake_scan)
 
     result = runner.invoke(
         direct_app,
@@ -1918,13 +1836,10 @@ def test_direct_cli_gate_preserves_json_when_profile_policy_fails(monkeypatch, t
     )
     stderr = plain_output(result.stderr)
 
-    assert result.exit_code == 1
-    data = json.loads(result.stdout)
-    assert data["assessment"]["profiles"]["agent_delegate"]["verdict"] == (
-        "do_not_install_before_review"
-    )
-    assert "Policy gate failed" in stderr
-    assert "profile agent_delegate" in stderr
+    assert result.exit_code == 2
+    assert result.stdout == ""
+    assert "--config" in stderr
+    assert "Unknown [policy] key(s): profiles" in stderr
 
 
 def test_direct_cli_gate_example_policy_passes_good_fixture(tmp_path):

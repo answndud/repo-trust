@@ -534,7 +534,7 @@ python -m json.tool /tmp/repotrust-fail.json
 
 ## 설정 파일
 
-정책 점수 기준, 목적별 profile gate, category weight, finding 예외를 TOML 파일로 지정할 수 있습니다.
+정책 점수 기준을 TOML 파일로 지정할 수 있습니다. 1인 운영용 v1 범위에서는 `policy.fail_under`만 지원합니다.
 
 복사 가능한 시작점은 `examples/repotrust.toml`에 있습니다.
 
@@ -543,23 +543,6 @@ python -m json.tool /tmp/repotrust-fail.json
 ```toml
 [policy]
 fail_under = 80
-
-[policy.profiles]
-install = "usable_after_review"
-dependency = "usable_after_review"
-agent_delegate = "usable_by_current_checks"
-
-[rules]
-disabled = ["remote.github_issues_disabled"]
-
-[severity_overrides]
-"security.no_policy" = "low"
-
-[weights]
-readme_quality = 0.25
-install_safety = 0.30
-security_posture = 0.25
-project_hygiene = 0.20
 ```
 
 **입력할 명령**
@@ -568,9 +551,7 @@ project_hygiene = 0.20
 repo-trust html . --config /path/to/repotrust.toml
 ```
 
-CLI 옵션이 config보다 우선합니다. `policy.profiles`는 `install`, `dependency`, `agent_delegate`에 대해 최소 허용 verdict를 지정합니다. verdict는 낮은 순서대로 `do_not_install_before_review`, `insufficient_evidence`, `usable_after_review`, `usable_by_current_checks`입니다.
-
-`rules.disabled`는 지정한 finding ID를 리포트와 점수 계산에서 제외합니다. `severity_overrides`는 finding ID별 severity를 `info`, `low`, `medium`, `high` 중 하나로 바꾼 뒤 점수와 assessment를 다시 계산합니다. config 자동 탐지와 중앙 조직 policy server는 아직 지원하지 않습니다.
+CLI 옵션이 config보다 우선합니다. config 자동 탐지, category weight 조정, finding disable, severity override, 목적별 profile gate, 중앙 조직 policy server는 지원하지 않습니다.
 
 정책에서 사용할 finding ID는 리포트와 `repo-trust explain <finding-id>` 출력의 설명을 기준으로 검토하세요. JSON report를 직접 파싱하는 도구는 `schema_version`을 먼저 확인하고 필요한 key만 보수적으로 읽는 방식으로 구현하세요.
 

@@ -14,10 +14,8 @@ from rich.console import Console
 from . import __version__
 from .compare_reports import render_compare_reports
 from .config import (
-    VERDICT_RANK,
     ConfigError,
     RepoTrustConfig,
-    apply_config_policy,
     load_config,
 )
 from .console import ConsoleWorkflow, run_console_mode
@@ -881,10 +879,9 @@ def _scan_result_with_config(
     remote: bool,
 ) -> ScanResult:
     try:
-        result = scan_target(target, weights=config.weights, remote=remote)
+        return scan_target(target, remote=remote)
     except ScanInputError as exc:
         raise typer.BadParameter(str(exc), param_hint="--remote") from exc
-    return apply_config_policy(result, config)
 
 
 def _resolve_output_path(output: Path, today: date | None = None) -> Path:
@@ -1003,12 +1000,6 @@ def _policy_failures(
             f"score {result.score.total} is below required minimum {effective_fail_under}"
         )
 
-    for profile, min_verdict in config.profile_min_verdicts.items():
-        actual_verdict = result.assessment.profiles[profile].verdict
-        if VERDICT_RANK[actual_verdict] < VERDICT_RANK[min_verdict]:
-            failures.append(
-                f"profile {profile} verdict {actual_verdict} is below required {min_verdict}"
-            )
     return failures
 
 
