@@ -575,7 +575,13 @@ CLI 옵션이 config보다 우선합니다. config 자동 탐지, category weigh
 
 ## 기존 호환 명령
 
-기존 개발용 명령인 `repotrust scan`도 계속 동작합니다. 새 사용자 문서와 공식 예시는 `repo-trust`와 `repo-trust-kr` 기준으로 설명합니다.
+기존 개발용 명령인 `repotrust scan`도 기존 자동화를 위해 당분간 계속 동작하지만, 실행 시 deprecation notice를 stderr에 출력합니다. 새 사용자 문서와 공식 예시는 `repo-trust`와 `repo-trust-kr` 기준으로 설명합니다.
+
+| 기존 명령 | 권장 명령 |
+| --- | --- |
+| `repotrust scan . --format html --output report.html` | `repo-trust html . --output report.html` |
+| `repotrust scan . --format json --output report.json` | `repo-trust json . --output report.json` |
+| `repotrust scan .` | `repo-trust check .` |
 
 ## 릴리즈 노트
 

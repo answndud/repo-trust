@@ -113,6 +113,17 @@ def test_cli_scan_json(tmp_path):
     assert "RepoTrust Summary" not in result.stdout
 
 
+def test_legacy_cli_scan_prints_deprecation_notice(tmp_path):
+    result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json"])
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 0
+    assert "Deprecated: repotrust scan is a legacy compatibility command." in stderr
+    assert "Prefer repo-trust" in stderr
+    assert "html/json/check" in stderr
+    assert json.loads(result.stdout)["target"]["kind"] == "local"
+
+
 def test_repo_self_scan_is_public_readiness_clean():
     result = runner.invoke(
         direct_app,

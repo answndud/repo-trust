@@ -127,6 +127,7 @@ def scan(
     ] = False,
 ) -> None:
     """Scan a repository target."""
+    _print_legacy_scan_deprecation()
     _run_scan(
         target=_target_with_subdir(target, subdir),
         report_format=report_format,
@@ -135,6 +136,14 @@ def scan(
         remote=remote,
         fail_under=fail_under,
         verbose=verbose,
+    )
+
+
+def _print_legacy_scan_deprecation() -> None:
+    status_console.print(
+        "[yellow]Deprecated:[/yellow] [bold]repotrust scan[/bold] is a legacy "
+        "compatibility command. Prefer [bold]repo-trust html/json/check[/bold]; "
+        "legacy scan remains available for existing automation for now."
     )
 
 
