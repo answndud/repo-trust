@@ -219,7 +219,7 @@ repo-trust safe-install https://github.com/openai/codex
 
 `safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 source install도 코드 실행으로 보고, 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 격리된 검토/설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. 안전 설치 안내는 터미널 전용 명령으로 유지하고, HTML 리포트는 점수와 근거를 보관하는 정적 리포트로 둡니다.
 
-`--audit`을 붙이면 README 설치 명령 외에도 설치 시점에 실행될 수 있는 표면을 한 번 더 점검합니다. 로컬 checkout을 대상으로 `pyproject.toml` build backend, `setup.py`, `package.json` install lifecycle script, root `Makefile`/`Dockerfile`/shell script, VCS dependency 신호를 보여줍니다. GitHub URL은 clone/API 호출 없이 로컬 checkout이 필요하다고 안내합니다.
+`--audit`을 붙이면 안전 설치 안내 뒤에 로컬 설치 시점 실행 표면을 점검합니다. README 설치 명령과 위험 README 패턴은 앞의 Safe Install Advice에서 다루고, audit 출력은 `pyproject.toml` build backend, `setup.py`, `package.json` install lifecycle script, root `Makefile`/`Dockerfile`/shell script, VCS dependency 신호에 집중합니다. GitHub URL은 clone/API 호출 없이 로컬 checkout이 필요하다고 안내합니다.
 
 ### 위험 리포트를 받은 뒤 다음 조치 보기
 

@@ -10,7 +10,6 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
     import tomli as tomllib
 
-from .rules import RISKY_INSTALL_PATTERNS, install_command_lines
 from .targets import parse_target
 
 
@@ -26,7 +25,6 @@ class InstallAuditSignal:
 class InstallAudit:
     target: str
     local_path: Path | None
-    readme_commands: list[str]
     signals: list[InstallAuditSignal]
     local_only: bool = False
 
@@ -37,7 +35,6 @@ def audit_install(target: str) -> InstallAudit:
         return InstallAudit(
             target=target,
             local_path=None,
-            readme_commands=[],
             signals=[
                 InstallAuditSignal(
                     id="audit.install.local_checkout_required",
@@ -54,7 +51,6 @@ def audit_install(target: str) -> InstallAudit:
         return InstallAudit(
             target=target,
             local_path=repo_path,
-            readme_commands=[],
             signals=[
                 InstallAuditSignal(
                     id="audit.install.local_path_missing",
@@ -65,13 +61,7 @@ def audit_install(target: str) -> InstallAudit:
             ],
         )
 
-    readme_text = _read_first_existing_text(
-        repo_path,
-        ("README.md", "README.rst", "README.txt", "README"),
-    )
-    readme_commands = install_command_lines(readme_text) if readme_text else []
     signals: list[InstallAuditSignal] = []
-    signals.extend(_risky_readme_command_signals(readme_commands))
     signals.extend(_python_install_signals(repo_path))
     signals.extend(_node_install_signals(repo_path))
     signals.extend(_root_execution_file_signals(repo_path))
@@ -80,7 +70,6 @@ def audit_install(target: str) -> InstallAudit:
     return InstallAudit(
         target=target,
         local_path=repo_path,
-        readme_commands=readme_commands,
         signals=sorted(signals, key=_signal_sort_key),
     )
 
@@ -112,11 +101,9 @@ def _render_en(audit: InstallAudit) -> str:
         [
             f"Local path: {audit.local_path}",
             "",
-            "README install commands:",
+            "Install-time execution signals:",
         ]
     )
-    lines.extend(_command_lines(audit.readme_commands))
-    lines.extend(["", "Install-time execution signals:"])
     lines.extend(_signal_lines(audit.signals))
     lines.extend(
         [
@@ -149,11 +136,9 @@ def _render_ko(audit: InstallAudit) -> str:
         [
             f"로컬 경로: {audit.local_path}",
             "",
-            "README 설치 명령:",
+            "설치 시점 실행 신호:",
         ]
     )
-    lines.extend(_command_lines(audit.readme_commands))
-    lines.extend(["", "설치 시점 실행 신호:"])
     lines.extend(_signal_lines(audit.signals))
     lines.extend(
         [
@@ -165,12 +150,6 @@ def _render_ko(audit: InstallAudit) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _command_lines(commands: list[str]) -> list[str]:
-    if not commands:
-        return ["- none detected"]
-    return [f"- {command}" for command in commands]
-
-
 def _signal_lines(signals: list[InstallAuditSignal]) -> list[str]:
     if not signals:
         return ["- none detected"]
@@ -178,23 +157,6 @@ def _signal_lines(signals: list[InstallAuditSignal]) -> list[str]:
         f"- {signal.id} [{signal.severity}]: {signal.evidence} -> {signal.recommendation}"
         for signal in signals
     ]
-
-
-def _risky_readme_command_signals(commands: list[str]) -> list[InstallAuditSignal]:
-    signals: list[InstallAuditSignal] = []
-    for risky_pattern in RISKY_INSTALL_PATTERNS:
-        for command in commands:
-            if risky_pattern["pattern"].search(command):
-                signals.append(
-                    InstallAuditSignal(
-                        id=f"audit.{risky_pattern['id']}",
-                        severity=risky_pattern["severity"].value,
-                        evidence=command,
-                        recommendation="Review or replace this README install command before running it.",
-                    )
-                )
-                break
-    return signals
 
 
 def _python_install_signals(repo_path: Path) -> list[InstallAuditSignal]:
@@ -313,14 +275,6 @@ def _vcs_dependency_signals(repo_path: Path) -> list[InstallAuditSignal]:
                 )
             )
     return signals
-
-
-def _read_first_existing_text(repo_path: Path, names: tuple[str, ...]) -> str:
-    for name in names:
-        path = repo_path / name
-        if path.is_file():
-            return _read_text(path)
-    return ""
 
 
 def _read_text(path: Path) -> str:

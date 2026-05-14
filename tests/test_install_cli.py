@@ -84,6 +84,8 @@ def test_direct_cli_safe_install_audit_reports_install_time_files(tmp_path):
     )
 
     assert result.exit_code == 0
+    assert "RepoTrust Install Audit" in result.stdout
+    assert "README install commands:" not in result.stdout
     assert "audit.install.python_build_backend [medium]" in result.stdout
     assert "audit.install.python_setup_py [medium]" in result.stdout
     assert "audit.install.npm_lifecycle_script [medium]" in result.stdout
