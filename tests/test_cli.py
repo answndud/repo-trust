@@ -367,8 +367,17 @@ def test_direct_cli_samples_writes_good_and_risky_gallery(tmp_path):
     assert "Next isolated step" in risky_report
     assert "<dt>지금 할 일</dt>" in risky_report
     assert "<dt>언제 수용할 수 있나요?</dt>" in risky_report
-    assert json.loads(good_json.read_text(encoding="utf-8"))["score"]["grade"] == "A"
-    assert json.loads(risky_json.read_text(encoding="utf-8"))["score"]["grade"] == "F"
+    good_report = json.loads(good_json.read_text(encoding="utf-8"))
+    risky_report_json = json.loads(risky_json.read_text(encoding="utf-8"))
+    assert good_report["score"]["total"] == 100
+    assert good_report["score"]["grade"] == "A"
+    assert good_report["assessment"]["confidence"] == "high"
+    assert good_report["findings"] == []
+    assert risky_report_json["score"]["total"] == 57
+    assert risky_report_json["score"]["grade"] == "F"
+    assert risky_report_json["assessment"]["confidence"] == "high"
+    assert risky_report_json["score"]["categories"]["install_safety"] == 30
+    assert len(risky_report_json["findings"]) == 7
 
 
 def test_direct_kr_cli_samples_outputs_korean_gallery(tmp_path):
