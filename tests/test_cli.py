@@ -20,6 +20,17 @@ def test_product_cli_version():
     assert result.stdout.strip() == "repo-trust 0.2.10"
 
 
+def test_direct_cli_root_prints_command_help_without_console_mode():
+    result = runner.invoke(direct_app, [], prog_name="repo-trust")
+    stdout = plain_output(result.stdout)
+
+    assert result.exit_code == 0
+    assert result.stderr == ""
+    assert "Usage: repo-trust [OPTIONS] COMMAND [ARGS]..." in stdout
+    assert "repo-trust check ." in stdout
+    assert "Console Mode" not in stdout
+
+
 def test_legacy_cli_scan_json_keeps_stdout_machine_readable(tmp_path):
     result = runner.invoke(app, ["scan", str(tmp_path), "--format", "json"])
 
@@ -51,6 +62,7 @@ def test_direct_kr_cli_help_uses_korean_labels():
     assert "사용법:" in stdout
     assert "HTML 신뢰 리포트를 저장합니다." in stdout
     assert "finding ID의 의미와 추천 조치를 설명합니다." in stdout
+    assert "콘솔 모드" not in stdout
 
 
 def test_samples_command_writes_good_and_risky_gallery(tmp_path):

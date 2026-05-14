@@ -25,9 +25,8 @@ Step 3. Save a machine-readable report for later comparison:
 Optional GitHub URL check without API keys:
   repo-trust check https://github.com/owner/repo
 
-If you prefer menus:
-  repo-trust
-  Choose [L] local scan, [S] safe install, then [J] export JSON.
+For a detailed beginner guide:
+  guides/command-mode-guide.md
 """
 
 
@@ -49,7 +48,6 @@ def _render_ko() -> str:
 API key 없이 GitHub URL만 빠르게 확인하려면:
   repo-trust-kr check https://github.com/owner/repo
 
-메뉴가 더 편하면:
-  repo-trust-kr
-  [L] 로컬 검사, [S] 안전 설치, [J] JSON 저장 순서로 선택하세요.
+자세한 초보자 가이드:
+  guides/command-mode-guide.md
 """

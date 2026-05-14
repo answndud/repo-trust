@@ -18,7 +18,6 @@ from .config import (
     RepoTrustConfig,
     load_config,
 )
-from .console import ConsoleWorkflow, run_console_mode
 from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
 from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text
@@ -172,7 +171,7 @@ def product_main(
         typer.echo(f"repo-trust {__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        _run_console_shell(ctx, locale="ko")
+        typer.echo(localized_help_text("root", "en"))
         raise typer.Exit()
 
 
@@ -201,7 +200,7 @@ def product_kr_main(
         typer.echo(f"repo-trust-kr {__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        _run_console_shell(ctx, locale="ko")
+        typer.echo(localized_help_text("root", "ko"))
         raise typer.Exit()
 
 
@@ -759,64 +758,6 @@ def _run_product_scan(
         dashboard=True,
         output_label=output_path,
         dashboard_locale=locale,
-    )
-
-
-def _run_console_shell(ctx: typer.Context, *, locale: str) -> None:
-    run_console_mode(
-        console=status_console,
-        help_text=lambda: localized_help_text("root", locale),
-        version=__version__,
-        run_workflow=_run_console_workflow,
-        locale=locale,
-    )
-
-
-def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
-    if workflow.workflow_kind == "safe_install":
-        _run_console_safe_install_workflow(workflow)
-        return
-    if workflow.workflow_kind == "next_steps":
-        _run_console_next_steps_workflow(workflow)
-        return
-
-    _run_product_scan(
-        target=workflow.target,
-        report_format=ReportFormat(workflow.report_format),
-        output=None,
-        config=None,
-        parse_only=workflow.parse_only,
-        remote=workflow.remote,
-        fail_under=None,
-        verbose=workflow.verbose,
-        terminal_only=workflow.terminal_only,
-        locale=workflow.locale,
-    )
-
-
-def _run_console_safe_install_workflow(workflow: ConsoleWorkflow) -> None:
-    result = _scan_result(
-        target=workflow.target,
-        config=None,
-        remote=workflow.remote,
-    )
-    status_console.print(
-        render_safe_install_advice(result, locale=workflow.locale),
-        end="",
-        markup=False,
-    )
-
-
-def _run_console_next_steps_workflow(workflow: ConsoleWorkflow) -> None:
-    result = _scan_result(
-        target=workflow.target,
-        config=None,
-        remote=workflow.remote,
-    )
-    status_console.print(
-        render_next_steps(result, locale=workflow.locale),
-        end="",
-        markup=False,
     )
 
 

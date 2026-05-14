@@ -17,13 +17,14 @@ English summary: RepoTrust is a Python CLI that helps you review observable trus
 
 1. [설치 빠른 시작](#installation-quickstart--설치-빠른-시작)에서 `repo-trust-kr`을 설치합니다.
 2. [5분 시작 가이드](#5분-시작-가이드)에서 샘플 리포트와 실제 저장소 검사를 실행합니다.
+3. 명령어가 낯설다면 [Command Mode 초보자 가이드](guides/command-mode-guide.md)를 따라 합니다.
 3. [리포트 읽는 법](#리포트-읽는-법)에서 결과를 어떻게 판단할지 확인합니다.
 
 CI, config, fixture, 개발자 검증은 RepoTrust를 프로젝트에 붙이거나 직접 개발할 때만 읽어도 됩니다.
 
 ## Installation Quickstart / 설치 빠른 시작
 
-PyPI는 사용하지 않습니다. 공식 배포 채널은 GitHub Releases이며, 처음 쓰는 사람은 release wheel을 설치한 뒤 한국어 콘솔 모드인 `repo-trust-kr`로 시작하면 됩니다.
+PyPI는 사용하지 않습니다. 공식 배포 채널은 GitHub Releases이며, 처음 쓰는 사람은 release wheel을 설치한 뒤 한국어 command mode인 `repo-trust-kr <명령>`으로 시작하면 됩니다.
 
 ### macOS / Linux
 
@@ -31,7 +32,7 @@ PyPI는 사용하지 않습니다. 공식 배포 채널은 GitHub Releases이며
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
-repo-trust-kr
+repo-trust-kr --help
 ```
 
 터미널을 새로 열었다면 실행 전에 `source .venv/bin/activate`로 가상환경을 다시 활성화하세요.
@@ -42,14 +43,14 @@ repo-trust-kr
 py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
-repo-trust-kr
+repo-trust-kr --help
 ```
 
 PowerShell에서 가상환경 활성화가 막히면 아래처럼 가상환경 안의 실행 파일을 직접 호출해도 됩니다.
 
 ```powershell
 .\.venv\Scripts\python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
-.\.venv\Scripts\repo-trust-kr.exe
+.\.venv\Scripts\repo-trust-kr.exe --help
 ```
 
 wheel 설치가 맞지 않는 환경에서는 같은 release의 source archive를 설치할 수 있습니다.
@@ -71,24 +72,26 @@ repo-trust-kr samples
 내가 보고 있는 저장소를 검사할 때는 아래 순서로 진행하면 됩니다.
 
 ```bash
-repo-trust-kr
+repo-trust-kr check .
+repo-trust-kr safe-install .
+repo-trust-kr next-steps .
+repo-trust-kr html .
 ```
 
-1. `[L] 로컬 저장소`를 선택하고 경로에 `.`을 입력합니다.
-2. README 설치 명령을 실행하기 전에는 `[S] 안전 설치`를 선택합니다.
-3. 위험 finding이 있거나 무엇부터 해야 할지 모르겠다면 `[N] 다음 조치`를 선택합니다.
-4. 나중에 다시 보거나 비교하려면 `[J] JSON 내보내기` 또는 `html` 명령으로 리포트를 저장합니다.
+1. `check .`로 현재 폴더의 신뢰 판단을 터미널에서 봅니다.
+2. README 설치 명령을 실행하기 전에는 `safe-install .`을 봅니다.
+3. 위험 finding이 있거나 무엇부터 해야 할지 모르겠다면 `next-steps .`를 실행합니다.
+4. 나중에 다시 보거나 공유하려면 `html .` 또는 `json .`으로 리포트를 저장합니다.
 
-GitHub URL만 빠르게 확인할 때는 `[G] GitHub 저장소`를 선택하면 됩니다. 기본 GitHub URL 검사는 API나 token 없이 URL만 확인하므로 파일 수준 근거가 부족할 수 있습니다. 중요한 dependency 후보라면 로컬로 checkout한 뒤 `[L] 로컬 저장소`로 검사하는 편이 더 정확합니다.
+GitHub URL만 빠르게 확인할 때는 `repo-trust-kr check https://github.com/owner/repo`를 실행하면 됩니다. 기본 GitHub URL 검사는 API나 token 없이 URL만 확인하므로 파일 수준 근거가 부족할 수 있습니다. 중요한 dependency 후보라면 로컬로 checkout한 뒤 `repo-trust-kr check .`로 검사하는 편이 더 정확합니다.
+
+명령어가 낯설다면 [Command Mode 초보자 가이드](guides/command-mode-guide.md)에 처음 실행 순서, 명령별 판단 기준, 자주 헷갈리는 경로/옵션 설명을 자세히 정리해 두었습니다.
 
 ## Usage / 사용 방식
 
-RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
+RepoTrust의 공식 사용 방식은 Command Mode입니다. 즉 `repo-trust-kr check .`처럼 할 일을 명령어 한 줄로 직접 지정합니다.
 
-| 방식 | 명령 | 추천 상황 | 결과 |
-| --- | --- | --- | --- |
-| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 튜토리얼, 샘플 리포트, 검사, 안전 설치 안내, 다음 조치 계획, JSON 저장 |
-| Command Mode | 아래 명령별 형식을 직접 입력 | 반복 실행, 자동화, 문서화할 때 | 튜토리얼, 샘플 리포트, HTML/JSON 파일, 터미널 대시보드, 안전 설치 안내, 다음 조치 계획, finding 설명, 리포트 비교 |
+명령 없이 `repo-trust` 또는 `repo-trust-kr`만 실행하면 메뉴 화면을 열지 않고 사용 가능한 명령과 초보자 가이드 위치를 보여줍니다. 예전 Console Mode는 제거됐습니다.
 
 Command Mode는 명령마다 받는 인자가 다릅니다.
 
@@ -106,9 +109,7 @@ Command Mode는 명령마다 받는 인자가 다릅니다.
 | finding ID 설명 보기 | `repo-trust explain <finding-id>` |
 | JSON 리포트 2개 비교 | `repo-trust compare <old.json> <new.json>` |
 
-명령 없이 `repo-trust` 또는 `repo-trust-kr`만 실행하면 같은 한국어 Console Mode가 열립니다. 영어 도움말과 영어 command output이 필요하면 `repo-trust <명령>` 형태의 Command Mode를 사용하세요.
-
-차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[N]` 단축키로 작업을 고릅니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`, `safe-install`, `next-steps`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
+파일 저장 규칙과 검사 기준은 모든 command에서 공유합니다. `check`, `safe-install`, `next-steps`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
 Monorepo에서 특정 package만 검사하려면 로컬 checkout을 대상으로 `--subdir <상대경로>`를 사용할 수 있습니다.
 
@@ -119,40 +120,6 @@ repo-trust safe-install --audit . --subdir packages/cli
 ```
 
 `--subdir`은 로컬 대상에서만 동작합니다. GitHub `tree`/`blob` URL은 clone이나 API 호출 없이 URL 형식만 확인하므로, 하위 폴더 단위 신뢰 평가는 해당 저장소를 로컬로 checkout한 뒤 `--subdir`로 실행하세요.
-
-## Console Mode
-
-명령어 옵션을 외우지 않아도 되는 메뉴 방식입니다.
-선택한 workflow의 결과는 같은 터미널에 바로 출력됩니다.
-
-**입력할 명령**
-
-```bash
-repo-trust-kr
-```
-
-`repo-trust`만 입력해도 같은 한국어 Console Mode가 열립니다.
-
-**화면 예시**
-
-```text
-RepoTrust v0.2.10
-설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다.
-처음이면: [L] 로컬 검사 -> [S] 안전 설치 -> [N] 다음 조치.
-────────────────────────────────────
-작업 선택:
-G  GitHub 저장소  기본은 API 없이 URL 확인
-L  로컬 저장소    파일 근거까지 로컬 검사
-C  빠른 점검      즉시 요약 보기
-J  JSON 내보내기  기계가 읽는 리포트 저장
-S  안전 설치      설치 전 다음 단계 안내
-N  다음 조치      검사 후 우선순위별 행동 계획
-────────────────────────────────────
-[?] 도움말   [Q] 종료
-→ 키를 누르세요
-```
-
-단축키는 대소문자를 구분하지 않습니다. 잘못 선택했다면 입력 단계에서 `[B]`를 눌러 작업 선택 화면으로 돌아갈 수 있습니다. 기존 숫자 입력도 일부 호환되므로 `1` 또는 `01`은 로컬 리포트로 동작합니다. 튜토리얼과 샘플 리포트 생성은 `repo-trust tutorial`, `repo-trust samples` command mode로 실행하세요.
 
 ## Command Mode
 

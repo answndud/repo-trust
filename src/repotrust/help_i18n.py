@@ -22,9 +22,12 @@ Commands:
   explain Explain a finding ID.
   compare Compare two JSON reports.
 
-Console Mode:
-  repo-trust      Open the workflow console with Korean UI.
-  repo-trust-kr   Open the workflow console with Korean UI.
+Beginner guide:
+  guides/command-mode-guide.md
+
+Run a command explicitly, for example:
+  repo-trust check .
+  repo-trust html .
 """,
         "ko": """사용법: repo-trust [옵션] 명령 [인자]...
 
@@ -46,9 +49,12 @@ Console Mode:
   explain finding ID의 의미와 추천 조치를 설명합니다.
   compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
 
-콘솔 모드:
-  repo-trust      한국어 workflow 콘솔을 엽니다.
-  repo-trust-kr   한국어 workflow 콘솔을 엽니다.
+초보자 가이드:
+  guides/command-mode-guide.md
+
+명령을 직접 지정해서 실행하세요. 예:
+  repo-trust-kr check .
+  repo-trust-kr html .
 """,
     },
     "html": {
