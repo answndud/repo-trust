@@ -4,6 +4,7 @@ from inspect import signature
 from pathlib import Path
 
 from repotrust.detection import detect_files
+from repotrust.finding_catalog import FINDING_EXPLANATIONS, FINDING_TITLES
 from repotrust.models import (
     Category,
     DetectedFiles,
@@ -13,8 +14,6 @@ from repotrust.models import (
     Target,
 )
 from repotrust.reports import (
-    FINDING_EXPLANATIONS,
-    FINDING_TITLES,
     render_html,
     render_json,
     render_markdown,
