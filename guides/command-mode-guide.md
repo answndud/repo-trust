@@ -224,7 +224,7 @@ repo-trust-kr json . --output reports/current.json
 
 `--format`은 사용하지 않습니다. `repo-trust html`, `repo-trust json`, `repo-trust check`처럼 command를 직접 고르는 방식을 사용하세요.
 
-## 좋은 예시와 나쁜 예시
+## 좋은 예시와 헷갈리는 예시
 
 좋은 예시:
 
@@ -235,7 +235,7 @@ repo-trust-kr html . --output reports/current.html
 repo-trust-kr json . --output reports/current.json
 ```
 
-나쁜 예시:
+헷갈리는 예시:
 
 ```bash
 repo-trust-kr
@@ -243,7 +243,7 @@ repo-trust-kr check https://github.com/owner/repo --subdir packages/api
 repo-trust-kr html .
 ```
 
-첫 번째는 더 이상 메뉴를 열지 않습니다. 사용할 command를 직접 적어야 합니다.
+첫 번째는 오류는 아니지만 검사를 실행하지 않고 도움말만 보여줍니다. 실제 검사를 하려면 `check`, `html`, `json` 같은 command를 직접 적어야 합니다.
 
 두 번째는 GitHub URL에 `--subdir`을 붙인 예입니다. 로컬 checkout에서만 사용하세요.
 
