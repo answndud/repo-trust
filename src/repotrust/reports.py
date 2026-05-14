@@ -4,7 +4,6 @@ import html
 import json
 
 from .evidence import EvidenceRow, evidence_rows
-from .install_advice import readme_install_commands, safe_commands
 from .models import JSON_SCHEMA_VERSION, AssessmentProfile, Finding, ScanResult
 
 
@@ -22,47 +21,6 @@ CATEGORY_DESCRIPTIONS = {
     "security_posture": "SECURITY.md, CI, Dependabot, lockfile처럼 보안과 재현성을 돕는 신호를 봅니다.",
     "project_hygiene": "LICENSE, dependency manifest 등 프로젝트를 dependency로 쓰기 전 확인할 관리 신호를 봅니다.",
     "target": "로컬 경로인지 GitHub URL인지, 원격 내용을 실제로 가져왔는지 같은 검사 대상 상태를 봅니다.",
-}
-
-DETECTED_LABELS = {
-    "readme": "README",
-    "license": "라이선스",
-    "security": "보안 정책",
-    "ci_workflows": "CI workflow",
-    "dependency_manifests": "Dependency manifest",
-    "lockfiles": "Lockfile",
-    "dependabot": "Dependabot 설정",
-}
-
-DETECTED_DESCRIPTIONS = {
-    "readme": (
-        "사용자가 설치와 사용 방법을 이해할 수 있는 핵심 문서입니다.",
-        "README가 없으면 목적, 설치 방법, 사용 방법을 사용자가 직접 추정해야 합니다.",
-    ),
-    "license": (
-        "라이선스 파일이 있어 dependency 사용 조건을 확인할 수 있습니다.",
-        "라이선스가 없으면 회사나 공개 프로젝트에서 사용할 수 있는지 판단하기 어렵습니다.",
-    ),
-    "security": (
-        "취약점 신고와 보안 대응 경로를 확인할 수 있습니다.",
-        "보안 문제를 어디로 신고해야 하는지 명확하지 않습니다.",
-    ),
-    "ci_workflows": (
-        "자동 테스트나 검증이 실행될 가능성이 있습니다.",
-        "자동 검증 신호가 없어 변경 품질을 판단하기 어렵습니다.",
-    ),
-    "dependency_manifests": (
-        "프로젝트가 어떤 패키지와 도구 체계를 쓰는지 확인할 수 있습니다.",
-        "dependency 선언 파일을 찾지 못해 설치 구조를 판단하기 어렵습니다.",
-    ),
-    "lockfiles": (
-        "고정된 dependency 버전으로 재현 가능한 설치에 도움이 됩니다.",
-        "lockfile이 없으면 같은 명령을 실행해도 시간이 지나며 다른 dependency가 설치될 수 있습니다.",
-    ),
-    "dependabot": (
-        "dependency 업데이트를 자동으로 감지하는 설정이 있습니다.",
-        "dependency 업데이트 관리가 자동화되어 있는지 확인되지 않습니다.",
-    ),
 }
 
 FINDING_TITLES = {
@@ -289,8 +247,6 @@ def render_html(result: ScanResult) -> str:
     next_action_items = "\n".join(
         f"          <li>{html.escape(action)}</li>" for action in assessment.next_actions
     )
-    safe_install_section = _safe_install_html(result)
-    next_steps_section = _next_steps_html(result)
     findings = "\n".join(
         _finding_html(finding) for finding in sorted(result.findings, key=_finding_sort_key)
     )
@@ -325,11 +281,6 @@ def render_html(result: ScanResult) -> str:
     .lead {{ color: #3d4852; font-size: 1.03rem; max-width: 860px; }}
     .assessment-grid {{ display: grid; grid-template-columns: minmax(260px, 0.95fr) minmax(320px, 1.05fr); gap: 18px; margin: 24px 0; }}
     .score-panel, .section-panel, .finding, .empty-state {{ border: 1px solid var(--line); border-radius: 8px; background: #fbfcfd; padding: 18px; }}
-    .next-command {{ border: 1px solid #b6d9d3; border-left: 4px solid var(--accent); border-radius: 8px; background: #f0faf8; padding: 12px 14px; margin: 8px 0 18px; }}
-    .next-command code {{ display: inline-block; background: #ffffff; border: 1px solid #c7e5df; padding: 6px 8px; }}
-    .command-list {{ display: grid; gap: 8px; padding-left: 0; list-style: none; }}
-    .command-list li {{ border: 1px solid #e3e8ef; border-radius: 6px; background: #ffffff; padding: 8px 10px; }}
-    .next-steps-plan {{ border: 1px solid #d8e5f3; border-left: 4px solid #2563eb; border-radius: 8px; background: #f7fbff; padding: 14px; white-space: pre-wrap; overflow-wrap: anywhere; font: 0.94rem/1.56 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
     .score {{ display: flex; align-items: baseline; gap: 12px; margin: 8px 0 12px; }}
     .score strong {{ font-size: 2.5rem; color: #0f172a; }}
     .score span {{ color: var(--muted); font-weight: 700; }}
@@ -353,15 +304,6 @@ def render_html(result: ScanResult) -> str:
     .finding {{ border-left: 5px solid #64748b; margin: 16px 0; background: #ffffff; }}
     .finding header {{ display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }}
     .finding dl {{ display: grid; grid-template-columns: 130px 1fr; gap: 10px 16px; margin: 0; }}
-    .finding-actions {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }}
-    .copy-button {{ border: 1px solid var(--line); border-radius: 6px; background: #ffffff; color: #17212b; padding: 5px 8px; font: inherit; font-size: 0.84rem; font-weight: 800; cursor: pointer; }}
-    .copy-button[data-copied="true"] {{ border-color: #15803d; color: #15803d; }}
-    .finding-controls {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }}
-    .finding-controls button {{ border: 1px solid var(--line); border-radius: 6px; background: #ffffff; color: #17212b; padding: 7px 10px; font: inherit; font-size: 0.9rem; font-weight: 800; cursor: pointer; }}
-    .finding-controls button[aria-pressed="true"] {{ background: #17212b; color: #ffffff; border-color: #17212b; }}
-    .finding details {{ margin-top: 10px; }}
-    .finding summary {{ cursor: pointer; color: #17212b; font-weight: 800; margin-bottom: 10px; }}
-    .finding[hidden] {{ display: none; }}
     .badge {{ display: inline-block; border-radius: 999px; padding: 3px 10px; color: #ffffff; font-size: 0.8rem; font-weight: 800; white-space: nowrap; }}
     .severity-info {{ border-left-color: #64748b; }}
     .severity-low {{ border-left-color: #15803d; }}
@@ -439,10 +381,6 @@ def render_html(result: ScanResult) -> str:
         </ul>
       </section>
 
-{safe_install_section}
-
-{next_steps_section}
-
       <h2>Purpose Profiles</h2>
       <p>같은 finding을 설치, dependency 채택, AI agent 위임 목적별로 다시 읽은 판단입니다.</p>
       <ul class="profile-grid">
@@ -450,18 +388,7 @@ def render_html(result: ScanResult) -> str:
       </ul>
 
       <h2>Prioritized Findings</h2>
-      <p>Assessment와 Purpose Profiles의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {finding_count}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 왜 위험한지, 지금 할 일, 수용 가능한 조건, 실제 근거를 함께 보여줍니다.</p>
-      <div class="finding-controls" aria-label="Finding filters">
-        <button type="button" data-filter-type="all" data-filter-value="all" aria-pressed="true">전체</button>
-        <button type="button" data-filter-type="severity" data-filter-value="high" aria-pressed="false">높음</button>
-        <button type="button" data-filter-type="severity" data-filter-value="medium" aria-pressed="false">중간</button>
-        <button type="button" data-filter-type="severity" data-filter-value="low" aria-pressed="false">낮음</button>
-        <button type="button" data-filter-type="severity" data-filter-value="info" aria-pressed="false">정보</button>
-        <button type="button" data-filter-type="category" data-filter-value="install_safety" aria-pressed="false">설치 안전성</button>
-        <button type="button" data-filter-type="category" data-filter-value="security_posture" aria-pressed="false">보안 태세</button>
-        <button type="button" data-action="expand-findings">전체 펼치기</button>
-        <button type="button" data-action="collapse-findings">전체 접기</button>
-      </div>
+      <p>Assessment와 Purpose Profiles의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {finding_count}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 설명, 실제 근거, 추천 조치를 함께 보여줍니다.</p>
 {findings}
 
       <h2>Next Actions</h2>
@@ -482,59 +409,6 @@ def render_html(result: ScanResult) -> str:
         </li>
       </ul>
     </section>
-    <script>
-      const controls = document.querySelectorAll('[data-filter-type]');
-      const findings = document.querySelectorAll('.finding');
-      controls.forEach((button) => {{
-        button.addEventListener('click', () => {{
-          controls.forEach((control) => control.setAttribute('aria-pressed', 'false'));
-          button.setAttribute('aria-pressed', 'true');
-          const type = button.dataset.filterType;
-          const value = button.dataset.filterValue;
-          findings.forEach((finding) => {{
-            const show = type === 'all' || finding.dataset[type] === value;
-            finding.hidden = !show;
-          }});
-        }});
-      }});
-      document.querySelector('[data-action="expand-findings"]')?.addEventListener('click', () => {{
-        document.querySelectorAll('.finding details').forEach((detail) => detail.open = true);
-      }});
-      document.querySelector('[data-action="collapse-findings"]')?.addEventListener('click', () => {{
-        document.querySelectorAll('.finding details').forEach((detail) => detail.open = false);
-      }});
-      async function copyText(value) {{
-        if (navigator.clipboard?.writeText) {{
-          await navigator.clipboard.writeText(value);
-          return;
-        }}
-        const textarea = document.createElement('textarea');
-        textarea.value = value;
-        textarea.setAttribute('readonly', '');
-        textarea.style.position = 'fixed';
-        textarea.style.left = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        textarea.remove();
-      }}
-      document.querySelectorAll('[data-copy-value]').forEach((button) => {{
-        button.addEventListener('click', async () => {{
-          try {{
-            await copyText(button.dataset.copyValue || '');
-            const original = button.textContent;
-            button.dataset.copied = 'true';
-            button.textContent = '복사됨';
-            setTimeout(() => {{
-              button.dataset.copied = 'false';
-              button.textContent = original;
-            }}, 1400);
-          }} catch (error) {{
-            button.textContent = '복사 실패';
-          }}
-        }});
-      }});
-    </script>
   </main>
 </body>
 </html>
@@ -559,93 +433,6 @@ def _profile_markdown(key: str, profile: AssessmentProfile) -> list[str]:
         lines.append(f"- {action}")
     lines.append("")
     return lines
-
-
-def _safe_install_html(result: ScanResult) -> str:
-    profile = result.assessment.profiles["install"]
-    readme_commands = readme_install_commands(result)
-    safe_pattern_commands = safe_commands(result, locale="ko")
-    next_command_label, next_command, next_command_detail = _next_safe_command(
-        result,
-        safe_pattern_commands=safe_pattern_commands,
-    )
-    readme_items = _command_items_html(
-        readme_commands,
-        empty_text="로컬 README 설치 섹션에서 인식 가능한 설치 명령을 찾지 못했습니다.",
-    )
-    safe_pattern_items = _command_items_html(safe_pattern_commands)
-    return f"""      <h2>Safe Install</h2>
-      <section class="section-panel" aria-label="Safe Install">
-        <p class="profile-verdict" style="color: {_verdict_color(profile.verdict)};">{html.escape(_assessment_label(profile.verdict))}</p>
-        <p>{html.escape(_install_profile_summary_ko(profile.summary))}</p>
-        <h3>Next isolated step</h3>
-        <div class="next-command">
-          <p><strong>{html.escape(next_command_label)}</strong></p>
-          <p><code>{html.escape(next_command)}</code></p>
-          <p class="description">{html.escape(next_command_detail)}</p>
-        </div>
-        <h3>실행 전 체크리스트</h3>
-        <ul class="next-steps">
-          <li>명령이 저장소 README나 신뢰할 수 있는 release notes에서 나온 것인지 확인하세요.</li>
-          <li>source install은 코드 실행으로 보고 먼저 격리 환경에서 검토하세요.</li>
-          <li>전역 설치, sudo, shell pipe보다 격리된 검토/설치 패턴을 우선하세요.</li>
-          <li>고위험 근거가 보이면 멈추고 HTML 리포트의 install finding을 먼저 확인하세요.</li>
-        </ul>
-        <h3>README에서 발견한 설치 명령</h3>
-        <ul class="command-list">
-{readme_items}
-        </ul>
-        <h3>격리된 검토/설치 패턴</h3>
-        <ul class="command-list">
-{safe_pattern_items}
-        </ul>
-      </section>
-"""
-
-
-def _next_steps_html(result: ScanResult) -> str:
-    from .next_steps import render_next_steps
-
-    plan = render_next_steps(result, locale="ko")
-    return f"""      <h2>Next Steps</h2>
-      <section class="section-panel" aria-label="Next Steps">
-        <p>리포트의 finding을 실행 순서로 다시 정리한 초보자용 조치 계획입니다. 자동 수정이나 외부 API 조회 없이 현재 리포트 근거만 사용합니다.</p>
-        <pre class="next-steps-plan">{html.escape(plan)}</pre>
-      </section>
-"""
-
-
-def _next_safe_command(
-    result: ScanResult,
-    *,
-    safe_pattern_commands: list[str],
-) -> tuple[str, str, str]:
-    install_profile = result.assessment.profiles["install"]
-    priority_finding = next(iter(install_profile.priority_finding_ids), "")
-    if install_profile.verdict == "do_not_install_before_review" and priority_finding:
-        return (
-            "설치 대신 먼저 이 finding을 확인하세요.",
-            f"repo-trust explain {priority_finding}",
-            "고위험 설치 근거가 있으면 README 설치 명령이나 대체 설치 명령을 바로 실행하지 않는 것이 가장 안전합니다.",
-        )
-    if safe_pattern_commands:
-        return (
-            "설치가 필요하다면 이 격리 단계부터 시작하세요.",
-            safe_pattern_commands[0],
-            "README 명령이나 source install을 그대로 실행하기 전에 격리된 환경을 먼저 만드는 흐름입니다.",
-        )
-    return (
-        "먼저 리포트 근거를 확인하세요.",
-        f"repo-trust safe-install {result.target.raw}",
-        "표준 manifest를 찾지 못해 설치 명령보다 안전 설치 안내를 먼저 확인해야 합니다.",
-    )
-
-
-def _command_items_html(commands: list[str], *, empty_text: str | None = None) -> str:
-    if not commands:
-        text = empty_text or "추천할 명령을 만들 근거가 부족합니다."
-        return f"          <li>{html.escape(text)}</li>"
-    return "\n".join(f"          <li><code>{html.escape(command)}</code></li>" for command in commands)
 
 
 def _profile_html(key: str, profile: AssessmentProfile) -> str:
@@ -673,23 +460,6 @@ def _profile_html(key: str, profile: AssessmentProfile) -> str:
         </li>"""
 
 
-def _install_profile_summary_ko(summary: str) -> str:
-    return {
-        "Do not run the documented install commands before reviewing the high-risk install evidence.": (
-            "고위험 설치 근거를 검토하기 전에는 문서의 설치 명령을 실행하지 마세요."
-        ),
-        "Install may be possible, but install-related findings should be reviewed first.": (
-            "설치가 가능할 수 있지만, 설치 관련 finding을 먼저 검토해야 합니다."
-        ),
-        "Current checks did not find install-specific blockers.": (
-            "현재 검사 기준에서는 설치를 막는 install-specific finding을 찾지 못했습니다."
-        ),
-        "RepoTrust did not collect enough file evidence to judge install safety.": (
-            "RepoTrust가 설치 안전성을 판단할 파일 근거를 충분히 수집하지 못했습니다."
-        ),
-    }.get(summary, summary)
-
-
 def _finding_markdown(finding: Finding) -> list[str]:
     return [
         f"### {finding.id}",
@@ -709,34 +479,22 @@ def _finding_html(finding: Finding) -> str:
     category_label = _category_label(finding.category.value)
     category = html.escape(finding.category.value)
     finding_id = html.escape(finding.id)
-    explain_command = html.escape(f"repo-trust explain {finding.id}")
-    action = _finding_action(finding)
-    acceptance_note = _finding_acceptance_note(finding)
     return f"""        <article class="finding severity-{severity}" data-severity="{severity}" data-category="{category}">
           <header>
             <div>
               <h3>{html.escape(_finding_title(finding))}</h3>
               <p class="description"><code>{finding_id}</code></p>
-              <div class="finding-actions" aria-label="Finding copy actions">
-                <button type="button" class="copy-button" data-copy-value="{finding_id}">ID 복사</button>
-                <button type="button" class="copy-button" data-copy-value="{explain_command}">explain 명령 복사</button>
-              </div>
             </div>
             <span class="badge badge-{severity}">{html.escape(severity_label)}</span>
           </header>
-          <details open>
-            <summary>터미널 없이 읽는 설명과 근거</summary>
-            <dl>
-              <dt>검사 영역</dt><dd>{html.escape(category_label)} <code>{category}</code></dd>
-              <dt>심각도</dt><dd>{html.escape(severity_label)} <code>{severity}</code></dd>
-              <dt>왜 위험한가요?</dt><dd>{html.escape(_finding_explanation(finding))}</dd>
-              <dt>지금 할 일</dt><dd>{html.escape(action)}</dd>
-              <dt>언제 수용할 수 있나요?</dt><dd>{html.escape(acceptance_note)}</dd>
-              <dt>원문 메시지</dt><dd>{html.escape(finding.message)}</dd>
-              <dt>실제 근거</dt><dd>{html.escape(finding.evidence)}</dd>
-              <dt>추천 조치</dt><dd>{html.escape(finding.recommendation)}</dd>
-            </dl>
-          </details>
+          <dl>
+            <dt>검사 영역</dt><dd>{html.escape(category_label)} <code>{category}</code></dd>
+            <dt>심각도</dt><dd>{html.escape(severity_label)} <code>{severity}</code></dd>
+            <dt>설명</dt><dd>{html.escape(_finding_explanation(finding))}</dd>
+            <dt>원문 메시지</dt><dd>{html.escape(finding.message)}</dd>
+            <dt>실제 근거</dt><dd>{html.escape(finding.evidence)}</dd>
+            <dt>추천 조치</dt><dd>{html.escape(finding.recommendation)}</dd>
+          </dl>
         </article>"""
 
 
@@ -804,41 +562,6 @@ def _finding_sort_key(finding: Finding) -> tuple[int, str]:
     return severity_rank.get(finding.severity.value, 9), finding.id
 
 
-def _display_value(value: object) -> str:
-    if isinstance(value, list):
-        return ", ".join(str(item) for item in value) if value else "없음"
-    return str(value) if value else "없음"
-
-
-def _score_verdict(result: ScanResult) -> dict[str, str]:
-    total = result.score.total
-    high_count = sum(1 for finding in result.findings if finding.severity.value == "high")
-    medium_count = sum(1 for finding in result.findings if finding.severity.value == "medium")
-    if high_count:
-        return {
-            "title": "설치 전 반드시 확인이 필요합니다.",
-            "body": f"high 심각도 항목이 {high_count}개 있습니다. README의 설치 명령이나 보안 관련 신호를 그대로 믿기 전에 근거와 추천 조치를 먼저 확인하세요.",
-            "color": "var(--danger)",
-        }
-    if total >= 90:
-        return {
-            "title": "기본 신뢰 신호가 대체로 좋습니다.",
-            "body": "v1 기준에서 큰 위험 신호는 적습니다. 그래도 dependency로 추가하기 전에는 라이선스와 조직 내부 정책을 별도로 확인하세요.",
-            "color": "var(--accent)",
-        }
-    if total >= 75:
-        return {
-            "title": "사용 가능하지만 보완 확인이 필요합니다.",
-            "body": f"medium 심각도 항목 {medium_count}개와 낮은 점수 영역을 확인하세요. 자동 설치나 CI 도입 전에는 발견 항목의 추천 조치를 검토하는 편이 좋습니다.",
-            "color": "var(--warn)",
-        }
-    return {
-        "title": "신뢰 신호가 부족합니다.",
-        "body": "문서, 설치 안전성, 보안 정책, 프로젝트 관리 신호 중 여러 항목이 부족합니다. 초보자는 바로 설치하지 말고 로컬 격리 환경에서 검토하세요.",
-        "color": "var(--danger)",
-    }
-
-
 def _category_html(category: str, score: int) -> str:
     label = _category_label(category)
     description = _category_description(category, score)
@@ -846,19 +569,6 @@ def _category_html(category: str, score: int) -> str:
             <div class="item-head">
               <span class="label">{html.escape(label)} <code>{html.escape(category)}</code></span>
               <span class="value">{score}/100</span>
-            </div>
-            <p class="description">{html.escape(description)}</p>
-          </li>"""
-
-
-def _detected_file_html(key: str, value: object) -> str:
-    label = _detected_label(key)
-    display = _display_value(value)
-    description = _detected_description(key, value)
-    return f"""          <li>
-            <div class="item-head">
-              <span class="label">{html.escape(label)} <code>{html.escape(key)}</code></span>
-              <span class="value">{html.escape(display)}</span>
             </div>
             <p class="description">{html.escape(description)}</p>
           </li>"""
@@ -882,55 +592,12 @@ def _category_description(category: str, score: int) -> str:
     return f"{base} {suffix}"
 
 
-def _detected_label(key: str) -> str:
-    return DETECTED_LABELS.get(key, key)
-
-
-def _detected_description(key: str, value: object) -> str:
-    descriptions = DETECTED_DESCRIPTIONS.get(key)
-    if not descriptions:
-        return "검사 중 발견한 파일 신호입니다."
-    present_text, missing_text = descriptions
-    return present_text if _has_detected_value(value) else missing_text
-
-
 def _finding_title(finding: Finding) -> str:
     return FINDING_TITLES.get(finding.id, finding.message)
 
 
 def _finding_explanation(finding: Finding) -> str:
     return FINDING_EXPLANATIONS.get(finding.id, finding.message)
-
-
-def _finding_action(finding: Finding) -> str:
-    from .finding_catalog import get_finding_reference
-
-    reference = get_finding_reference(finding.id)
-    if reference:
-        return reference.action
-    return finding.recommendation
-
-
-def _finding_acceptance_note(finding: Finding) -> str:
-    severity = finding.severity.value
-    category = finding.category.value
-
-    if finding.id == "target.github_not_fetched":
-        return "GitHub URL 형식만 확인해도 충분한 단계라면 수용할 수 있습니다. 파일 근거가 필요하면 로컬 checkout을 검사하거나 --remote를 명시하세요."
-    if finding.id == "target.github_subpath_unsupported":
-        return "repository root 수준 판단이면 참고 정보로 둘 수 있습니다. 하위 폴더만 채택할지 결정해야 한다면 local scan과 --subdir로 다시 확인하세요."
-    remote_github_prefix = "remote" + ".github_"
-    if finding.id.startswith(remote_github_prefix) or finding.id == "remote.readme_content_unavailable":
-        return "원격 근거가 일시적으로 부족한 상태라면 재시도하거나 로컬 checkout으로 보강한 뒤 수용하세요."
-    if severity == "high":
-        return "근거를 직접 검토하고 더 안전한 설치/채택 경로가 확인되기 전에는 수용하지 않는 편이 좋습니다."
-    if category == "install_safety":
-        return "격리 환경에서 명령과 스크립트를 먼저 검토했고, 실행 범위와 버전이 의도한 대로 제한된 경우에만 수용하세요."
-    if severity == "medium":
-        return "팀 정책이나 사용 맥락상 예외가 문서화되어 있고, dependency 채택 전에 보완 계획이 있으면 수용할 수 있습니다."
-    if severity == "low":
-        return "낮은 우선순위의 보완 항목입니다. lockfile, release note, 내부 정책 같은 다른 근거가 충분하면 backlog로 둘 수 있습니다."
-    return "정보성 항목입니다. 판단에 필요한 근거가 충분한지 확인한 뒤 참고로 남기면 됩니다."
 
 
 def _severity_ko(severity: str) -> str:
@@ -943,7 +610,3 @@ def _risk_label_ko(risk_label: str) -> str:
 
 def _target_kind_ko(kind: str) -> str:
     return TARGET_KIND_LABELS.get(kind, kind)
-
-
-def _has_detected_value(value: object) -> bool:
-    return bool(value)

@@ -365,9 +365,10 @@ def test_direct_cli_samples_writes_good_and_risky_gallery(tmp_path):
     for path in [good_html, good_json, risky_html, risky_json]:
         assert path.exists()
     risky_report = risky_html.read_text(encoding="utf-8")
-    assert "Next isolated step" in risky_report
-    assert "<dt>지금 할 일</dt>" in risky_report
-    assert "<dt>언제 수용할 수 있나요?</dt>" in risky_report
+    assert "Next isolated step" not in risky_report
+    assert "<dt>설명</dt>" in risky_report
+    assert "<dt>추천 조치</dt>" in risky_report
+    assert "<script>" not in risky_report
     good_report = json.loads(good_json.read_text(encoding="utf-8"))
     risky_report_json = json.loads(risky_json.read_text(encoding="utf-8"))
     assert good_report["score"]["total"] == 100

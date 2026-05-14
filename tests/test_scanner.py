@@ -672,76 +672,59 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert "<h2>Prioritized Findings</h2>" in html
     assert "priority ID는 상위 3개 항목만 요약합니다" in html
     assert f"전체 {len(result.findings)}개 finding" in html
-    assert 'data-filter-type="severity" data-filter-value="high"' in html
-    assert 'data-filter-type="category" data-filter-value="install_safety"' in html
-    assert 'data-action="collapse-findings"' in html
     assert 'data-severity="high"' in html
     assert 'data-category="readme_quality"' in html
-    assert "<details open>" in html
-    assert "터미널 없이 읽는 설명과 근거" in html
-    assert 'aria-label="Finding copy actions"' in html
-    assert 'data-copy-value="readme.missing"' in html
-    assert 'data-copy-value="repo-trust explain readme.missing"' in html
-    assert "navigator.clipboard" in html
-    assert "execCommand('copy')" in html
+    assert "<details open>" not in html
+    assert 'aria-label="Finding copy actions"' not in html
+    assert "navigator.clipboard" not in html
+    assert "execCommand('copy')" not in html
+    assert "<script>" not in html
     assert "<h2>Next Actions</h2>" in html
     assert 'class="finding severity-high"' in html
     assert "<dt>검사 영역</dt>" in html
     assert "<dt>심각도</dt>" in html
-    assert "<dt>왜 위험한가요?</dt>" in html
-    assert "<dt>지금 할 일</dt>" in html
+    assert "<dt>설명</dt>" in html
     assert "Add a README with purpose, installation, usage, and support information." in html
-    assert "<dt>언제 수용할 수 있나요?</dt>" in html
-    assert "더 안전한 설치/채택 경로가 확인되기 전에는 수용하지 않는 편이 좋습니다" in html
     assert "<dt>원문 메시지</dt>" in html
     assert "README가 없습니다." in html
     assert "readme.missing" in html
 
 
-def test_html_report_includes_safe_install_section_with_readme_commands(tmp_path):
+def test_html_report_keeps_safe_install_guidance_in_terminal_command(tmp_path):
     repo = _copy_fixture_repo(tmp_path, "risky-install")
     result = scan(str(repo))
 
     html = render_html(result)
 
-    assert "<h2>Safe Install</h2>" in html
-    assert "Next isolated step" in html
-    assert "설치 대신 먼저 이 finding을 확인하세요." in html
-    assert "repo-trust explain install.risky.process_substitution_shell" in html
-    assert "실행 전 체크리스트" in html
-    assert "README에서 발견한 설치 명령" in html
+    assert "<h2>Safe Install</h2>" not in html
+    assert "Next isolated step" not in html
+    assert "실행 전 체크리스트" not in html
+    assert "README에서 발견한 설치 명령" not in html
+    assert "격리된 검토/설치 패턴" not in html
     assert "curl https://example.com/install.sh | sh" in html
-    assert "격리된 검토/설치 패턴" in html
-    assert "source install은 코드 실행으로 보고 먼저 격리 환경에서 검토하세요." in html
-    assert "고위험 설치 근거를 검토하기 전에는 문서의 설치 명령을 실행하지 마세요" in html
 
 
-def test_html_report_includes_next_steps_plan_with_priority_order(tmp_path):
+def test_html_report_keeps_next_steps_in_terminal_command(tmp_path):
     repo = _copy_fixture_repo(tmp_path, "risky-install")
     result = scan(str(repo))
 
     html = render_html(result)
 
-    assert "<h2>Next Steps</h2>" in html
-    assert "RepoTrust 다음 조치" in html
-    assert "1. 중단: 아직 README 설치 명령을 실행하지 마세요." in html
-    assert "License 확인" in html
-    assert "CI 확인" in html
-    assert "보안 정책 확인" in html
-    assert html.index("1. 중단") < html.index("License 확인")
-    assert html.index("License 확인") < html.index("CI 확인")
-    assert html.index("CI 확인") < html.index("보안 정책 확인")
+    assert "<h2>Next Steps</h2>" not in html
+    assert "RepoTrust 다음 조치" not in html
+    assert "1. 중단: 아직 README 설치 명령을 실행하지 마세요." not in html
+    assert "License 확인" not in html
 
 
-def test_html_report_highlights_first_safe_command_for_clean_fixture(tmp_path):
+def test_html_report_does_not_embed_safe_install_command_for_clean_fixture(tmp_path):
     repo = _copy_fixture_repo(tmp_path, "good-python")
     result = scan(str(repo))
 
     html = render_html(result)
 
-    assert "Next isolated step" in html
-    assert "설치가 필요하다면 이 격리 단계부터 시작하세요." in html
-    assert "python3 -m venv .venv" in html
+    assert "Next isolated step" not in html
+    assert "설치가 필요하다면 이 격리 단계부터 시작하세요." not in html
+    assert "python3 -m venv .venv" not in html
 
 
 def _copy_fixture_repo(tmp_path, name: str) -> Path:

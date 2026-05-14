@@ -251,13 +251,13 @@ repo-trust safe-install --audit .
 repo-trust safe-install https://github.com/openai/codex
 ```
 
-`safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 source install도 코드 실행으로 보고, 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 격리된 검토/설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. HTML 리포트의 `Safe Install` 섹션은 `Next isolated step`을 맨 위에 따로 보여주므로, 설치 명령을 실행하기 전에 먼저 할 일을 빠르게 확인할 수 있습니다.
+`safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 source install도 코드 실행으로 보고, 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 격리된 검토/설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. 안전 설치 안내는 터미널 전용 명령으로 유지하고, HTML 리포트는 점수와 근거를 보관하는 정적 리포트로 둡니다.
 
 `--audit`을 붙이면 README 설치 명령 외에도 설치 시점에 실행될 수 있는 표면을 한 번 더 점검합니다. 로컬 checkout을 대상으로 `pyproject.toml` build backend, `setup.py`, `package.json` install lifecycle script, root `Makefile`/`Dockerfile`/shell script, VCS dependency 신호를 보여줍니다. GitHub URL은 clone/API 호출 없이 로컬 checkout이 필요하다고 안내합니다.
 
 ### 위험 리포트를 받은 뒤 다음 조치 보기
 
-리포트의 finding을 하나씩 해석하기 어렵다면 `next-steps`를 실행하세요. RepoTrust가 저장소를 검사한 뒤, 초보자가 바로 따라 할 수 있는 순서로 조치 계획을 보여줍니다. 고위험 설치 finding이 있으면 README 설치 명령을 먼저 멈추게 하고, 그 다음 license, CI, security policy 같은 adoption risk를 순서대로 정리합니다. HTML 리포트에도 같은 `Next Steps` 섹션이 들어갑니다.
+리포트의 finding을 하나씩 해석하기 어렵다면 `next-steps`를 실행하세요. RepoTrust가 저장소를 검사한 뒤, 초보자가 바로 따라 할 수 있는 순서로 조치 계획을 보여줍니다. 고위험 설치 finding이 있으면 README 설치 명령을 먼저 멈추게 하고, 그 다음 license, CI, security policy 같은 adoption risk를 순서대로 정리합니다. 실행 순서 안내는 터미널 전용 명령으로 유지하고, HTML 리포트에는 검사 결과와 전체 finding 근거만 남깁니다.
 
 **입력할 명령**
 
@@ -438,19 +438,19 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다. 실제 tok
 | 이유 | 판단에 영향을 준 주요 finding 또는 통과 이유 |
 | 목적별 판단 | 설치, dependency 채택, AI agent 위임 관점의 별도 verdict |
 | 다음 행동 | 지금 바로 실행할 후속 조치 |
-| HTML `Next Steps` | 위험 finding을 어떤 순서로 확인하고 멈출지 |
-| HTML `Safe Install` | README 설치 명령을 실행해도 되는지와 격리된 검토/설치 대안 |
-| HTML `Prioritized Findings` | 각 finding의 위험 이유, 지금 할 일, 수용 가능한 조건, 실제 근거 |
+| HTML `Assessment` | 저장해 둘 최종 판단, 점수, confidence, coverage |
+| HTML `Evidence Matrix` | 실제로 확인한 근거와 확인하지 못한 근거 |
+| HTML `Prioritized Findings` | 각 finding의 설명, 원문 메시지, 실제 근거, 추천 조치 |
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
 처음에는 아래 순서로 읽으면 됩니다.
 
 1. 터미널의 `RESULT`와 `이유`/`WHY`에서 최종 판단과 상위 위험을 확인합니다.
-2. HTML 리포트를 만들었다면 `Next Steps`를 먼저 보고, 설치를 멈춰야 하는지 판단합니다.
-3. README의 설치 명령을 복사하기 전에는 `Safe Install`의 `Next isolated step`과 체크리스트를 확인합니다.
-4. 더 자세한 근거가 필요하면 `Prioritized Findings`에서 `왜 위험한가요?`, `지금 할 일`, `언제 수용할 수 있나요?`, `실제 근거`를 확인합니다.
-5. finding card의 `ID 복사`와 `explain 명령 복사` 버튼으로 `repo-trust explain <finding-id>` 설명을 이어서 봅니다.
+2. HTML 리포트를 만들었다면 `Evidence Matrix`에서 이번 실행이 실제 파일 근거를 충분히 봤는지 확인합니다.
+3. 더 자세한 근거가 필요하면 `Prioritized Findings`에서 설명, 원문 메시지, 실제 근거, 추천 조치를 확인합니다.
+4. 설치 명령 실행 여부가 고민되면 `repo-trust safe-install <대상>`을 실행합니다.
+5. 위험 finding 처리 순서가 필요하면 `repo-trust next-steps <대상>` 또는 `repo-trust next-steps --from-json <report.json>`을 실행합니다.
 
 HTML/JSON 리포트를 저장한 뒤 터미널의 `Open with: open <path>` 또는 `열기 명령: open <경로>` 안내를 복사하면 macOS에서 바로 파일을 열 수 있습니다. Windows에서는 파일 탐색기에서 `result` 폴더를 열거나 PowerShell에서 `ii .\result\<파일명>.html`을 실행할 수 있습니다.
 
@@ -483,9 +483,9 @@ python -m json.tool repotrust-samples/sample-good-YYYY-MM-DD.json
 | `sample-good` | `100/100`, grade `A`, high confidence | 모든 신호가 found이고 finding이 없어야 합니다. |
 | `sample-risky` | `57/100`, grade `F`, high confidence | HTML/JSON의 전체 finding과 Install Safety가 `30/100`인지 확인합니다. |
 
-`sample-risky`는 일부러 위험한 설치 명령을 담은 연습용 리포트입니다. 실제 저장소에서 비슷한 high finding이 나오면 명령을 바로 실행하지 말고, terminal `WHY`의 상위 항목과 HTML `Next Steps`, `Safe Install`, `Prioritized Findings`의 evidence/recommendation을 함께 확인하세요.
+`sample-risky`는 일부러 위험한 설치 명령을 담은 연습용 리포트입니다. 실제 저장소에서 비슷한 high finding이 나오면 명령을 바로 실행하지 말고, terminal `WHY`, `repo-trust safe-install`, `repo-trust next-steps`, HTML `Prioritized Findings`의 evidence/recommendation을 함께 확인하세요.
 
-특정 finding을 더 자세히 보고 싶으면 `repo-trust explain <finding-id>`를 실행하세요. HTML 리포트에서는 finding card에서 해당 명령을 바로 복사할 수 있습니다.
+특정 finding을 더 자세히 보고 싶으면 HTML 리포트의 finding ID를 보고 `repo-trust explain <finding-id>`를 실행하세요.
 
 ## 실패 기준 설정
 
