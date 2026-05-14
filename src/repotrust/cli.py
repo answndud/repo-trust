@@ -866,16 +866,6 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
     if workflow.workflow_kind == "next_steps":
         _run_console_next_steps_workflow(workflow)
         return
-    if workflow.workflow_kind == "tutorial":
-        status_console.print(render_tutorial(locale=workflow.locale), markup=False)
-        return
-    if workflow.workflow_kind == "samples":
-        paths = write_sample_gallery(Path("result"))
-        status_console.print(
-            render_sample_gallery_summary(paths, locale=workflow.locale),
-            markup=False,
-        )
-        return
 
     _run_product_scan(
         target=workflow.target,

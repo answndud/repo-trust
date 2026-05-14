@@ -154,14 +154,12 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert "Advice before running install commands" in stderr
     assert "[N]  Next Steps" in stderr
     assert "Prioritized action plan after a scan" in stderr
-    assert "[T]  Tutorial" in stderr
-    assert "Copyable first-run commands" in stderr
-    assert "[P]  Samples" in stderr
-    assert "Generate good/risky sample reports" in stderr
+    assert "[T]  Tutorial" not in stderr
+    assert "[P]  Samples" not in stderr
     assert "[M]  Compare JSON" not in stderr
     assert "Create before/after HTML report" not in stderr
-    assert "Recent:" in stderr
-    assert "[R] Reports   [?] Help   [Q] Quit" in stderr
+    assert "Recent:" not in stderr
+    assert "[?] Help   [Q] Quit" in stderr
     assert "→ Press a key" in stderr
     assert "+-- select workflow" not in stderr
     assert "repotrust㉿local" not in stderr
@@ -188,14 +186,12 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "설치 전 다음 단계 안내" in stderr
     assert "[N]  다음 조치" in stderr
     assert "검사 후 우선순위별 행동 계획" in stderr
-    assert "[T]  튜토리얼" in stderr
-    assert "처음 따라 할 명령 보기" in stderr
-    assert "[P]  샘플" in stderr
-    assert "좋은/위험 리포트 예시 생성" in stderr
+    assert "[T]  튜토리얼" not in stderr
+    assert "[P]  샘플" not in stderr
     assert "[M]  JSON 비교" not in stderr
     assert "개선 전/후 HTML 만들기" not in stderr
-    assert "최근 리포트:" in stderr
-    assert "[R] 리포트   [?] 도움말   [Q] 종료" in stderr
+    assert "최근 리포트:" not in stderr
+    assert "[?] 도움말   [Q] 종료" in stderr
     assert "→ 키를 누르세요" in stderr
     assert "+-- 워크플로우 선택" not in stderr
     assert "repotrust㉿local" not in stderr
@@ -707,9 +703,9 @@ def test_console_mode_does_not_use_alternate_screen_for_real_terminals():
     assert len([event for event in events if event.startswith("input:")]) == 1
 
 
-def test_console_mode_recent_reports_returns_without_close_prompt_for_real_terminals():
+def test_console_mode_help_returns_without_close_prompt_for_real_terminals():
     events = []
-    inputs = iter(["5"])
+    inputs = iter(["?"])
 
     class FakeConsole:
         is_terminal = True
@@ -1142,32 +1138,6 @@ def test_direct_cli_interactive_safe_install_workflow():
     assert "install.risky.shell_pipe_install" in stderr
 
 
-def test_direct_cli_interactive_tutorial_workflow():
-    result = runner.invoke(direct_app, [], input="t\n", prog_name="repo-trust")
-    stderr = plain_output(result.stderr)
-
-    assert result.exit_code == 0
-    assert "Selected: Beginner tutorial" in stderr
-    assert "Running analysis..." in stderr
-    assert "RepoTrust Beginner Tutorial" in stderr
-    assert "repo-trust html ." in stderr
-    assert "repo-trust safe-install ." in stderr
-
-
-def test_direct_cli_interactive_samples_workflow(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-
-    result = runner.invoke(direct_app, [], input="p\n", prog_name="repo-trust")
-    stderr = plain_output(result.stderr)
-
-    assert result.exit_code == 0
-    assert "Selected: Sample report gallery" in stderr
-    assert "Running analysis..." in stderr
-    assert "RepoTrust Sample Report Gallery" in stderr
-    assert "sample-good" in stderr
-    assert (tmp_path / "result" / f"sample-good-{date.today().isoformat()}.html").exists()
-
-
 def test_direct_cli_interactive_next_steps_workflow():
     result = runner.invoke(
         direct_app,
@@ -1230,28 +1200,6 @@ def test_direct_cli_interactive_back_returns_to_home_without_scan():
     assert "Back to action selection." in stderr
     assert stderr.count("Select action:") == 2
     assert "Running analysis..." not in stderr
-
-
-def test_direct_cli_interactive_recent_reports_workflow(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    result_dir = tmp_path / "result"
-    result_dir.mkdir()
-    (result_dir / "repo-2026-04-28.html").write_text("<html></html>", encoding="utf-8")
-    (result_dir / "repo-2026-04-28.json").write_text("{}", encoding="utf-8")
-    (result_dir / "repo-compare-2026-04-28.html").write_text("<html></html>", encoding="utf-8")
-
-    result = runner.invoke(direct_app, [], input="05\n", prog_name="repo-trust")
-
-    assert result.exit_code == 0
-    assert result.stdout == ""
-    assert "recent reports" in result.stderr
-    assert "repo-2026-04-28.html" in result.stderr
-    assert "repo-2026-04-28.json" in result.stderr
-    assert "repo-compare-2026-04-28.html" in result.stderr
-    assert "compare html" in result.stderr
-    assert "json report" in result.stderr
-    assert "html report" in result.stderr
-    assert "Open helper: copy a path below, or run `open <path>` on macOS." in result.stderr
 
 
 def test_direct_cli_html_github_url_defaults_to_parse_only(monkeypatch, tmp_path):

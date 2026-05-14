@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Final
 
 from rich.cells import cell_len
 from rich.console import Console
 
 from .console_i18n import ConsoleLocale, ConsoleText, console_text
-from .terminal_theme import badge, kali_section, kali_table, muted
+from .terminal_theme import muted
 
 
 @dataclass(frozen=True)
@@ -34,7 +33,6 @@ def run_console_mode(
     help_text: Callable[[], str],
     version: str,
     run_workflow: RunWorkflow,
-    result_dir: Path = Path("result"),
     locale: ConsoleLocale = "en",
 ) -> None:
     """Run the interactive product shell for humans."""
@@ -43,7 +41,6 @@ def run_console_mode(
         help_text=help_text,
         version=version,
         run_workflow=run_workflow,
-        result_dir=result_dir,
         locale=locale,
     )
 
@@ -54,18 +51,14 @@ def _run_console_mode_body(
     help_text: Callable[[], str],
     version: str,
     run_workflow: RunWorkflow,
-    result_dir: Path,
     locale: ConsoleLocale,
 ) -> None:
     text = console_text(locale)
     while True:
-        _print_console_home(console=console, version=version, result_dir=result_dir, text=text)
+        _print_console_home(console=console, version=version, text=text)
         choice = _ask_menu_choice(console=console, text=text)
         if choice == "q":
             console.print(f"[dim]{text['session_closed']}[/dim]")
-            return
-        if choice == "r":
-            _print_recent_reports(console=console, result_dir=result_dir, text=text)
             return
         if choice == "?":
             console.print(help_text())
@@ -90,7 +83,6 @@ def _print_console_home(
     *,
     console: Console,
     version: str,
-    result_dir: Path,
     text: ConsoleText,
 ) -> None:
     console.print(f"[bold white]{text['console_title']} v{version}[/]")
@@ -101,7 +93,6 @@ def _print_console_home(
     for line in _workflow_lines(text):
         console.print(line)
     console.print(_separator())
-    console.print(muted(_recent_count_line(result_dir, text)))
     console.print(muted(text["controls"]))
 
 
@@ -121,51 +112,6 @@ def _workflow_lines(text: ConsoleText) -> list[str]:
 
 def _separator(width: int = 36) -> str:
     return f"[bright_black]{'─' * width}[/]"
-
-
-def _recent_count_line(result_dir: Path, text: ConsoleText) -> str:
-    count = len(_recent_reports(result_dir, limit=10_000))
-    return str(text["recent_count"]).format(count=count)
-
-
-def _recent_summary_lines(result_dir: Path, text: ConsoleText) -> list[str]:
-    reports = _recent_reports(result_dir, limit=3)
-    if not reports:
-        return [f"[bright_black]│[/] {muted(text['no_saved_reports'])}"]
-    return [f"[bright_black]│[/] {muted(path)}" for path in reports]
-
-
-def _print_recent_reports(
-    *,
-    console: Console,
-    result_dir: Path,
-    text: ConsoleText,
-) -> None:
-    reports = _recent_reports(result_dir, limit=10)
-    console.print(kali_section(str(text["recent_reports_title"]).lower()))
-    table = kali_table()
-    table.add_column(str(text["number_column"]), justify="right", style="blue")
-    table.add_column(str(text["path_column"]))
-    table.add_column(str(text["type_column"]))
-    if reports:
-        for index, path in enumerate(reports, start=1):
-            table.add_row(str(index), str(path), _report_type_label(path, text))
-    else:
-        table.add_row("-", str(text["no_reports_found"]), "-")
-    console.print(table)
-    console.print(muted(text["recent_reports_open_hint"]))
-
-
-def _recent_reports(result_dir: Path, limit: int) -> list[Path]:
-    if not result_dir.exists():
-        return []
-    reports = [
-        path
-        for path in result_dir.iterdir()
-        if path.is_file() and path.suffix.lower() in {".html", ".json", ".md"}
-    ]
-    reports.sort(key=lambda path: path.stat().st_mtime, reverse=True)
-    return reports[:limit]
 
 
 def _prompt_workflow(
@@ -254,18 +200,6 @@ def _prompt_workflow(
             workflow_kind="next_steps",
             locale=locale,
         )
-    if choice == "t":
-        _print_selected(console=console, label=str(text["selected_tutorial"]))
-        return ConsoleWorkflow(
-            workflow_kind="tutorial",
-            locale=locale,
-        )
-    if choice == "p":
-        _print_selected(console=console, label=str(text["selected_samples"]))
-        return ConsoleWorkflow(
-            workflow_kind="samples",
-            locale=locale,
-        )
     _print_selected(console=console, label=str(text["selected_check"]))
     target = _ask_value(
         console=console,
@@ -286,7 +220,7 @@ def _prompt_workflow(
 
 
 def _ask_menu_choice(*, console: Console, text: ConsoleText) -> str:
-    choices = {"g", "l", "c", "j", "s", "n", "t", "p", "r", "?", "q"}
+    choices = {"g", "l", "c", "j", "s", "n", "?", "q"}
     while True:
         value = _input_command(console, prompt=f"[cyan]→[/] {text['select_prompt']} ").strip() or "1"
         normalized = _normalize_menu_choice(value)
@@ -331,25 +265,10 @@ def _normalize_menu_choice(value: str) -> str:
             "2": "g",
             "3": "j",
             "4": "c",
-            "5": "r",
             "6": "?",
             "8": "s",
         }.get(str(int(normalized)), normalized)
     return normalized
-
-
-def _report_type_label(path: Path, text: ConsoleText) -> str:
-    suffix = path.suffix.lower()
-    stem = path.stem.lower()
-    if suffix == ".json":
-        return str(text["json_report_type"])
-    if suffix == ".html" and "compare" in stem:
-        return str(text["compare_html_report_type"])
-    if suffix == ".html":
-        return str(text["html_report_type"])
-    if suffix == ".md":
-        return str(text["markdown_report_type"])
-    return suffix.lstrip(".") or "report"
 
 
 def _pad_cells(value: str, width: int) -> str:
