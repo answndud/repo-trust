@@ -179,32 +179,6 @@ CI 정책 시작 파일을 생성합니다.
   --help      이 도움말을 출력하고 종료합니다.
 """,
     },
-    "audit-install": {
-        "en": """Usage: repo-trust audit-install [OPTIONS] TARGET
-
-Compatibility command for install-time execution auditing.
-Prefer `repo-trust safe-install --audit TARGET` for new usage.
-
-Arguments:
-  TARGET  Local path or GitHub URL to inspect.
-
-Options:
-  --subdir PATH  Audit this relative subdirectory of a local target.
-  --help  Show this help and exit.
-""",
-        "ko": """사용법: repo-trust audit-install [옵션] 대상
-
-설치 시점 실행 표면 점검을 위한 호환 명령입니다.
-새 사용법은 `repo-trust-kr safe-install --audit 대상`을 권장합니다.
-
-인자:
-  대상  검사할 로컬 경로 또는 GitHub URL입니다.
-
-옵션:
-  --subdir PATH  로컬 대상의 상대 하위 디렉터리를 점검합니다.
-  --help  이 도움말을 출력하고 종료합니다.
-""",
-    },
     "safe-install": {
         "en": """Usage: repo-trust safe-install [OPTIONS] TARGET
 

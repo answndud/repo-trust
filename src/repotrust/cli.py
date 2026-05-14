@@ -482,43 +482,6 @@ def init_policy(
         status_console.print("Next step: review repotrust.toml before making the workflow a required gate.")
 
 
-@direct_app.command("audit-install", add_help_option=False)
-@direct_kr_app.command("audit-install", add_help_option=False)
-def audit_install_command(
-    ctx: typer.Context,
-    target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
-    help_requested: Annotated[
-        bool,
-        typer.Option(
-            "--help",
-            callback=_help_callback("audit-install"),
-            help=HELP_OPTION_HELP,
-            is_eager=True,
-        ),
-    ] = False,
-    subdir: Annotated[
-        Path | None,
-        typer.Option("--subdir", help="Audit this relative subdirectory of a local target."),
-    ] = None,
-) -> None:
-    """Audit install-time execution surfaces without running commands."""
-    locale = _product_locale(ctx)
-    if locale == "ko":
-        typer.echo(
-            "audit-install은 호환 명령입니다. 새 사용법은 "
-            "`repo-trust-kr safe-install --audit <대상>`입니다.",
-            err=True,
-        )
-    else:
-        typer.echo(
-            "audit-install is a compatibility command. Prefer "
-            "`repo-trust safe-install --audit <target>` for new usage.",
-            err=True,
-        )
-    audit = audit_install(_target_with_subdir(target, subdir))
-    typer.echo(render_install_audit(audit, locale=locale), nl=False)
-
-
 @direct_app.command("safe-install", add_help_option=False)
 @direct_kr_app.command("safe-install", add_help_option=False)
 def safe_install(

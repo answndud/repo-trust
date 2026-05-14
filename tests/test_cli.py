@@ -457,24 +457,6 @@ def test_direct_cli_init_policy_force_overwrites_existing_files(tmp_path):
     assert "RepoTrust Gate" in workflow.read_text(encoding="utf-8")
 
 
-def test_direct_cli_audit_install_reports_risky_readme_commands():
-    result = runner.invoke(
-        direct_app,
-        ["audit-install", "tests/fixtures/repos/risky-install"],
-        prog_name="repo-trust",
-    )
-
-    assert result.exit_code == 0
-    assert "audit-install is a compatibility command" in result.stderr
-    assert "repo-trust safe-install --audit <target>" in result.stderr
-    assert "RepoTrust Install Audit" in result.stdout
-    assert "README install commands:" in result.stdout
-    assert "curl https://example.com/install.sh | sh" in result.stdout
-    assert "audit.install.risky.shell_pipe_install [high]" in result.stdout
-    assert "audit.install.risky.python_inline_execution [high]" in result.stdout
-    assert "audit.install.risky.vcs_direct_install [medium]" in result.stdout
-
-
 def test_direct_cli_safe_install_audit_includes_install_time_surface():
     result = runner.invoke(
         direct_app,
@@ -486,11 +468,14 @@ def test_direct_cli_safe_install_audit_includes_install_time_surface():
     assert result.stderr == ""
     assert "RepoTrust Safe Install Advice" in result.stdout
     assert "RepoTrust Install Audit" in result.stdout
+    assert "README install commands:" in result.stdout
     assert "curl https://example.com/install.sh | sh" in result.stdout
     assert "audit.install.risky.shell_pipe_install [high]" in result.stdout
+    assert "audit.install.risky.python_inline_execution [high]" in result.stdout
+    assert "audit.install.risky.vcs_direct_install [medium]" in result.stdout
 
 
-def test_direct_cli_audit_install_reports_install_time_files(tmp_path):
+def test_direct_cli_safe_install_audit_reports_install_time_files(tmp_path):
     (tmp_path / "README.md").write_text(
         "# Project\n\n"
         "Project explains enough about install behavior for users and agents.\n\n"
@@ -517,12 +502,12 @@ def test_direct_cli_audit_install_reports_install_time_files(tmp_path):
 
     result = runner.invoke(
         direct_app,
-        ["audit-install", str(tmp_path)],
+        ["safe-install", "--audit", str(tmp_path)],
         prog_name="repo-trust",
     )
 
     assert result.exit_code == 0
-    assert "audit-install is a compatibility command" in result.stderr
+    assert result.stderr == ""
     assert "audit.install.python_build_backend [medium]" in result.stdout
     assert "audit.install.python_setup_py [medium]" in result.stdout
     assert "audit.install.npm_lifecycle_script [medium]" in result.stdout
@@ -532,17 +517,29 @@ def test_direct_cli_audit_install_reports_install_time_files(tmp_path):
     assert "audit.install.vcs_dependency [medium]" in result.stdout
 
 
-def test_direct_cli_audit_install_github_url_explains_local_checkout_requirement():
+def test_direct_cli_safe_install_audit_github_url_explains_local_checkout_requirement():
     result = runner.invoke(
         direct_app,
-        ["audit-install", "https://github.com/openai/codex"],
+        ["safe-install", "--audit", "https://github.com/openai/codex"],
         prog_name="repo-trust",
     )
 
     assert result.exit_code == 0
-    assert "audit-install is a compatibility command" in result.stderr
+    assert result.stderr == ""
     assert "Scope: local checkout required" in result.stdout
     assert "audit.install.local_checkout_required [info]" in result.stdout
+
+
+def test_direct_cli_audit_install_command_is_removed():
+    result = runner.invoke(
+        direct_app,
+        ["audit-install", "tests/fixtures/repos/risky-install"],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 2
+    assert "No such command" in stderr
 
 
 def test_direct_cli_json_scans_local_subdir(tmp_path):
@@ -633,7 +630,7 @@ def test_direct_cli_subdir_rejects_parent_traversal(tmp_path):
     assert "--subdir must be a relative path inside" in stderr
 
 
-def test_direct_cli_audit_install_scans_local_subdir(tmp_path):
+def test_direct_cli_safe_install_audit_scans_local_subdir(tmp_path):
     package_dir = tmp_path / "packages" / "tool"
     package_dir.mkdir(parents=True)
     (package_dir / "README.md").write_text(
@@ -646,12 +643,12 @@ def test_direct_cli_audit_install_scans_local_subdir(tmp_path):
 
     result = runner.invoke(
         direct_app,
-        ["audit-install", str(tmp_path), "--subdir", "packages/tool"],
+        ["safe-install", "--audit", str(tmp_path), "--subdir", "packages/tool"],
         prog_name="repo-trust",
     )
 
     assert result.exit_code == 0
-    assert "audit-install is a compatibility command" in result.stderr
+    assert result.stderr == ""
     assert "packages/tool" in result.stdout
     assert "audit.install.python_setup_py [medium]" in result.stdout
 

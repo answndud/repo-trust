@@ -254,7 +254,7 @@ repo-trust safe-install https://github.com/openai/codex
 
 `safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 source install도 코드 실행으로 보고, 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 격리된 검토/설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. HTML 리포트의 `Safe Install` 섹션은 `Next isolated step`을 맨 위에 따로 보여주므로, 설치 명령을 실행하기 전에 먼저 할 일을 빠르게 확인할 수 있습니다.
 
-`--audit`을 붙이면 README 설치 명령 외에도 설치 시점에 실행될 수 있는 표면을 한 번 더 점검합니다. 로컬 checkout을 대상으로 `pyproject.toml` build backend, `setup.py`, `package.json` install lifecycle script, root `Makefile`/`Dockerfile`/shell script, VCS dependency 신호를 보여줍니다. GitHub URL은 clone/API 호출 없이 로컬 checkout이 필요하다고 안내합니다. 기존 `audit-install` 명령은 호환용으로 남아 있지만 새 사용법은 `safe-install --audit`입니다.
+`--audit`을 붙이면 README 설치 명령 외에도 설치 시점에 실행될 수 있는 표면을 한 번 더 점검합니다. 로컬 checkout을 대상으로 `pyproject.toml` build backend, `setup.py`, `package.json` install lifecycle script, root `Makefile`/`Dockerfile`/shell script, VCS dependency 신호를 보여줍니다. GitHub URL은 clone/API 호출 없이 로컬 checkout이 필요하다고 안내합니다.
 
 ### 위험 리포트를 받은 뒤 다음 조치 보기
 
@@ -602,7 +602,6 @@ CLI 옵션이 config보다 우선합니다. `policy.profiles`는 `install`, `dep
 ## 기존 호환 명령
 
 기존 개발용 명령인 `repotrust scan`도 계속 동작합니다. 새 사용자 문서와 공식 예시는 `repo-trust`와 `repo-trust-kr` 기준으로 설명합니다.
-`audit-install`도 기존 사용자를 위해 남아 있지만 실행 시 호환 명령 안내를 출력합니다. 새 사용법은 `repo-trust safe-install --audit <대상>`입니다.
 
 ## 릴리즈 노트
 
