@@ -4,6 +4,10 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
+No unreleased changes yet.
+
+## v0.3.0 - 2026-05-14
+
 ### Removed
 
 - Removed Console Mode. Running `repo-trust` or `repo-trust-kr` without a command now prints localized command help and the beginner guide path.
@@ -22,7 +26,14 @@ All notable changes to RepoTrust are documented here.
 ### Fixed
 
 - README now states the Python 3.10+ requirement before the wheel install commands.
-- README sample gallery expectations now match the v0.2.10 built-in `sample-risky` output.
+- README sample gallery expectations now match the current built-in `sample-risky` output.
+
+### Validation
+
+- `.venv/bin/python -m pytest -q` passed with 83 tests.
+- `.venv/bin/python -m build --outdir /tmp/repotrust-release-v0.3.0/dist` built `repotrust-0.3.0.tar.gz` and `repotrust-0.3.0-py3-none-any.whl`.
+- Clean wheel smoke verified `repo-trust` and `repo-trust-kr` version `0.3.0`, fixture JSON/gate/HTML generation, and JSON `json.tool`.
+- Local self-scan returned grade `A`, high confidence, full coverage, and no medium/high findings.
 
 ## v0.2.10 - 2026-05-14
 

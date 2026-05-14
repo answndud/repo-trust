@@ -16,7 +16,7 @@ def test_product_cli_version():
     result = runner.invoke(direct_app, ["--version"], prog_name="repo-trust")
 
     assert result.exit_code == 0
-    assert result.stdout.strip() == "repo-trust 0.2.10"
+    assert result.stdout.strip() == "repo-trust 0.3.0"
 
 
 def test_direct_cli_root_prints_command_help_without_console_mode():

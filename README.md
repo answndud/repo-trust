@@ -33,7 +33,7 @@ RepoTrust는 Python 3.10 이상이 필요합니다. macOS 기본 `/usr/bin/pytho
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
+python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.3.0/repotrust-0.3.0-py3-none-any.whl
 repo-trust-kr --help
 ```
 
@@ -44,21 +44,21 @@ repo-trust-kr --help
 ```powershell
 py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
+python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.3.0/repotrust-0.3.0-py3-none-any.whl
 repo-trust-kr --help
 ```
 
 PowerShell에서 가상환경 활성화가 막히면 아래처럼 가상환경 안의 실행 파일을 직접 호출해도 됩니다.
 
 ```powershell
-.\.venv\Scripts\python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl
+.\.venv\Scripts\python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.3.0/repotrust-0.3.0-py3-none-any.whl
 .\.venv\Scripts\repo-trust-kr.exe --help
 ```
 
 wheel 설치가 맞지 않는 환경에서는 같은 release의 source archive를 설치할 수 있습니다.
 
 ```bash
-python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.2.10/repotrust-0.2.10.tar.gz
+python -m pip install https://github.com/answndud/repo-trust/releases/download/v0.3.0/repotrust-0.3.0.tar.gz
 ```
 
 ## 5분 시작 가이드
