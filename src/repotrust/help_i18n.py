@@ -20,6 +20,7 @@ Commands:
   next-steps Print a beginner action plan from scan findings.
   tutorial Print a beginner tutorial with copyable commands.
   samples Write built-in good/risky sample reports.
+  init-policy Create starter CI policy files.
   gate   Write JSON and fail when policy requirements are not met.
   explain Explain a finding ID.
   compare Compare two JSON reports.
@@ -44,6 +45,7 @@ Console Mode:
   next-steps 검사 결과에서 초보자용 다음 조치 계획을 보여줍니다.
   tutorial 초보자가 처음 따라 할 명령을 보여줍니다.
   samples 좋은/위험 샘플 리포트를 생성합니다.
+  init-policy CI 정책 시작 파일을 생성합니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
   explain finding ID의 의미와 추천 조치를 설명합니다.
   compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
@@ -151,6 +153,26 @@ Options:
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
   --help             영어 또는 한국어 도움말을 선택해 봅니다.
+""",
+    },
+    "init-policy": {
+        "en": """Usage: repo-trust init-policy [OPTIONS]
+
+Create starter CI policy files.
+
+Options:
+  --dir PATH  Repository directory to write policy files into. Defaults to current directory.
+  --force     Overwrite existing RepoTrust policy files.
+  --help      Choose English or Korean help and exit.
+""",
+        "ko": """사용법: repo-trust init-policy [옵션]
+
+CI 정책 시작 파일을 생성합니다.
+
+옵션:
+  --dir PATH  정책 파일을 생성할 저장소 디렉터리입니다. 기본값은 현재 디렉터리입니다.
+  --force     기존 RepoTrust 정책 파일을 덮어씁니다.
+  --help      영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },
     "safe-install": {
