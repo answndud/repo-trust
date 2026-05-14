@@ -4,7 +4,6 @@ import json
 import os
 from base64 import b64decode
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any, Protocol
 from urllib.error import HTTPError
 from urllib.parse import urlencode
@@ -50,7 +49,6 @@ LOCKFILES = {
     "Pipfile.lock",
     "go.sum",
 }
-RELEASE_FRESHNESS_STALE_DAYS = 540
 
 
 @dataclass(frozen=True)
@@ -137,24 +135,6 @@ class GitHubClient:
             self._headers(),
         )
 
-    def get_latest_release(self, owner: str, repo: str) -> GitHubResponse:
-        return self.transport.request(
-            "GET",
-            f"{self.api_base_url}/repos/{owner}/{repo}/releases/latest",
-            self._headers(),
-        )
-
-    def get_tags(self, owner: str, repo: str) -> GitHubResponse:
-        url = f"{self.api_base_url}/repos/{owner}/{repo}/tags?{urlencode({'per_page': 1})}"
-        return self.transport.request("GET", url, self._headers())
-
-    def get_commit(self, owner: str, repo: str, sha: str) -> GitHubResponse:
-        return self.transport.request(
-            "GET",
-            f"{self.api_base_url}/repos/{owner}/{repo}/commits/{sha}",
-            self._headers(),
-        )
-
     def _headers(self) -> dict[str, str]:
         headers = {
             "Accept": "application/vnd.github+json",
@@ -202,12 +182,6 @@ def scan_remote_github(
         ref=target.ref,
     )
     root_files = _root_file_paths(contents_response)
-    release_freshness_findings = _release_freshness_findings(
-        client,
-        owner,
-        repo,
-        root_files,
-    )
     github_security_response = _fetch_github_security_policy(
         client,
         owner,
@@ -219,7 +193,6 @@ def scan_remote_github(
     if target.subpath:
         findings.append(github_subpath_unsupported_finding(target.subpath))
     findings.extend(_repository_metadata_findings(repository_response))
-    findings.extend(release_freshness_findings)
     findings.extend(
         _partial_findings(
             contents_response,
@@ -396,137 +369,6 @@ def _partial_scan_finding(endpoint: str, status_code: int) -> Finding:
         evidence=f"{endpoint} endpoint returned HTTP {status_code}.",
         recommendation="Retry later or verify repository permissions before treating missing remote signals as absent.",
     )
-
-
-def _release_freshness_findings(
-    client: GitHubClient,
-    owner: str,
-    repo: str,
-    root_files: list[str],
-) -> list[Finding]:
-    if not _has_release_freshness_signal(root_files):
-        return []
-
-    latest_release_response = client.get_latest_release(owner, repo)
-    release_source = _release_date_source(latest_release_response)
-    if release_source:
-        return _stale_release_findings(release_source)
-
-    if latest_release_response.status_code not in {200, 404}:
-        return []
-
-    tags_response = client.get_tags(owner, repo)
-    tag_name, tag_sha = _latest_tag(tags_response)
-    if not tag_name or not tag_sha:
-        return []
-
-    commit_response = client.get_commit(owner, repo, tag_sha)
-    tag_source = _tag_date_source(tag_name, commit_response)
-    if not tag_source:
-        return []
-    return _stale_release_findings(tag_source)
-
-
-def _has_release_freshness_signal(root_files: list[str]) -> bool:
-    return bool(_all_matches(root_files, DEPENDENCY_MANIFESTS))
-
-
-def _release_date_source(
-    response: GitHubResponse,
-) -> tuple[str, str, str, str, datetime] | None:
-    if not 200 <= response.status_code < 300 or not isinstance(response.data, dict):
-        return None
-    date_key = "published_at"
-    raw_date = response.data.get(date_key)
-    if not isinstance(raw_date, str):
-        date_key = "created_at"
-        raw_date = response.data.get(date_key)
-    if not isinstance(raw_date, str):
-        return None
-    parsed = _parse_github_datetime(raw_date)
-    if parsed is None:
-        return None
-    tag = response.data.get("tag_name")
-    label = tag if isinstance(tag, str) and tag else "unknown"
-    return ("latest release", label, date_key, raw_date, parsed)
-
-
-def _tag_date_source(
-    tag_name: str,
-    response: GitHubResponse,
-) -> tuple[str, str, str, str, datetime] | None:
-    if not 200 <= response.status_code < 300 or not isinstance(response.data, dict):
-        return None
-    raw_date = _commit_date(response.data)
-    if raw_date is None:
-        return None
-    parsed = _parse_github_datetime(raw_date)
-    if parsed is None:
-        return None
-    return ("latest tag", tag_name, "commit_date", raw_date, parsed)
-
-
-def _latest_tag(response: GitHubResponse) -> tuple[str | None, str | None]:
-    if not 200 <= response.status_code < 300 or not isinstance(response.data, list):
-        return (None, None)
-    if not response.data:
-        return (None, None)
-    tag = response.data[0]
-    if not isinstance(tag, dict):
-        return (None, None)
-    name = tag.get("name")
-    commit = tag.get("commit")
-    if not isinstance(name, str) or not isinstance(commit, dict):
-        return (None, None)
-    sha = commit.get("sha")
-    if not isinstance(sha, str):
-        return (None, None)
-    return (name, sha)
-
-
-def _commit_date(data: dict[str, Any]) -> str | None:
-    commit = data.get("commit")
-    if not isinstance(commit, dict):
-        return None
-    committer = commit.get("committer")
-    if isinstance(committer, dict) and isinstance(committer.get("date"), str):
-        return committer["date"]
-    author = commit.get("author")
-    if isinstance(author, dict) and isinstance(author.get("date"), str):
-        return author["date"]
-    return None
-
-
-def _stale_release_findings(
-    source: tuple[str, str, str, str, datetime],
-) -> list[Finding]:
-    source_type, label, date_key, raw_date, parsed = source
-    age_days = (datetime.now(timezone.utc) - parsed).days
-    if age_days <= RELEASE_FRESHNESS_STALE_DAYS:
-        return []
-    return [
-        Finding(
-            id="remote.release_or_tag_stale",
-            category=Category.PROJECT_HYGIENE,
-            severity=Severity.LOW,
-            message="Latest release or tag is older than the freshness threshold.",
-            evidence=(
-                f"{source_type} {label} {date_key}={raw_date}; "
-                f"age_days={age_days}; threshold_days={RELEASE_FRESHNESS_STALE_DAYS}."
-            ),
-            recommendation="Review release notes, changelog, and maintenance status before adopting the repository.",
-        )
-    ]
-
-
-def _parse_github_datetime(value: str) -> datetime | None:
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=timezone.utc)
-    return parsed.astimezone(timezone.utc)
 
 
 def _detected_files_from_remote(

@@ -207,7 +207,7 @@ def test_remote_enabled_or_unknown_issues_metadata_does_not_deduct():
 
 
 def test_remote_success_detects_files_from_contents_and_workflows():
-    result, _ = _scan(_successful_responses())
+    result, transport = _scan(_successful_responses())
 
     assert result.detected_files.readme == "README.md"
     assert result.detected_files.license == "LICENSE"
@@ -217,90 +217,9 @@ def test_remote_success_detects_files_from_contents_and_workflows():
     assert result.detected_files.ci_workflows == [".github/workflows/ci.yml"]
     assert result.detected_files.dependabot == ".github/dependabot.yml"
     assert result.score.total == 100
-
-
-def test_remote_stale_latest_release_adds_low_project_hygiene_finding():
-    responses = _successful_responses()
-    responses.append(
-        GitHubResponse(
-            status_code=200,
-            data={
-                "tag_name": "v1.0.0",
-                "published_at": "2020-01-01T00:00:00Z",
-            },
-        )
-    )
-
-    result, transport = _scan(responses)
-
-    finding = _finding(result, "remote.release_or_tag_stale")
-    assert finding.category.value == "project_hygiene"
-    assert finding.severity.value == "low"
-    assert "latest release v1.0.0 published_at=2020-01-01T00:00:00Z" in finding.evidence
-    assert result.score.categories["project_hygiene"] == 92
-    assert result.score.total == 98
-    assert transport.requests[6][1] == "https://api.github.com/repos/owner/repo/releases/latest"
-
-
-def test_remote_tags_only_stale_tag_adds_low_project_hygiene_finding():
-    responses = _successful_responses()
-    responses.extend(
-        [
-            GitHubResponse(status_code=404),
-            GitHubResponse(
-                status_code=200,
-                data=[
-                    {
-                        "name": "v0.9.0",
-                        "commit": {"sha": "abc123"},
-                    }
-                ],
-            ),
-            GitHubResponse(
-                status_code=200,
-                data={
-                    "commit": {
-                        "committer": {"date": "2020-02-03T04:05:06Z"},
-                    }
-                },
-            ),
-        ]
-    )
-
-    result, transport = _scan(responses)
-
-    finding = _finding(result, "remote.release_or_tag_stale")
-    assert "latest tag v0.9.0 commit_date=2020-02-03T04:05:06Z" in finding.evidence
-    assert transport.requests[6][1] == "https://api.github.com/repos/owner/repo/releases/latest"
-    assert transport.requests[7][1] == "https://api.github.com/repos/owner/repo/tags?per_page=1"
-    assert transport.requests[8][1] == "https://api.github.com/repos/owner/repo/commits/abc123"
-
-
-def test_remote_no_release_or_tag_practice_does_not_deduct():
-    responses = _successful_responses()
-    responses.extend(
-        [
-            GitHubResponse(status_code=404),
-            GitHubResponse(status_code=200, data=[]),
-        ]
-    )
-
-    result, _ = _scan(responses)
-
-    assert "remote.release_or_tag_stale" not in {finding.id for finding in result.findings}
-    assert result.score.total == 100
-
-
-def test_remote_release_api_failure_does_not_create_stale_or_partial_finding():
-    responses = _successful_responses()
-    responses.append(GitHubResponse(status_code=500))
-
-    result, _ = _scan(responses)
-
-    ids = [finding.id for finding in result.findings]
-    assert "remote.release_or_tag_stale" not in ids
-    assert "remote.github_partial_scan" not in ids
-    assert result.score.total == 100
+    assert all("/releases/" not in request[1] for request in transport.requests)
+    assert all("/tags" not in request[1] for request in transport.requests)
+    assert all("/commits/" not in request[1] for request in transport.requests)
 
 
 def test_remote_subpath_url_reports_root_scope_limitation():

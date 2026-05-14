@@ -158,9 +158,6 @@ MESSAGE_KO = {
     "GitHub API returned an unexpected error.": "GitHub API에서 예상하지 못한 오류가 났습니다.",
     "GitHub repository is archived.": "GitHub 저장소가 archived 상태입니다.",
     "GitHub issue tracking is disabled.": "GitHub issue 기능이 꺼져 있습니다.",
-    "Latest release or tag is older than the freshness threshold.": (
-        "최신 release 또는 tag가 freshness 기준보다 오래됐습니다."
-    ),
     "GitHub remote scan completed with partial metadata.": (
         "GitHub 원격 검사가 일부 정보만 확인한 상태로 끝났습니다."
     ),

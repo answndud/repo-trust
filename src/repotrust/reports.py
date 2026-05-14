@@ -94,7 +94,6 @@ FINDING_TITLES = {
     "remote.github_partial_scan": "GitHub 원격 조회가 일부만 완료됐습니다.",
     "remote.github_archived": "GitHub 저장소가 archived 상태입니다.",
     "remote.github_issues_disabled": "GitHub Issues가 비활성화되어 있습니다.",
-    "remote.release_or_tag_stale": "최신 release 또는 tag가 오래됐습니다.",
     "remote.readme_content_unavailable": "원격 README 내용 확인에 실패했습니다.",
     "target.local_path_missing": "로컬 경로를 찾을 수 없습니다.",
     "readme.too_short": "README가 너무 짧습니다.",
@@ -141,7 +140,6 @@ FINDING_EXPLANATIONS = {
     "remote.github_partial_scan": "GitHub API 일부 endpoint가 실패했거나 접근할 수 없어 리포트가 제한된 정보로 만들어졌습니다.",
     "remote.github_archived": "archived 저장소는 일반적으로 더 이상 유지보수되지 않는 읽기 전용 상태입니다. 새 dependency로 채택하기 전에 maintained fork나 대안을 확인하세요.",
     "remote.github_issues_disabled": "Issues가 꺼져 있으면 버그 제보, 사용 질문, 지원 경로가 GitHub에 없을 수 있습니다.",
-    "remote.release_or_tag_stale": "패키지로 배포될 가능성이 있는 저장소에서 최신 release나 tag의 기준 날짜가 freshness 기준보다 오래됐습니다. release가 없다는 사실만으로 감점하지 않고, 확인 가능한 release/tag 날짜가 오래된 경우에만 낮은 심각도로 표시합니다.",
     "remote.readme_content_unavailable": "README 파일은 발견했지만 내용을 가져오지 못해 README 품질과 설치 명령 안전성을 완전히 검사하지 못했습니다.",
 }
 

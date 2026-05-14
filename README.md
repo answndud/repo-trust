@@ -602,7 +602,7 @@ CLI 옵션이 config보다 우선합니다. `policy.profiles`는 `install`, `dep
 | Security Posture | SECURITY.md, CI, Dependabot, lockfile, dependency pinning 신호가 있는지 |
 | Project Hygiene | LICENSE, dependency manifest 같은 기본 관리 신호가 있는지 |
 
-`package.json`의 install lifecycle script와 exact version이 아닌 Node/Python direct dependency도 보수적인 finding으로 표시합니다. `--remote`를 명시한 GitHub 원격 검사에서는 package manifest가 있는 저장소에 한해 오래된 최신 release/tag도 낮은 심각도로 알려줍니다. 이 검사는 취약점 여부를 판단하지 않고, 설치 중 자동 실행되거나 시간이 지나며 다른 dependency가 설치될 수 있는 신호를 알려줍니다.
+`package.json`의 install lifecycle script와 exact version이 아닌 Node/Python direct dependency도 보수적인 finding으로 표시합니다. 이 검사는 취약점 여부를 판단하지 않고, 설치 중 자동 실행되거나 시간이 지나며 다른 dependency가 설치될 수 있는 신호를 알려줍니다.
 
 아직 아래 항목은 점수화하지 않습니다.
 

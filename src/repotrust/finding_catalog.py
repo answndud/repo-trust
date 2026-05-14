@@ -239,12 +239,6 @@ FINDING_REFERENCES: dict[str, FindingReference] = {
         Severity.LOW,
         "Find the project's support or issue reporting channel before adoption.",
     ),
-    "remote.release_or_tag_stale": FindingReference(
-        "remote.release_or_tag_stale",
-        Category.PROJECT_HYGIENE,
-        Severity.LOW,
-        "Review release cadence and maintenance expectations for the project type.",
-    ),
 }
 
 
