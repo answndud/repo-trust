@@ -379,7 +379,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다. 실제 tok
 | --- | --- |
 | RESULT | 최종 판단, 위험도, 점수, confidence |
 | 이유 | 판단에 영향을 준 주요 finding 또는 통과 이유 |
-| 목적별 판단 | 설치, dependency 채택, AI agent 위임 관점의 별도 verdict |
+| 목적별 판단 | 터미널 dashboard와 JSON `assessment.profiles`에서 설치, dependency 채택, AI agent 위임 관점의 별도 verdict 확인 |
 | 다음 행동 | 지금 바로 실행할 후속 조치 |
 | HTML `Assessment` | 저장해 둘 최종 판단, 점수, confidence, coverage |
 | HTML `Evidence Matrix` | 실제로 확인한 근거와 확인하지 못한 근거 |

@@ -56,12 +56,6 @@ PROFILE_LABELS = {
     "agent_delegate": "Agent delegation",
 }
 
-PROFILE_LABELS_KO = {
-    "install": "설치",
-    "dependency": "의존성 채택",
-    "agent_delegate": "AI agent 위임",
-}
-
 CONFIDENCE_LABELS = {
     "high": "높음",
     "medium": "중간",
@@ -173,9 +167,6 @@ def render_html(result: ScanResult) -> str:
     findings = "\n".join(
         _finding_html(finding) for finding in sorted(result.findings, key=_finding_sort_key)
     )
-    profile_items = "\n".join(
-        _profile_html(key, profile) for key, profile in assessment.profiles.items()
-    )
     if not findings:
         findings = """        <article class="empty-state">
           <h3>현재 활성화된 검사에서 문제를 찾지 못했습니다.</h3>
@@ -210,9 +201,6 @@ def render_html(result: ScanResult) -> str:
     .verdict {{ font-weight: 800; color: {_verdict_color(assessment.verdict)}; }}
     .pill-row {{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }}
     .pill {{ display: inline-block; border: 1px solid var(--line); border-radius: 999px; background: #ffffff; padding: 4px 10px; font-size: 0.86rem; font-weight: 800; }}
-    .profile-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; padding-left: 0; list-style: none; }}
-    .profile-grid li {{ border: 1px solid #e3e8ef; border-radius: 8px; background: #ffffff; padding: 14px; }}
-    .profile-verdict {{ font-weight: 800; margin: 4px 0 8px; }}
     .meta {{ display: grid; grid-template-columns: 150px 1fr; gap: 8px 16px; margin: 18px 0 0; }}
     .meta dt, .finding dt {{ font-weight: 700; color: #374151; }}
     .meta dd, .finding dd {{ margin: 0; }}
@@ -304,14 +292,8 @@ def render_html(result: ScanResult) -> str:
         </ul>
       </section>
 
-      <h2>Purpose Profiles</h2>
-      <p>같은 finding을 설치, dependency 채택, AI agent 위임 목적별로 다시 읽은 판단입니다.</p>
-      <ul class="profile-grid">
-{profile_items}
-      </ul>
-
       <h2>Prioritized Findings</h2>
-      <p>Assessment와 Purpose Profiles의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {finding_count}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 설명, 실제 근거, 추천 조치를 함께 보여줍니다.</p>
+      <p>Assessment의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {finding_count}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 설명, 실제 근거, 추천 조치를 함께 보여줍니다.</p>
 {findings}
 
       <h2>Next Actions</h2>
@@ -328,7 +310,7 @@ def render_html(result: ScanResult) -> str:
             <span class="label">JSON schema</span>
             <span class="value">{html.escape(JSON_SCHEMA_VERSION)}</span>
           </div>
-          <p class="description">이 리포트의 JSON 출력에는 machine-readable assessment와 purpose profiles가 포함됩니다.</p>
+          <p class="description">이 HTML은 저장용 근거 리포트입니다. 목적별 판단이 필요하면 JSON의 <code>assessment.profiles</code> 또는 터미널 dashboard를 확인하세요.</p>
         </li>
       </ul>
     </section>
@@ -356,31 +338,6 @@ def _profile_markdown(key: str, profile: AssessmentProfile) -> list[str]:
         lines.append(f"- {action}")
     lines.append("")
     return lines
-
-
-def _profile_html(key: str, profile: AssessmentProfile) -> str:
-    reasons = "\n".join(
-        f"              <li>{html.escape(reason)}</li>" for reason in profile.reasons
-    )
-    actions = "\n".join(
-        f"              <li>{html.escape(action)}</li>" for action in profile.next_actions
-    )
-    priority = ", ".join(profile.priority_finding_ids) or "none"
-    return f"""        <li>
-          <h3>{html.escape(PROFILE_LABELS_KO.get(key, key))}</h3>
-          <p class="profile-verdict" style="color: {_verdict_color(profile.verdict)};">{html.escape(_assessment_label(profile.verdict))}</p>
-          <p class="description">{html.escape(profile.summary)}</p>
-          <p><strong>Priority findings:</strong> <code>{html.escape(priority)}</code></p>
-          <details>
-            <summary>판단 이유와 다음 조치</summary>
-            <ul>
-{reasons}
-            </ul>
-            <ul>
-{actions}
-            </ul>
-          </details>
-        </li>"""
 
 
 def _finding_markdown(finding: Finding) -> list[str]:

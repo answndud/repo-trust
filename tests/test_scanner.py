@@ -595,13 +595,15 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert "<h2>Evidence Matrix</h2>" in html
     assert "<h2>Risk Breakdown</h2>" in html
     assert "<h2>Why This Score</h2>" in html
-    assert "<h2>Purpose Profiles</h2>" in html
+    assert "<h2>Purpose Profiles</h2>" not in html
     assert "<h2>Prioritized Findings</h2>" in html
-    assert "priority ID는 상위 3개 항목만 요약합니다" in html
+    assert "Assessment의 priority ID는 상위 3개 항목만 요약합니다" in html
+    assert "assessment.profiles" in html
     assert f"전체 {len(result.findings)}개 finding" in html
     assert 'data-severity="high"' in html
     assert 'data-category="readme_quality"' in html
     assert "<details open>" not in html
+    assert "<details>" not in html
     assert 'aria-label="Finding copy actions"' not in html
     assert "navigator.clipboard" not in html
     assert "execCommand('copy')" not in html
