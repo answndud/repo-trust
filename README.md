@@ -398,24 +398,24 @@ repo-trust html https://github.com/openai/codex --output reports/codex.html
 
 ## 도움말
 
-`--help`를 붙이면 먼저 도움말 언어를 고릅니다.
+`--help`를 붙이면 entrypoint 언어에 맞는 도움말을 바로 출력합니다. `repo-trust`는 영어, `repo-trust-kr`은 한국어 도움말을 보여줍니다.
 
 **입력할 명령**
 
 ```bash
 repo-trust --help
+repo-trust-kr --help
 ```
 
 **화면 예시**
 
 ```text
-┌──(repotrust㉿help)-[language]
-│ 01 english
-│ 02 한국어
-└─$ help language [1]:
+Usage: repo-trust [OPTIONS] COMMAND [ARGS]...
+
+Inspect repository trust signals and write clear local reports.
 ```
 
-`1`을 입력하면 영어 도움말이 나오고, `2`를 입력하면 한국어 도움말이 나옵니다. `repo-trust-kr --help`, `repo-trust html --help`, `repo-trust json --help`, `repo-trust check --help`도 같은 방식으로 동작합니다.
+subcommand도 같은 규칙을 따릅니다. 예를 들어 `repo-trust html --help`는 영어, `repo-trust-kr html --help`는 한국어 도움말을 바로 출력합니다.
 
 ## GitHub 원격 검사
 

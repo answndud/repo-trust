@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import typer
-
 PRODUCT_HELP = {
     "root": {
         "en": """Usage: repo-trust [OPTIONS] COMMAND [ARGS]...
@@ -10,7 +8,7 @@ Inspect repository trust signals and write clear local reports.
 
 Options:
   --version  Show the RepoTrust version and exit.
-  --help     Choose English or Korean help and exit.
+  --help     Show this help and exit.
 
 Commands:
   html   Write an HTML trust report.
@@ -35,7 +33,7 @@ Console Mode:
 
 옵션:
   --version  RepoTrust 버전을 출력하고 종료합니다.
-  --help     영어 또는 한국어 도움말을 선택해 봅니다.
+  --help     이 도움말을 출력하고 종료합니다.
 
 명령:
   html   HTML 신뢰 리포트를 저장합니다.
@@ -71,7 +69,7 @@ Options:
   --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
   -v, --verbose      Print findings in the terminal dashboard.
-  --help             Choose English or Korean help and exit.
+  --help             Show this help and exit.
 """,
         "ko": """사용법: repo-trust html [옵션] 대상
 
@@ -88,7 +86,7 @@ HTML 신뢰 리포트를 저장합니다.
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
-  --help             영어 또는 한국어 도움말을 선택해 봅니다.
+  --help             이 도움말을 출력하고 종료합니다.
 """,
     },
     "json": {
@@ -107,7 +105,7 @@ Options:
   --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
   -v, --verbose      Print findings in the terminal dashboard.
-  --help             Choose English or Korean help and exit.
+  --help             Show this help and exit.
 """,
         "ko": """사용법: repo-trust json [옵션] 대상
 
@@ -124,7 +122,7 @@ JSON 신뢰 리포트를 저장합니다.
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
-  --help             영어 또는 한국어 도움말을 선택해 봅니다.
+  --help             이 도움말을 출력하고 종료합니다.
 """,
     },
     "check": {
@@ -142,7 +140,7 @@ Options:
   --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
   -v, --verbose      Print findings in the terminal dashboard.
-  --help             Choose English or Korean help and exit.
+  --help             Show this help and exit.
 """,
         "ko": """사용법: repo-trust check [옵션] 대상
 
@@ -158,7 +156,7 @@ Options:
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
   -v, --verbose      터미널 대시보드에 finding을 자세히 출력합니다.
-  --help             영어 또는 한국어 도움말을 선택해 봅니다.
+  --help             이 도움말을 출력하고 종료합니다.
 """,
     },
     "init-policy": {
@@ -169,7 +167,7 @@ Create starter CI policy files.
 Options:
   --dir PATH  Repository directory to write policy files into. Defaults to current directory.
   --force     Overwrite existing RepoTrust policy files.
-  --help      Choose English or Korean help and exit.
+  --help      Show this help and exit.
 """,
         "ko": """사용법: repo-trust init-policy [옵션]
 
@@ -178,7 +176,7 @@ CI 정책 시작 파일을 생성합니다.
 옵션:
   --dir PATH  정책 파일을 생성할 저장소 디렉터리입니다. 기본값은 현재 디렉터리입니다.
   --force     기존 RepoTrust 정책 파일을 덮어씁니다.
-  --help      영어 또는 한국어 도움말을 선택해 봅니다.
+  --help      이 도움말을 출력하고 종료합니다.
 """,
     },
     "audit-install": {
@@ -192,7 +190,7 @@ Arguments:
 
 Options:
   --subdir PATH  Audit this relative subdirectory of a local target.
-  --help  Choose English or Korean help and exit.
+  --help  Show this help and exit.
 """,
         "ko": """사용법: repo-trust audit-install [옵션] 대상
 
@@ -204,7 +202,7 @@ Options:
 
 옵션:
   --subdir PATH  로컬 대상의 상대 하위 디렉터리를 점검합니다.
-  --help  영어 또는 한국어 도움말을 선택해 봅니다.
+  --help  이 도움말을 출력하고 종료합니다.
 """,
     },
     "safe-install": {
@@ -221,7 +219,7 @@ Options:
   --remote       For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only   For GitHub URLs, force URL-only mode without the GitHub API.
   --audit        Also audit local install-time execution surfaces.
-  --help         Choose English or Korean help and exit.
+  --help         Show this help and exit.
 """,
         "ko": """사용법: repo-trust safe-install [옵션] 대상
 
@@ -236,7 +234,7 @@ Options:
   --remote       GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only   GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --audit        로컬 설치 시점 실행 표면도 함께 점검합니다.
-  --help         영어 또는 한국어 도움말을 선택해 봅니다.
+  --help         이 도움말을 출력하고 종료합니다.
 """,
     },
     "next-steps": {
@@ -253,7 +251,7 @@ Options:
   --subdir PATH     Scan this relative subdirectory of a local target.
   --remote          For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only      For GitHub URLs, force URL-only mode without the GitHub API.
-  --help            Choose English or Korean help and exit.
+  --help            Show this help and exit.
 """,
         "ko": """사용법: repo-trust next-steps [옵션] [대상]
 
@@ -268,7 +266,7 @@ Options:
   --subdir PATH     로컬 대상의 상대 하위 디렉터리를 검사합니다.
   --remote          GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only      GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
-  --help            영어 또는 한국어 도움말을 선택해 봅니다.
+  --help            이 도움말을 출력하고 종료합니다.
 """,
     },
     "tutorial": {
@@ -277,14 +275,14 @@ Options:
 Print a beginner tutorial with copyable commands.
 
 Options:
-  --help  Choose English or Korean help and exit.
+  --help  Show this help and exit.
 """,
         "ko": """사용법: repo-trust tutorial [옵션]
 
 초보자가 처음 따라 할 명령을 보여줍니다.
 
 옵션:
-  --help  영어 또는 한국어 도움말을 선택해 봅니다.
+  --help  이 도움말을 출력하고 종료합니다.
 """,
     },
     "samples": {
@@ -294,7 +292,7 @@ Write built-in good/risky sample reports.
 
 Options:
   -o, --output-dir PATH  Directory for generated sample reports. Defaults to result/.
-  --help  Choose English or Korean help and exit.
+  --help  Show this help and exit.
 """,
         "ko": """사용법: repo-trust samples [옵션]
 
@@ -302,7 +300,7 @@ Options:
 
 옵션:
   -o, --output-dir PATH  샘플 리포트를 저장할 디렉터리입니다. 기본값은 result/입니다.
-  --help  영어 또는 한국어 도움말을 선택해 봅니다.
+  --help  이 도움말을 출력하고 종료합니다.
 """,
     },
     "gate": {
@@ -320,7 +318,7 @@ Options:
   --remote           For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
-  --help             Choose English or Korean help and exit.
+  --help             Show this help and exit.
 """,
         "ko": """사용법: repo-trust gate [옵션] 대상
 
@@ -336,7 +334,7 @@ JSON 리포트를 출력하고 정책 요구사항을 만족하지 못하면 실
   --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
-  --help             영어 또는 한국어 도움말을 선택해 봅니다.
+  --help             이 도움말을 출력하고 종료합니다.
 """,
     },
     "explain": {
@@ -348,7 +346,7 @@ Arguments:
   FINDING_ID  Finding ID such as install.risky.uses_sudo.
 
 Options:
-  --help  Choose English or Korean help and exit.
+  --help  Show this help and exit.
 """,
         "ko": """사용법: repo-trust explain [옵션] FINDING_ID
 
@@ -358,7 +356,7 @@ RepoTrust finding ID의 의미와 추천 조치를 설명합니다.
   FINDING_ID  install.risky.uses_sudo 같은 finding ID입니다.
 
 옵션:
-  --help  영어 또는 한국어 도움말을 선택해 봅니다.
+  --help  이 도움말을 출력하고 종료합니다.
 """,
     },
     "compare": {
@@ -373,7 +371,7 @@ Arguments:
 Options:
   --format, -f  Comparison output format: text, markdown, or html.
   --output, -o  Write the comparison report to this file.
-  --help  Choose English or Korean help and exit.
+  --help  Show this help and exit.
 """,
         "ko": """사용법: repo-trust compare [옵션] OLD_JSON NEW_JSON
 
@@ -386,22 +384,12 @@ Options:
 옵션:
   --format, -f  비교 출력 형식입니다: text, markdown, html.
   --output, -o  비교 리포트를 이 파일에 저장합니다.
-  --help  영어 또는 한국어 도움말을 선택해 봅니다.
+  --help  이 도움말을 출력하고 종료합니다.
 """,
     },
 }
 
-HELP_OPTION_HELP = "Choose English or Korean help and exit."
-
-
-def show_localized_help(command: str) -> None:
-    typer.echo("┌──(repotrust㉿help)-[language]")
-    typer.echo("│ 01 english")
-    typer.echo("│ 02 한국어")
-    choice = typer.prompt("└─$ help language", default="1")
-    locale = "ko" if choice.strip() == "2" else "en"
-    typer.echo()
-    typer.echo(localized_help_text(command, locale))
+HELP_OPTION_HELP = "Show command help and exit."
 
 
 def localized_help_text(command: str, locale: str) -> str:

@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 from typing import Annotated
 
+import click
 import typer
 from rich.console import Console
 
@@ -22,7 +23,7 @@ from .config import (
 from .console import ConsoleWorkflow, run_console_mode
 from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
 from .finding_catalog import get_finding_reference
-from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
+from .help_i18n import HELP_OPTION_HELP, localized_help_text
 from .init_policy import init_policy_files
 from .install_audit import audit_install, render_install_audit
 from .install_advice import render_safe_install_advice
@@ -62,7 +63,10 @@ class ReportFormat(str, Enum):
 def _help_callback(command: str):
     def callback(value: bool) -> bool:
         if value:
-            show_localized_help(command)
+            current = click.get_current_context(silent=True)
+            command_path = current.command_path if current is not None else "repo-trust"
+            locale = "ko" if command_path.split()[0].endswith("-kr") else "en"
+            typer.echo(localized_help_text(command, locale))
             raise typer.Exit()
         return value
 

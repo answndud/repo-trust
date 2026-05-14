@@ -736,12 +736,10 @@ def test_console_mode_recent_reports_returns_without_close_prompt_for_real_termi
 
 
 def test_direct_cli_help_shows_product_commands_without_launcher():
-    result = runner.invoke(direct_app, ["--help"], input="1\n", prog_name="repo-trust")
+    result = runner.invoke(direct_app, ["--help"], prog_name="repo-trust")
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "repotrust㉿help" in stdout
-    assert "└─$ help language" in stdout
     assert "Usage:" in stdout
     assert "html" in stdout
     assert "json" in stdout
@@ -755,13 +753,11 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "RepoTrust Console" not in stdout
 
 
-def test_direct_cli_help_can_show_korean_product_commands():
-    result = runner.invoke(direct_app, ["--help"], input="2\n", prog_name="repo-trust")
+def test_direct_kr_cli_help_shows_korean_product_commands():
+    result = runner.invoke(direct_kr_app, ["--help"], prog_name="repo-trust-kr")
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "repotrust㉿help" in stdout
-    assert "02 한국어" in stdout
     assert "사용법:" in stdout
     assert "HTML 신뢰 리포트를 저장합니다." in stdout
     assert "파일 저장 없이 터미널 대시보드로 검사합니다." in stdout
@@ -773,44 +769,40 @@ def test_direct_cli_help_can_show_korean_product_commands():
     assert "두 JSON 리포트의 점수와 finding 변화를 비교합니다." in stdout
 
 
-def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
-    result = runner.invoke(direct_kr_app, ["--help"], input="1\n", prog_name="repo-trust-kr")
+def test_direct_kr_cli_help_does_not_open_launcher():
+    result = runner.invoke(direct_kr_app, ["--help"], prog_name="repo-trust-kr")
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "Usage:" in stdout
+    assert "사용법:" in stdout
     assert "html" in stdout
     assert "json" in stdout
     assert "check" in stdout
     assert "explain" in stdout
-    assert "init-policy" in stdout
-    assert "audit-install" not in stdout
-    assert "compare" in stdout
     assert "RepoTrust 한국어 콘솔" not in stdout
 
 
-def test_direct_cli_subcommand_help_can_show_korean_without_target():
-    result = runner.invoke(direct_app, ["html", "--help"], input="2\n", prog_name="repo-trust")
+def test_direct_cli_subcommand_help_shows_english_without_target():
+    result = runner.invoke(direct_app, ["html", "--help"], prog_name="repo-trust")
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "사용법: repo-trust html" in stdout
-    assert "대상  검사할 로컬 경로 또는 GitHub URL입니다." in stdout
+    assert "Usage: repo-trust html" in stdout
+    assert "TARGET  Local path or GitHub URL to inspect." in stdout
     assert "--parse-only" in stdout
 
 
-def test_direct_kr_cli_subcommand_help_can_show_english_without_target():
+def test_direct_kr_cli_subcommand_help_shows_korean_without_target():
     result = runner.invoke(
         direct_kr_app,
         ["check", "--help"],
-        input="1\n",
         prog_name="repo-trust-kr",
     )
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    assert "Usage: repo-trust check" in stdout
-    assert "Inspect a target and print a terminal dashboard." in stdout
+    assert "사용법: repo-trust check" in stdout
+    assert "파일을 저장하지 않고 터미널 대시보드로 검사합니다." in stdout
     assert "--fail-under" in stdout
 
 
