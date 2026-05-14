@@ -25,6 +25,7 @@ from .dashboard import print_assessment_dashboard, print_command_header, print_l
 from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
 from .init_policy import init_policy_files
+from .install_audit import audit_install, render_install_audit
 from .install_advice import render_safe_install_advice
 from .models import Category, DetectedFiles, Finding, ScanResult, Score, Severity, Target
 from .next_steps import render_next_steps
@@ -457,6 +458,26 @@ def init_policy(
         status_console.print(f"Skipped [bold]{path}[/bold] because it already exists. Use --force to overwrite.")
     if result.written:
         status_console.print("Next step: review repotrust.toml before making the workflow a required gate.")
+
+
+@direct_app.command("audit-install", add_help_option=False)
+@direct_kr_app.command("audit-install", add_help_option=False)
+def audit_install_command(
+    ctx: typer.Context,
+    target: Annotated[str, typer.Argument(help="Local path or GitHub URL to inspect.")],
+    help_requested: Annotated[
+        bool,
+        typer.Option(
+            "--help",
+            callback=_help_callback("audit-install"),
+            help=HELP_OPTION_HELP,
+            is_eager=True,
+        ),
+    ] = False,
+) -> None:
+    """Audit install-time execution surfaces without running commands."""
+    audit = audit_install(target)
+    typer.echo(render_install_audit(audit, locale=_product_locale(ctx)), nl=False)
 
 
 @direct_app.command("safe-install", add_help_option=False)

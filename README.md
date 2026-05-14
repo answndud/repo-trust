@@ -100,6 +100,7 @@ Command Mode는 명령마다 받는 인자가 다릅니다.
 | JSON 리포트 저장 | `repo-trust json <대상>` |
 | 터미널에서 즉시 확인 | `repo-trust check <대상>` |
 | 설치 전 안내 보기 | `repo-trust safe-install <대상>` |
+| 설치 시점 실행 표면 점검 | `repo-trust audit-install <대상>` |
 | 검사 후 다음 조치 보기 | `repo-trust next-steps <대상>` |
 | 저장된 JSON에서 다음 조치 보기 | `repo-trust next-steps --from-json <report.json>` |
 | CI policy 시작 파일 만들기 | `repo-trust init-policy` |
@@ -266,6 +267,8 @@ repo-trust safe-install https://github.com/openai/codex
 ```
 
 `safe-install`은 README에서 발견한 실제 설치 명령을 먼저 보여줍니다. high-risk install finding이 있으면 README 설치 명령을 아직 실행하지 말라고 안내하고, 실행 전 체크리스트와 안전한 다음 단계를 보여줍니다. Python이나 Node manifest가 보이면 source install도 코드 실행으로 보고, 가상환경, `pip install -e .`, `npm ci --ignore-scripts`처럼 격리된 검토/설치 패턴을 예시로 보여줍니다. GitHub URL을 기본값으로 검사하면 API 없이 URL만 확인하므로 설치 근거가 부족하다고 설명합니다. HTML 리포트의 `Safe Install` 섹션은 `Next isolated step`을 맨 위에 따로 보여주므로, 설치 명령을 실행하기 전에 먼저 할 일을 빠르게 확인할 수 있습니다.
+
+`audit-install`은 README 설치 명령 외에도 설치 시점에 실행될 수 있는 표면을 한 번 더 점검합니다. 로컬 checkout을 대상으로 `pyproject.toml` build backend, `setup.py`, `package.json` install lifecycle script, root `Makefile`/`Dockerfile`/shell script, VCS dependency 신호를 보여줍니다. GitHub URL은 clone/API 호출 없이 로컬 checkout이 필요하다고 안내합니다.
 
 ### 위험 리포트를 받은 뒤 다음 조치 보기
 

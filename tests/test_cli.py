@@ -444,6 +444,76 @@ def test_direct_cli_init_policy_force_overwrites_existing_files(tmp_path):
     assert "RepoTrust Gate" in workflow.read_text(encoding="utf-8")
 
 
+def test_direct_cli_audit_install_reports_risky_readme_commands():
+    result = runner.invoke(
+        direct_app,
+        ["audit-install", "tests/fixtures/repos/risky-install"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert result.stderr == ""
+    assert "RepoTrust Install Audit" in result.stdout
+    assert "README install commands:" in result.stdout
+    assert "curl https://example.com/install.sh | sh" in result.stdout
+    assert "audit.install.risky.shell_pipe_install [high]" in result.stdout
+    assert "audit.install.risky.python_inline_execution [high]" in result.stdout
+    assert "audit.install.risky.vcs_direct_install [medium]" in result.stdout
+
+
+def test_direct_cli_audit_install_reports_install_time_files(tmp_path):
+    (tmp_path / "README.md").write_text(
+        "# Project\n\n"
+        "Project explains enough about install behavior for users and agents.\n\n"
+        "## Getting Started\n\n"
+        "pip install .\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "pyproject.toml").write_text(
+        "[build-system]\nbuild-backend = \"setuptools.build_meta\"\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "setup.py").write_text("print('setup')\n", encoding="utf-8")
+    (tmp_path / "package.json").write_text(
+        '{"scripts": {"postinstall": "node install.js"}}',
+        encoding="utf-8",
+    )
+    (tmp_path / "Makefile").write_text("install:\n\ttrue\n", encoding="utf-8")
+    (tmp_path / "Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
+    (tmp_path / "install.sh").write_text("#!/bin/sh\n", encoding="utf-8")
+    (tmp_path / "requirements.txt").write_text(
+        "example @ git+https://github.com/example/project.git\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        direct_app,
+        ["audit-install", str(tmp_path)],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "audit.install.python_build_backend [medium]" in result.stdout
+    assert "audit.install.python_setup_py [medium]" in result.stdout
+    assert "audit.install.npm_lifecycle_script [medium]" in result.stdout
+    assert "audit.install.makefile [low]" in result.stdout
+    assert "audit.install.dockerfile [low]" in result.stdout
+    assert "audit.install.root_shell_script [medium]" in result.stdout
+    assert "audit.install.vcs_dependency [medium]" in result.stdout
+
+
+def test_direct_cli_audit_install_github_url_explains_local_checkout_requirement():
+    result = runner.invoke(
+        direct_app,
+        ["audit-install", "https://github.com/openai/codex"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "Scope: local checkout required" in result.stdout
+    assert "audit.install.local_checkout_required [info]" in result.stdout
+
+
 def test_direct_cli_safe_install_explains_parse_only_evidence_gap():
     result = runner.invoke(
         direct_app,
@@ -565,6 +635,7 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "explain" in stdout
     assert "next-steps" in stdout
     assert "init-policy" in stdout
+    assert "audit-install" in stdout
     assert "compare" in stdout
     assert "RepoTrust Console" not in stdout
 
@@ -582,6 +653,7 @@ def test_direct_cli_help_can_show_korean_product_commands():
     assert "JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다." in stdout
     assert "검사 결과에서 초보자용 다음 조치 계획을 보여줍니다." in stdout
     assert "CI 정책 시작 파일을 생성합니다." in stdout
+    assert "설치 시점 실행 표면을 점검합니다." in stdout
     assert "finding ID의 의미와 추천 조치를 설명합니다." in stdout
     assert "두 JSON 리포트의 점수와 finding 변화를 비교합니다." in stdout
 
@@ -597,6 +669,7 @@ def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
     assert "check" in stdout
     assert "explain" in stdout
     assert "init-policy" in stdout
+    assert "audit-install" in stdout
     assert "compare" in stdout
     assert "RepoTrust 한국어 콘솔" not in stdout
 
