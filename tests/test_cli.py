@@ -395,66 +395,16 @@ def test_direct_kr_cli_samples_outputs_korean_gallery(tmp_path):
     assert (tmp_path / f"sample-good-{date.today().isoformat()}.html").exists()
 
 
-def test_direct_cli_init_policy_writes_starter_files(tmp_path):
+def test_direct_cli_init_policy_command_is_removed():
     result = runner.invoke(
         direct_app,
-        ["init-policy", "--dir", str(tmp_path)],
+        ["init-policy"],
         prog_name="repo-trust",
     )
     stderr = plain_output(result.stderr)
 
-    policy = tmp_path / "repotrust.toml"
-    workflow = tmp_path / ".github" / "workflows" / "repotrust.yml"
-    assert result.exit_code == 0
-    assert result.stdout == ""
-    assert policy.exists()
-    assert workflow.exists()
-    assert "Created" in stderr
-    assert "review repotrust.toml" in stderr
-    assert "[policy]" in policy.read_text(encoding="utf-8")
-    assert load_config(policy).fail_under == 85
-    workflow_text = workflow.read_text(encoding="utf-8")
-    assert "releases/download/v0.2.10/repotrust-0.2.10-py3-none-any.whl" in workflow_text
-    assert "repo-trust gate . --config repotrust.toml --output repotrust-report.json" in workflow_text
-
-
-def test_direct_cli_init_policy_does_not_overwrite_without_force(tmp_path):
-    policy = tmp_path / "repotrust.toml"
-    workflow = tmp_path / ".github" / "workflows" / "repotrust.yml"
-    workflow.parent.mkdir(parents=True)
-    policy.write_text("custom policy\n", encoding="utf-8")
-    workflow.write_text("custom workflow\n", encoding="utf-8")
-
-    result = runner.invoke(
-        direct_app,
-        ["init-policy", "--dir", str(tmp_path)],
-        prog_name="repo-trust",
-    )
-    stderr = plain_output(result.stderr)
-
-    assert result.exit_code == 0
-    assert policy.read_text(encoding="utf-8") == "custom policy\n"
-    assert workflow.read_text(encoding="utf-8") == "custom workflow\n"
-    assert "Skipped" in stderr
-    assert "--force" in stderr
-
-
-def test_direct_cli_init_policy_force_overwrites_existing_files(tmp_path):
-    policy = tmp_path / "repotrust.toml"
-    workflow = tmp_path / ".github" / "workflows" / "repotrust.yml"
-    workflow.parent.mkdir(parents=True)
-    policy.write_text("custom policy\n", encoding="utf-8")
-    workflow.write_text("custom workflow\n", encoding="utf-8")
-
-    result = runner.invoke(
-        direct_app,
-        ["init-policy", "--dir", str(tmp_path), "--force"],
-        prog_name="repo-trust",
-    )
-
-    assert result.exit_code == 0
-    assert "[policy]" in policy.read_text(encoding="utf-8")
-    assert "RepoTrust Gate" in workflow.read_text(encoding="utf-8")
+    assert result.exit_code == 2
+    assert "No such command" in stderr
 
 
 def test_direct_cli_safe_install_audit_includes_install_time_surface():
@@ -750,7 +700,7 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "gate" in stdout
     assert "explain" in stdout
     assert "next-steps" in stdout
-    assert "init-policy" in stdout
+    assert "init-policy" not in stdout
     assert "audit-install" not in stdout
     assert "compare" in stdout
     assert "RepoTrust Console" not in stdout
@@ -766,7 +716,7 @@ def test_direct_kr_cli_help_shows_korean_product_commands():
     assert "파일 저장 없이 터미널 대시보드로 검사합니다." in stdout
     assert "JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다." in stdout
     assert "검사 결과에서 초보자용 다음 조치 계획을 보여줍니다." in stdout
-    assert "CI 정책 시작 파일을 생성합니다." in stdout
+    assert "CI 정책 시작 파일을 생성합니다." not in stdout
     assert "설치 시점 실행 표면을 점검합니다." not in stdout
     assert "finding ID의 의미와 추천 조치를 설명합니다." in stdout
     assert "두 JSON 리포트의 점수와 finding 변화를 비교합니다." in stdout

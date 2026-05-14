@@ -24,7 +24,6 @@ from .console import ConsoleWorkflow, run_console_mode
 from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
 from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text
-from .init_policy import init_policy_files
 from .install_audit import audit_install, render_install_audit
 from .install_advice import render_safe_install_advice
 from .models import Category, DetectedFiles, Finding, ScanResult, Score, Severity, Target
@@ -438,48 +437,6 @@ def samples(
         render_sample_gallery_summary(paths, locale=_product_locale(ctx)),
         markup=False,
     )
-
-
-@direct_app.command("init-policy", add_help_option=False)
-@direct_kr_app.command("init-policy", add_help_option=False)
-def init_policy(
-    ctx: typer.Context,
-    help_requested: Annotated[
-        bool,
-        typer.Option(
-            "--help",
-            callback=_help_callback("init-policy"),
-            help=HELP_OPTION_HELP,
-            is_eager=True,
-        ),
-    ] = False,
-    directory: Annotated[
-        Path,
-        typer.Option("--dir", help="Repository directory to write policy files into."),
-    ] = Path("."),
-    force: Annotated[
-        bool,
-        typer.Option("--force", help="Overwrite existing RepoTrust policy files."),
-    ] = False,
-) -> None:
-    """Create starter CI policy files without overwriting by default."""
-    result = init_policy_files(directory, version=__version__, force=force)
-    locale = _product_locale(ctx)
-    if locale == "ko":
-        for path in result.written:
-            status_console.print(f"생성: [bold]{path}[/bold]")
-        for path in result.skipped:
-            status_console.print(f"건너뜀: [bold]{path}[/bold] 이미 존재합니다. 덮어쓰려면 --force를 사용하세요.")
-        if result.written:
-            status_console.print("다음 단계: repotrust.toml 정책을 검토한 뒤 pull_request gate로 사용하세요.")
-        return
-
-    for path in result.written:
-        status_console.print(f"Created [bold]{path}[/bold]")
-    for path in result.skipped:
-        status_console.print(f"Skipped [bold]{path}[/bold] because it already exists. Use --force to overwrite.")
-    if result.written:
-        status_console.print("Next step: review repotrust.toml before making the workflow a required gate.")
 
 
 @direct_app.command("safe-install", add_help_option=False)
