@@ -174,16 +174,6 @@ repo-trust gate . --fail-under 80 --output reports/repotrust.json
 fail_under = 80
 ```
 
-## 두 리포트 비교하기
-
-개선 전후 JSON 리포트를 비교하려면 `compare`를 사용합니다.
-
-```bash
-repo-trust-kr compare reports/before.json reports/after.json
-```
-
-`compare`는 저장소를 다시 검사하지 않고 두 JSON 파일만 읽습니다. 점수 변화, 새 finding, 해결된 finding, severity 변화를 터미널에 출력합니다.
-
 ## 샘플 리포트 만들어보기
 
 처음에는 실제 저장소보다 샘플을 먼저 보는 편이 쉽습니다.

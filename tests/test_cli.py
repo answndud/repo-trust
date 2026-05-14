@@ -35,10 +35,11 @@ def test_direct_cli_help_exposes_current_product_commands():
     stdout = plain_output(result.stdout)
 
     assert result.exit_code == 0
-    for command in ["html", "json", "check", "gate", "explain", "next-steps", "compare"]:
+    for command in ["html", "json", "check", "gate", "explain", "next-steps"]:
         assert command in stdout
     assert "init-policy" not in stdout
     assert "audit-install" not in stdout
+    assert "compare" not in stdout
 
 
 def test_direct_kr_cli_help_uses_korean_labels():

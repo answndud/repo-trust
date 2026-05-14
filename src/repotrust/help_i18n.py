@@ -20,7 +20,6 @@ Commands:
   samples Write built-in good/risky sample reports.
   gate   Write JSON and fail when policy requirements are not met.
   explain Explain a finding ID.
-  compare Compare two JSON reports.
 
 Beginner guide:
   guides/command-mode-guide.md
@@ -47,7 +46,6 @@ Run a command explicitly, for example:
   samples 좋은/위험 샘플 리포트를 생성합니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
   explain finding ID의 의미와 추천 조치를 설명합니다.
-  compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
 
 초보자 가이드:
   guides/command-mode-guide.md
@@ -312,30 +310,6 @@ RepoTrust finding ID의 의미와 추천 조치를 설명합니다.
 
 인자:
   FINDING_ID  install.risky.uses_sudo 같은 finding ID입니다.
-
-옵션:
-  --help  이 도움말을 출력하고 종료합니다.
-""",
-    },
-    "compare": {
-        "en": """Usage: repo-trust compare [OPTIONS] OLD_JSON NEW_JSON
-
-Compare two RepoTrust JSON reports.
-
-Arguments:
-  OLD_JSON  Older RepoTrust JSON report.
-  NEW_JSON  Newer RepoTrust JSON report.
-
-Options:
-  --help  Show this help and exit.
-""",
-        "ko": """사용법: repo-trust compare [옵션] OLD_JSON NEW_JSON
-
-두 RepoTrust JSON 리포트의 점수와 finding 변화를 비교합니다.
-
-인자:
-  OLD_JSON  이전 RepoTrust JSON 리포트입니다.
-  NEW_JSON  최신 RepoTrust JSON 리포트입니다.
 
 옵션:
   --help  이 도움말을 출력하고 종료합니다.

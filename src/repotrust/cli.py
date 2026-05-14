@@ -12,7 +12,6 @@ import typer
 from rich.console import Console
 
 from . import __version__
-from .compare_reports import render_compare_reports
 from .config import (
     ConfigError,
     RepoTrustConfig,
@@ -606,39 +605,6 @@ def explain(
     typer.echo(f"Default severity: {reference.severity.value}")
     typer.echo(f"Meaning: {reference.explanation}")
     typer.echo(f"Recommended action: {reference.action}")
-
-
-@direct_app.command("compare", add_help_option=False)
-@direct_kr_app.command("compare", add_help_option=False)
-def compare(
-    ctx: typer.Context,
-    old_report: Annotated[Path, typer.Argument(help="Older RepoTrust JSON report.")],
-    new_report: Annotated[Path, typer.Argument(help="Newer RepoTrust JSON report.")],
-    help_requested: Annotated[
-        bool,
-        typer.Option(
-            "--help",
-            callback=_help_callback("compare"),
-            help=HELP_OPTION_HELP,
-            is_eager=True,
-        ),
-    ] = False,
-) -> None:
-    """Compare two RepoTrust JSON reports."""
-    locale = _product_locale(ctx)
-    try:
-        old_data = _load_report_json(old_report)
-        new_data = _load_report_json(new_report)
-    except ValueError as exc:
-        status_console.print(str(exc))
-        raise typer.Exit(code=1) from exc
-
-    rendered = render_compare_reports(
-        old_data,
-        new_data,
-        locale=locale,
-    )
-    typer.echo(rendered)
 
 
 def _run_product_scan(
