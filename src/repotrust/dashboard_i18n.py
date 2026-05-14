@@ -5,12 +5,6 @@ from .models import ScanResult
 
 TEXT = {
     "en": {
-        "assessment_title": "Trust Assessment",
-        "risk_breakdown_title": "Risk Breakdown",
-        "evidence_title": "Evidence",
-        "top_findings_title": "Top Findings",
-        "profiles_title": "Purpose Profiles",
-        "next_actions_title": "Next Actions",
         "findings_title": "Findings",
         "area_column": "Area",
         "score_column": "Score",
@@ -19,20 +13,10 @@ TEXT = {
         "status_column": "Status",
         "evidence_column": "Evidence",
         "severity_column": "Severity",
-        "recommendation_column": "Recommendation",
         "message_column": "Message",
-        "terminal_only": "terminal only",
-        "no_findings": "No findings",
-        "no_action_required": "No action required by the current rule set.",
         "save_html_action": "Save an HTML report when you need a shareable review artifact.",
     },
     "ko": {
-        "assessment_title": "신뢰도 검사 결과",
-        "risk_breakdown_title": "어디가 괜찮고 어디를 봐야 하나",
-        "evidence_title": "확인한 근거",
-        "top_findings_title": "먼저 볼 문제",
-        "profiles_title": "목적별 판단",
-        "next_actions_title": "다음에 할 일",
         "findings_title": "발견 항목",
         "area_column": "영역",
         "score_column": "점수",
@@ -41,11 +25,7 @@ TEXT = {
         "status_column": "상태",
         "evidence_column": "근거",
         "severity_column": "심각도",
-        "recommendation_column": "추천 조치",
         "message_column": "설명",
-        "terminal_only": "파일 저장 안 함",
-        "no_findings": "큰 문제 없음",
-        "no_action_required": "현재 규칙으로는 바로 고칠 항목이 없습니다.",
         "save_html_action": "공유하거나 나중에 보려면 HTML 리포트를 저장하세요.",
     },
 }
@@ -221,17 +201,6 @@ def text(key: str, locale: str) -> str:
     return TEXT.get(locale, TEXT["en"]).get(key, TEXT["en"][key])
 
 
-def beginner_summary(result: ScanResult) -> str:
-    assessment = result.assessment
-    if assessment.verdict == "do_not_install_before_review":
-        return "지금 바로 설치하지 마세요. 먼저 빨간색 또는 노란색 항목을 확인해야 합니다."
-    if assessment.verdict == "insufficient_evidence":
-        return "아직 판단할 근거가 부족합니다. README, LICENSE, 보안 문서 같은 기본 파일을 더 확인하세요."
-    if assessment.verdict == "usable_after_review":
-        return "사용할 수는 있지만 먼저 아래 문제를 읽고 괜찮은지 확인하세요."
-    return "현재 확인한 기준에서는 사용할 수 있어 보입니다. 그래도 중요한 프로젝트라면 아래 근거를 한 번 더 확인하세요."
-
-
 def localized_actions(result: ScanResult, locale: str) -> list[str]:
     if locale != "ko":
         return list(result.assessment.next_actions)
@@ -289,15 +258,6 @@ def risk_label(risk_label: str) -> str:
 
 def confidence_label(confidence: str) -> str:
     return {"high": "높음", "medium": "보통", "low": "낮음"}.get(confidence, confidence)
-
-
-def coverage_label(coverage: str) -> str:
-    return {
-        "full": "충분히 확인",
-        "partial": "일부만 확인",
-        "failed": "검사 실패",
-        "metadata_only": "기본 정보만 확인",
-    }.get(coverage, coverage)
 
 
 def mode_label(mode: str, locale: str) -> str:

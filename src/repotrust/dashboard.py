@@ -7,10 +7,8 @@ from rich.console import Console
 from rich.table import Table
 
 from .dashboard_i18n import (
-    beginner_summary,
     category_label,
     confidence_label,
-    coverage_label,
     evidence_label,
     format_label,
     localized_actions,
@@ -243,48 +241,6 @@ def _incomplete_details_text(result: ScanResult, *, locale: str) -> str:
     return "Analysis incomplete — detailed scores and evidence may be unavailable."
 
 
-def _assessment_text(
-    *,
-    result: ScanResult,
-    mode: str,
-    output_label: Path | None,
-    locale: str,
-) -> str:
-    output = str(output_label) if output_label is not None else text("terminal_only", locale)
-    assessment = result.assessment
-    if locale == "ko":
-        return (
-            f"{kali_kv('결론', _verdict(result, locale))}\n"
-            f"[bright_black]│[/] "
-            f"{kali_inline_kv('확실도', _confidence_badge(assessment.confidence, locale))}  "
-            f"{kali_inline_kv('검사 범위', _coverage_badge(assessment.coverage, locale))}\n"
-            f"[bright_black]│[/] "
-            f"{kali_inline_kv('점수', badge(f'{result.score.total}/{result.score.max_score}', style='blue'))}  "
-            f"{kali_inline_kv('등급', badge(result.score.grade, style='white'))}  "
-            f"{kali_inline_kv('위험도', _risk_badge(result.score.risk_label, locale))}\n"
-            f"{kali_kv('발견 항목', _finding_counts(result, locale))}\n\n"
-            f"{beginner_summary(result)}\n\n"
-            f"{kali_kv('검사 대상', result.target.raw)}\n"
-            f"{kali_kv('검사 방식', mode_label(mode, locale))}\n"
-            f"{kali_kv('결과 파일', output)}"
-        )
-    return (
-        f"{kali_kv('Verdict', f'{_verdict(result, locale)}  [bright_black]{assessment.verdict}[/]')}\n"
-        f"[bright_black]│[/] "
-        f"{kali_inline_kv('Confidence', _confidence_badge(assessment.confidence, locale))}  "
-        f"{kali_inline_kv('Coverage', _coverage_badge(assessment.coverage, locale))}\n"
-        f"[bright_black]│[/] "
-        f"{kali_inline_kv('Score', badge(f'{result.score.total}/{result.score.max_score}', style='blue'))}  "
-        f"{kali_inline_kv('Grade', badge(result.score.grade, style='white'))}  "
-        f"{kali_inline_kv('Risk', _risk_badge(result.score.risk_label, locale))}\n"
-        f"{kali_kv('Findings', _finding_counts(result, locale))}\n\n"
-        f"{assessment.summary}\n\n"
-        f"{kali_kv('Target', result.target.raw)}\n"
-        f"{kali_kv('Mode', mode)}\n"
-        f"{kali_kv('Output', output)}"
-    )
-
-
 def _risk_breakdown_table(result: ScanResult, *, locale: str) -> Table:
     table = kali_table()
     table.add_column(text("area_column", locale))
@@ -308,24 +264,6 @@ def _evidence_table(result: ScanResult, *, locale: str) -> Table:
     table.add_column(text("evidence_column", locale))
     for row in evidence_rows(result):
         table.add_row(evidence_label(row.label, locale), status_text(row, locale), row.value)
-    return table
-
-
-def _top_findings_table(result: ScanResult, *, locale: str) -> Table:
-    table = kali_table()
-    table.add_column(text("severity_column", locale))
-    table.add_column("ID")
-    table.add_column(text("recommendation_column", locale))
-    findings = sorted(result.findings, key=_finding_sort_key)[:5]
-    if not findings:
-        table.add_row("-", text("no_findings", locale), text("no_action_required", locale))
-        return table
-    for finding in findings:
-        table.add_row(
-            severity_label(finding.severity.value, locale),
-            finding.id,
-            recommendation_text(finding.recommendation, locale),
-        )
     return table
 
 
@@ -399,10 +337,6 @@ def _risk_badge(risk_label: str, locale: str) -> str:
     return badge(label, style=style)
 
 
-def _verdict(result: ScanResult, locale: str) -> str:
-    return _verdict_badge(result.assessment.verdict, locale)
-
-
 def _verdict_badge(verdict: str, locale: str) -> str:
     if verdict == "do_not_install_before_review":
         if locale == "ko":
@@ -424,8 +358,3 @@ def _verdict_badge(verdict: str, locale: str) -> str:
 def _confidence_badge(confidence: str, locale: str) -> str:
     label = confidence_label(confidence) if locale == "ko" else confidence.upper()
     return badge(label, style=state_style(confidence))
-
-
-def _coverage_badge(coverage: str, locale: str) -> str:
-    label = coverage_label(coverage) if locale == "ko" else coverage.upper()
-    return badge(label, style=state_style(coverage))
