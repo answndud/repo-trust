@@ -4,7 +4,9 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
-No changes yet.
+### Fixed
+
+- README sample gallery expectations now match the v0.2.10 built-in `sample-risky` output.
 
 ## v0.2.10 - 2026-05-14
 

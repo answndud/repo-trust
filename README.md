@@ -515,7 +515,7 @@ python -m json.tool repotrust-samples/sample-good-YYYY-MM-DD.json
 | 샘플 | 기대 결과 | 먼저 볼 항목 |
 | --- | --- | --- |
 | `sample-good` | `100/100`, grade `A`, high confidence | 모든 신호가 found이고 finding이 없어야 합니다. |
-| `sample-risky` | `51/100`, grade `F`, high confidence | HTML/JSON의 전체 finding과 Install Safety가 `0/100`인지 확인합니다. |
+| `sample-risky` | `57/100`, grade `F`, high confidence | HTML/JSON의 전체 finding과 Install Safety가 `30/100`인지 확인합니다. |
 
 `sample-risky`는 일부러 위험한 설치 명령을 담은 연습용 리포트입니다. 실제 저장소에서 비슷한 high finding이 나오면 명령을 바로 실행하지 말고, terminal `WHY`의 상위 항목과 HTML `Next Steps`, `Safe Install`, `Prioritized Findings`의 evidence/recommendation을 함께 확인하세요.
 
