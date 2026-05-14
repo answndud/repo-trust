@@ -611,6 +611,7 @@ CLI 옵션이 config보다 우선합니다. `policy.profiles`는 `install`, `dep
 ## 기존 호환 명령
 
 기존 개발용 명령인 `repotrust scan`도 계속 동작합니다. 새 사용자 문서와 공식 예시는 `repo-trust`와 `repo-trust-kr` 기준으로 설명합니다.
+`audit-install`도 기존 사용자를 위해 남아 있지만 실행 시 호환 명령 안내를 출력합니다. 새 사용법은 `repo-trust safe-install --audit <대상>`입니다.
 
 ## 릴리즈 노트
 

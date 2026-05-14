@@ -502,8 +502,21 @@ def audit_install_command(
     ] = None,
 ) -> None:
     """Audit install-time execution surfaces without running commands."""
+    locale = _product_locale(ctx)
+    if locale == "ko":
+        typer.echo(
+            "audit-install은 호환 명령입니다. 새 사용법은 "
+            "`repo-trust-kr safe-install --audit <대상>`입니다.",
+            err=True,
+        )
+    else:
+        typer.echo(
+            "audit-install is a compatibility command. Prefer "
+            "`repo-trust safe-install --audit <target>` for new usage.",
+            err=True,
+        )
     audit = audit_install(_target_with_subdir(target, subdir))
-    typer.echo(render_install_audit(audit, locale=_product_locale(ctx)), nl=False)
+    typer.echo(render_install_audit(audit, locale=locale), nl=False)
 
 
 @direct_app.command("safe-install", add_help_option=False)

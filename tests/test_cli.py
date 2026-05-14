@@ -459,7 +459,8 @@ def test_direct_cli_audit_install_reports_risky_readme_commands():
     )
 
     assert result.exit_code == 0
-    assert result.stderr == ""
+    assert "audit-install is a compatibility command" in result.stderr
+    assert "repo-trust safe-install --audit <target>" in result.stderr
     assert "RepoTrust Install Audit" in result.stdout
     assert "README install commands:" in result.stdout
     assert "curl https://example.com/install.sh | sh" in result.stdout
@@ -515,6 +516,7 @@ def test_direct_cli_audit_install_reports_install_time_files(tmp_path):
     )
 
     assert result.exit_code == 0
+    assert "audit-install is a compatibility command" in result.stderr
     assert "audit.install.python_build_backend [medium]" in result.stdout
     assert "audit.install.python_setup_py [medium]" in result.stdout
     assert "audit.install.npm_lifecycle_script [medium]" in result.stdout
@@ -532,6 +534,7 @@ def test_direct_cli_audit_install_github_url_explains_local_checkout_requirement
     )
 
     assert result.exit_code == 0
+    assert "audit-install is a compatibility command" in result.stderr
     assert "Scope: local checkout required" in result.stdout
     assert "audit.install.local_checkout_required [info]" in result.stdout
 
@@ -642,6 +645,7 @@ def test_direct_cli_audit_install_scans_local_subdir(tmp_path):
     )
 
     assert result.exit_code == 0
+    assert "audit-install is a compatibility command" in result.stderr
     assert "packages/tool" in result.stdout
     assert "audit.install.python_setup_py [medium]" in result.stdout
 
