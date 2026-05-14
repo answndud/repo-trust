@@ -514,6 +514,116 @@ def test_direct_cli_audit_install_github_url_explains_local_checkout_requirement
     assert "audit.install.local_checkout_required [info]" in result.stdout
 
 
+def test_direct_cli_json_scans_local_subdir(tmp_path):
+    package_dir = tmp_path / "packages" / "tool"
+    package_dir.mkdir(parents=True)
+    (package_dir / "README.md").write_text(
+        "# Tool\n\n"
+        "Tool explains enough about its purpose and setup path for a monorepo package scan.\n\n"
+        "## Installation\n\n"
+        "pip install tool\n\n"
+        "## Usage\n\n"
+        "tool scan .\n\n"
+        "## Contributing\n\n"
+        "Open issues and review release notes.\n",
+        encoding="utf-8",
+    )
+    (package_dir / "pyproject.toml").write_text(
+        "[project]\nname = \"tool\"\nversion = \"0.1.0\"\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "report.json"
+
+    result = runner.invoke(
+        direct_app,
+        ["json", str(tmp_path), "--subdir", "packages/tool", "--output", str(output)],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    data = json.loads(output.read_text(encoding="utf-8"))
+    assert data["target"]["kind"] == "local"
+    assert data["target"]["path"].endswith("packages/tool")
+    assert data["detected_files"]["readme"] == "README.md"
+    assert data["detected_files"]["dependency_manifests"] == ["pyproject.toml"]
+
+
+def test_legacy_cli_scan_scans_local_subdir(tmp_path):
+    package_dir = tmp_path / "packages" / "tool"
+    package_dir.mkdir(parents=True)
+    (package_dir / "README.md").write_text(
+        "# Tool\n\n"
+        "Tool explains enough about its purpose and setup path for a monorepo package scan.\n\n"
+        "## Installation\n\n"
+        "pip install tool\n\n"
+        "## Usage\n\n"
+        "tool scan .\n\n"
+        "## Contributing\n\n"
+        "Open issues and review release notes.\n",
+        encoding="utf-8",
+    )
+    (package_dir / "pyproject.toml").write_text(
+        "[project]\nname = \"tool\"\nversion = \"0.1.0\"\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        ["scan", str(tmp_path), "--subdir", "packages/tool", "--format", "json"],
+    )
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data["target"]["path"].endswith("packages/tool")
+    assert data["detected_files"]["readme"] == "README.md"
+
+
+def test_direct_cli_subdir_rejects_github_url():
+    result = runner.invoke(
+        direct_app,
+        ["check", "https://github.com/openai/codex", "--subdir", "packages/tool"],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 2
+    assert "--subdir can only be used with local path" in stderr
+
+
+def test_direct_cli_subdir_rejects_parent_traversal(tmp_path):
+    result = runner.invoke(
+        direct_app,
+        ["json", str(tmp_path), "--subdir", "../outside"],
+        prog_name="repo-trust",
+    )
+    stderr = plain_output(result.stderr)
+
+    assert result.exit_code == 2
+    assert "--subdir must be a relative path inside" in stderr
+
+
+def test_direct_cli_audit_install_scans_local_subdir(tmp_path):
+    package_dir = tmp_path / "packages" / "tool"
+    package_dir.mkdir(parents=True)
+    (package_dir / "README.md").write_text(
+        "# Tool\n\n"
+        "## Getting Started\n\n"
+        "pip install .\n",
+        encoding="utf-8",
+    )
+    (package_dir / "setup.py").write_text("print('setup')\n", encoding="utf-8")
+
+    result = runner.invoke(
+        direct_app,
+        ["audit-install", str(tmp_path), "--subdir", "packages/tool"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert "packages/tool" in result.stdout
+    assert "audit.install.python_setup_py [medium]" in result.stdout
+
+
 def test_direct_cli_safe_install_explains_parse_only_evidence_gap():
     result = runner.invoke(
         direct_app,

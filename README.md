@@ -111,6 +111,16 @@ Command Mode는 명령마다 받는 인자가 다릅니다.
 
 차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[N]`, `[T]`, `[P]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`, `safe-install`, `next-steps`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
+Monorepo에서 특정 package만 검사하려면 로컬 checkout을 대상으로 `--subdir <상대경로>`를 사용할 수 있습니다.
+
+```bash
+repo-trust check . --subdir packages/api
+repo-trust json . --subdir services/worker --output worker-repotrust.json
+repo-trust audit-install . --subdir packages/cli
+```
+
+`--subdir`은 로컬 대상에서만 동작합니다. GitHub `tree`/`blob` URL은 clone이나 API 호출 없이 URL 형식만 확인하므로, 하위 폴더 단위 신뢰 평가는 해당 저장소를 로컬로 checkout한 뒤 `--subdir`로 실행하세요.
+
 ## Console Mode
 
 명령어 옵션을 외우지 않아도 되는 메뉴 방식입니다.

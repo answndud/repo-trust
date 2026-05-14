@@ -68,6 +68,7 @@ Arguments:
 Options:
   -o, --output PATH  Custom output path. Defaults to result/<target>-YYYY-MM-DD.html.
   --config PATH      Load an explicit repotrust.toml policy file.
+  --subdir PATH      Scan this relative subdirectory of a local target.
   --remote           For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
@@ -84,6 +85,7 @@ HTML 신뢰 리포트를 저장합니다.
 옵션:
   -o, --output PATH  저장 경로를 직접 지정합니다. 기본값은 result/<대상>-YYYY-MM-DD.html입니다.
   --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
+  --subdir PATH      로컬 대상의 상대 하위 디렉터리를 검사합니다.
   --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
@@ -102,6 +104,7 @@ Arguments:
 Options:
   -o, --output PATH  Custom output path. Defaults to result/<target>-YYYY-MM-DD.json.
   --config PATH      Load an explicit repotrust.toml policy file.
+  --subdir PATH      Scan this relative subdirectory of a local target.
   --remote           For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
@@ -118,6 +121,7 @@ JSON 신뢰 리포트를 저장합니다.
 옵션:
   -o, --output PATH  저장 경로를 직접 지정합니다. 기본값은 result/<대상>-YYYY-MM-DD.json입니다.
   --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
+  --subdir PATH      로컬 대상의 상대 하위 디렉터리를 검사합니다.
   --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
@@ -135,6 +139,7 @@ Arguments:
 
 Options:
   --config PATH      Load an explicit repotrust.toml policy file.
+  --subdir PATH      Scan this relative subdirectory of a local target.
   --remote           For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
@@ -150,6 +155,7 @@ Options:
 
 옵션:
   --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
+  --subdir PATH      로컬 대상의 상대 하위 디렉터리를 검사합니다.
   --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.
@@ -186,6 +192,7 @@ Arguments:
   TARGET  Local path or GitHub URL to inspect.
 
 Options:
+  --subdir PATH  Audit this relative subdirectory of a local target.
   --help  Choose English or Korean help and exit.
 """,
         "ko": """사용법: repo-trust audit-install [옵션] 대상
@@ -196,6 +203,7 @@ Options:
   대상  검사할 로컬 경로 또는 GitHub URL입니다.
 
 옵션:
+  --subdir PATH  로컬 대상의 상대 하위 디렉터리를 점검합니다.
   --help  영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },
@@ -209,6 +217,7 @@ Arguments:
 
 Options:
   --config PATH  Load an explicit repotrust.toml policy file.
+  --subdir PATH  Scan this relative subdirectory of a local target.
   --remote       For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only   For GitHub URLs, force URL-only mode without the GitHub API.
   --help         Choose English or Korean help and exit.
@@ -222,6 +231,7 @@ Options:
 
 옵션:
   --config PATH  repotrust.toml 정책 파일을 직접 지정합니다.
+  --subdir PATH  로컬 대상의 상대 하위 디렉터리를 검사합니다.
   --remote       GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only   GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --help         영어 또는 한국어 도움말을 선택해 봅니다.
@@ -238,6 +248,7 @@ Arguments:
 Options:
   --from-json PATH  Read an existing RepoTrust JSON report without rescanning.
   --config PATH     Load an explicit repotrust.toml policy file.
+  --subdir PATH     Scan this relative subdirectory of a local target.
   --remote          For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only      For GitHub URLs, force URL-only mode without the GitHub API.
   --help            Choose English or Korean help and exit.
@@ -252,6 +263,7 @@ Options:
 옵션:
   --from-json PATH  저장된 RepoTrust JSON 리포트를 재스캔 없이 읽습니다.
   --config PATH     repotrust.toml 정책 파일을 직접 지정합니다.
+  --subdir PATH     로컬 대상의 상대 하위 디렉터리를 검사합니다.
   --remote          GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only      GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --help            영어 또는 한국어 도움말을 선택해 봅니다.
@@ -302,6 +314,7 @@ Arguments:
 Options:
   -o, --output PATH  Write JSON report to this file. Defaults to stdout.
   --config PATH      Load an explicit repotrust.toml policy file.
+  --subdir PATH      Scan this relative subdirectory of a local target.
   --remote           For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only       For GitHub URLs, force URL-only mode without the GitHub API.
   --fail-under INT   Exit with code 1 if total score is below this value.
@@ -317,6 +330,7 @@ JSON 리포트를 출력하고 정책 요구사항을 만족하지 못하면 실
 옵션:
   -o, --output PATH  JSON 리포트를 저장할 경로입니다. 기본값은 stdout입니다.
   --config PATH      repotrust.toml 정책 파일을 직접 지정합니다.
+  --subdir PATH      로컬 대상의 상대 하위 디렉터리를 검사합니다.
   --remote           GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only       GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
   --fail-under INT   전체 점수가 이 값보다 낮으면 exit code 1로 종료합니다.

@@ -109,6 +109,10 @@ def scan(
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
     ] = None,
+    subdir: Annotated[
+        Path | None,
+        typer.Option("--subdir", help="Scan this relative subdirectory of a local target."),
+    ] = None,
     remote: Annotated[
         bool,
         typer.Option("--remote", help="Use GitHub API remote scan for GitHub URL targets."),
@@ -124,7 +128,7 @@ def scan(
 ) -> None:
     """Scan a repository target."""
     _run_scan(
-        target=target,
+        target=_target_with_subdir(target, subdir),
         report_format=report_format,
         output=output,
         config=config,
@@ -218,6 +222,10 @@ def html_report(
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
     ] = None,
+    subdir: Annotated[
+        Path | None,
+        typer.Option("--subdir", help="Scan this relative subdirectory of a local target."),
+    ] = None,
     parse_only: Annotated[
         bool,
         typer.Option(
@@ -247,6 +255,7 @@ def html_report(
         report_format=ReportFormat.HTML,
         output=output,
         config=config,
+        subdir=subdir,
         parse_only=parse_only,
         remote=remote,
         fail_under=fail_under,
@@ -281,6 +290,10 @@ def json_report(
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
     ] = None,
+    subdir: Annotated[
+        Path | None,
+        typer.Option("--subdir", help="Scan this relative subdirectory of a local target."),
+    ] = None,
     parse_only: Annotated[
         bool,
         typer.Option(
@@ -310,6 +323,7 @@ def json_report(
         report_format=ReportFormat.JSON,
         output=output,
         config=config,
+        subdir=subdir,
         parse_only=parse_only,
         remote=remote,
         fail_under=fail_under,
@@ -335,6 +349,10 @@ def check(
     config: Annotated[
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
+    ] = None,
+    subdir: Annotated[
+        Path | None,
+        typer.Option("--subdir", help="Scan this relative subdirectory of a local target."),
     ] = None,
     parse_only: Annotated[
         bool,
@@ -365,6 +383,7 @@ def check(
         report_format=ReportFormat.MARKDOWN,
         output=None,
         config=config,
+        subdir=subdir,
         parse_only=parse_only,
         remote=remote,
         fail_under=fail_under,
@@ -474,9 +493,13 @@ def audit_install_command(
             is_eager=True,
         ),
     ] = False,
+    subdir: Annotated[
+        Path | None,
+        typer.Option("--subdir", help="Audit this relative subdirectory of a local target."),
+    ] = None,
 ) -> None:
     """Audit install-time execution surfaces without running commands."""
-    audit = audit_install(target)
+    audit = audit_install(_target_with_subdir(target, subdir))
     typer.echo(render_install_audit(audit, locale=_product_locale(ctx)), nl=False)
 
 
@@ -498,6 +521,10 @@ def safe_install(
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
     ] = None,
+    subdir: Annotated[
+        Path | None,
+        typer.Option("--subdir", help="Scan this relative subdirectory of a local target."),
+    ] = None,
     parse_only: Annotated[
         bool,
         typer.Option(
@@ -514,6 +541,7 @@ def safe_install(
     ] = False,
 ) -> None:
     """Print install advice without running repository install commands."""
+    target = _target_with_subdir(target, subdir)
     parsed_target = parse_target(target)
     remote_scan = _resolve_product_remote(
         parsed_target_kind=parsed_target.kind,
@@ -545,6 +573,10 @@ def next_steps(
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
     ] = None,
+    subdir: Annotated[
+        Path | None,
+        typer.Option("--subdir", help="Scan this relative subdirectory of a local target."),
+    ] = None,
     from_json: Annotated[
         Path | None,
         typer.Option("--from-json", help="Read an existing RepoTrust JSON report without rescanning."),
@@ -569,6 +601,8 @@ def next_steps(
         raise typer.BadParameter("Pass TARGET or --from-json REPORT.json.")
     if target is not None and from_json is not None:
         raise typer.BadParameter("TARGET cannot be combined with --from-json.")
+    if subdir is not None and from_json is not None:
+        raise typer.BadParameter("--subdir cannot be combined with --from-json.")
     if from_json is not None:
         try:
             result = _scan_result_from_report_json(_load_report_json(from_json))
@@ -579,6 +613,7 @@ def next_steps(
         return
 
     assert target is not None
+    target = _target_with_subdir(target, subdir)
     parsed_target = parse_target(target)
     remote_scan = _resolve_product_remote(
         parsed_target_kind=parsed_target.kind,
@@ -611,6 +646,10 @@ def gate(
         Path | None,
         typer.Option("--config", help="Load an explicit repotrust.toml policy file."),
     ] = None,
+    subdir: Annotated[
+        Path | None,
+        typer.Option("--subdir", help="Scan this relative subdirectory of a local target."),
+    ] = None,
     parse_only: Annotated[
         bool,
         typer.Option(
@@ -631,6 +670,7 @@ def gate(
     ] = None,
 ) -> None:
     """Write JSON and fail when the configured policy gate fails."""
+    target = _target_with_subdir(target, subdir)
     parsed_target = parse_target(target)
     remote_scan = _resolve_product_remote(
         parsed_target_kind=parsed_target.kind,
@@ -765,6 +805,7 @@ def _run_product_scan(
     report_format: ReportFormat,
     output: Path | None,
     config: Path | None,
+    subdir: Path | None = None,
     parse_only: bool,
     remote: bool,
     fail_under: int | None,
@@ -772,6 +813,7 @@ def _run_product_scan(
     terminal_only: bool = False,
     locale: str = "en",
 ) -> None:
+    target = _target_with_subdir(target, subdir)
     parsed_target = parse_target(target)
     remote_scan = _resolve_product_remote(
         parsed_target_kind=parsed_target.kind,
@@ -1004,6 +1046,26 @@ def _safe_slug(value: str) -> str:
     while "--" in slug:
         slug = slug.replace("--", "-")
     return slug or "repository"
+
+
+def _target_with_subdir(target: str, subdir: Path | None) -> str:
+    if subdir is None:
+        return target
+
+    parsed_target = parse_target(target)
+    if parsed_target.kind != "local":
+        raise typer.BadParameter(
+            "--subdir can only be used with local path targets.",
+            param_hint="--subdir",
+        )
+    if subdir.is_absolute() or ".." in subdir.parts:
+        raise typer.BadParameter(
+            "--subdir must be a relative path inside the local target.",
+            param_hint="--subdir",
+        )
+
+    base_path = Path(parsed_target.path or parsed_target.raw).expanduser()
+    return str(base_path / subdir)
 
 
 def _format_extension(report_format: ReportFormat) -> str:
