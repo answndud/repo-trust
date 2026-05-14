@@ -166,7 +166,7 @@ def product_main(
         typer.echo(f"repo-trust {__version__}")
         raise typer.Exit()
     if ctx.invoked_subcommand is None:
-        _run_console_shell(ctx, locale="en")
+        _run_console_shell(ctx, locale="ko")
         raise typer.Exit()
 
 

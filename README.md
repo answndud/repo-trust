@@ -107,7 +107,7 @@ Command Mode는 명령마다 받는 인자가 다릅니다.
 | finding ID 설명 보기 | `repo-trust explain <finding-id>` |
 | JSON 리포트 2개 비교 | `repo-trust compare <old.json> <new.json>` |
 
-`repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
+명령 없이 `repo-trust` 또는 `repo-trust-kr`만 실행하면 같은 한국어 Console Mode가 열립니다. 영어 도움말과 영어 command output이 필요하면 `repo-trust <명령>` 형태의 Command Mode를 사용하세요.
 
 차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[N]` 단축키로 작업을 고릅니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`, `safe-install`, `next-steps`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
@@ -132,6 +132,8 @@ repo-trust safe-install --audit . --subdir packages/cli
 repo-trust-kr
 ```
 
+`repo-trust`만 입력해도 같은 한국어 Console Mode가 열립니다.
+
 **화면 예시**
 
 ```text
@@ -152,8 +154,6 @@ N  다음 조치      검사 후 우선순위별 행동 계획
 ```
 
 단축키는 대소문자를 구분하지 않습니다. 잘못 선택했다면 입력 단계에서 `[B]`를 눌러 작업 선택 화면으로 돌아갈 수 있습니다. 기존 숫자 입력도 일부 호환되므로 `1` 또는 `01`은 로컬 리포트로 동작합니다. 튜토리얼과 샘플 리포트 생성은 `repo-trust tutorial`, `repo-trust samples` command mode로 실행하세요.
-
-영어 화면이 필요하면 `repo-trust`를 입력하면 됩니다.
 
 ## Command Mode
 

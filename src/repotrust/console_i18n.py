@@ -4,53 +4,6 @@ ConsoleLocale = str
 ConsoleText = dict[str, object]
 
 CONSOLE_TEXT: dict[str, ConsoleText] = {
-    "en": {
-        "brand_title": "REPO-TRUST",
-        "console_title": "RepoTrust",
-        "tagline": "Offline-first trust checks before installing a repository.",
-        "first_run_hint": "First run: [L] scan local repo -> [S] safe install -> [J] export JSON.",
-        "mission_label": "Mission",
-        "mission": (
-            "Decide whether a repository is safe enough to install, depend on, "
-            "or hand to an AI agent."
-        ),
-        "command_mode_label": "Command Mode",
-        "command_mode": (
-            "repo-trust html <target>   repo-trust safe-install <target>   "
-            "repo-trust check <target>"
-        ),
-        "workflows_title": "Select action:",
-        "key_column": "Key",
-        "action_column": "Action",
-        "use_when_column": "Use When",
-        "output_column": "Output",
-        "workflows": [
-            ("G", "GitHub repo", "URL check without API by default", ""),
-            ("L", "Local repo", "Full file-level local scan", ""),
-            ("C", "Quick check", "Instant trust summary", ""),
-            ("J", "Export JSON", "Save machine-readable report", ""),
-            ("S", "Safe Install", "Advice before running install commands", ""),
-            ("N", "Next Steps", "Prioritized action plan after a scan", ""),
-        ],
-        "controls_title": "Controls",
-        "controls": "[?] Help   [Q] Quit",
-        "input_controls": "[B] Back",
-        "select_prompt": "Press a key",
-        "selected_github": "Selected: GitHub repository",
-        "selected_local": "Selected: Local repository",
-        "selected_check": "Selected: Quick check",
-        "selected_json": "Selected: JSON export",
-        "selected_safe_install": "Selected: Safe install advice",
-        "selected_next_steps": "Selected: Next steps plan",
-        "processing_message": "Running analysis...",
-        "session_closed": "Session closed.",
-        "local_path_prompt": "Enter local repository path:",
-        "github_url_prompt": "Enter GitHub URL:",
-        "github_url_example": "Example: https://github.com/openai/openai-python",
-        "any_target_prompt": "Enter repository target:",
-        "default_hint": "default",
-        "back_message": "Back to action selection.",
-    },
     "ko": {
         "brand_title": "REPO-TRUST",
         "console_title": "RepoTrust",
@@ -102,4 +55,4 @@ CONSOLE_TEXT: dict[str, ConsoleText] = {
 
 
 def console_text(locale: ConsoleLocale) -> ConsoleText:
-    return CONSOLE_TEXT.get(locale, CONSOLE_TEXT["en"])
+    return CONSOLE_TEXT["ko"]

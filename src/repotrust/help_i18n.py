@@ -24,8 +24,8 @@ Commands:
   compare Compare two JSON reports.
 
 Console Mode:
-  repo-trust      Open the English workflow console.
-  repo-trust-kr   Open the Korean workflow console.
+  repo-trust      Open the workflow console with Korean UI.
+  repo-trust-kr   Open the workflow console with Korean UI.
 """,
         "ko": """사용법: repo-trust [옵션] 명령 [인자]...
 
@@ -49,7 +49,7 @@ Console Mode:
   compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
 
 콘솔 모드:
-  repo-trust      영어 workflow 콘솔을 엽니다.
+  repo-trust      한국어 workflow 콘솔을 엽니다.
   repo-trust-kr   한국어 workflow 콘솔을 엽니다.
 """,
     },

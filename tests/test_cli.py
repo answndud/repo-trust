@@ -141,28 +141,34 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert result.exit_code == 0
     assert result.stdout == ""
     assert "RepoTrust v0.2.10" in stderr
-    assert "Offline-first trust checks before installing a repository." in stderr
-    assert "First run: [L] scan local repo -> [S] safe install -> [J] export JSON." in stderr
-    assert "Select action:" in stderr
-    assert "[G]  GitHub repo" in stderr
-    assert "URL check without API by default" in stderr
-    assert "[L]  Local repo" in stderr
-    assert "Full file-level local scan" in stderr
-    assert "[C]  Quick check" in stderr
-    assert "[J]  Export JSON" in stderr
-    assert "[S]  Safe Install" in stderr
-    assert "Advice before running install commands" in stderr
-    assert "[N]  Next Steps" in stderr
-    assert "Prioritized action plan after a scan" in stderr
+    assert "설치 전 저장소 신뢰도를 기본은 API 없이 점검합니다." in stderr
+    assert "처음이면: [L] 로컬 검사 -> [S] 안전 설치 -> [J] JSON 저장." in stderr
+    assert "작업 선택:" in stderr
+    assert "[G]  GitHub 저장소" in stderr
+    assert "기본은 API 없이 URL 확인" in stderr
+    assert "[L]  로컬 저장소" in stderr
+    assert "파일 근거까지 로컬 검사" in stderr
+    assert "[C]  빠른 점검" in stderr
+    assert "[J]  JSON 내보내기" in stderr
+    assert "[S]  안전 설치" in stderr
+    assert "설치 전 다음 단계 안내" in stderr
+    assert "[N]  다음 조치" in stderr
+    assert "검사 후 우선순위별 행동 계획" in stderr
     assert "[T]  Tutorial" not in stderr
+    assert "[T]  튜토리얼" not in stderr
     assert "[P]  Samples" not in stderr
+    assert "[P]  샘플" not in stderr
     assert "[M]  Compare JSON" not in stderr
+    assert "[M]  JSON 비교" not in stderr
     assert "Create before/after HTML report" not in stderr
+    assert "개선 전/후 HTML 만들기" not in stderr
     assert "Recent:" not in stderr
-    assert "[?] Help   [Q] Quit" in stderr
-    assert "→ Press a key" in stderr
+    assert "최근 리포트:" not in stderr
+    assert "[?] 도움말   [Q] 종료" in stderr
+    assert "→ 키를 누르세요" in stderr
     assert "+-- select workflow" not in stderr
     assert "repotrust㉿local" not in stderr
+    assert "세션을 종료했습니다." in stderr
     assert "Scan local repository" not in stderr
 
 
@@ -1056,17 +1062,18 @@ def test_direct_cli_interactive_local_html_workflow(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
     result = runner.invoke(direct_app, [], input="01\n.\n", prog_name="repo-trust")
+    stderr = plain_output(result.stderr)
 
     assert result.exit_code == 0
-    assert "Selected: Local repository" in result.stderr
-    assert "Enter local repository path:" in result.stderr
-    assert "[B] Back" in result.stderr
-    assert "Running analysis..." in result.stderr
+    assert "선택됨: 로컬 저장소" in stderr
+    assert "로컬 저장소 경로 입력:" in stderr
+    assert "[B] 뒤로" in stderr
+    assert "분석 중..." in stderr
     assert "RESULT:" in result.stderr
-    assert "WHY" in result.stderr
-    assert "ACTIONS" in result.stderr
-    assert "Open full report:" in result.stderr
-    assert "Open with: open result/" in plain_output(result.stderr)
+    assert "이유" in result.stderr
+    assert "다음 행동" in result.stderr
+    assert "전체 리포트 열기:" in result.stderr
+    assert (tmp_path / "result").exists()
 
 
 def test_direct_cli_interactive_github_shortcut_shows_input_and_processing(monkeypatch, tmp_path):
@@ -1096,14 +1103,14 @@ def test_direct_cli_interactive_github_shortcut_shows_input_and_processing(monke
     )
 
     assert result.exit_code == 0
-    assert "Selected: GitHub repository" in result.stderr
-    assert "Enter GitHub URL:" in result.stderr
-    assert "Example: https://github.com/openai/openai-python" in result.stderr
-    assert "[B] Back" in result.stderr
-    assert "Running analysis..." in result.stderr
+    assert "선택됨: GitHub 저장소" in result.stderr
+    assert "GitHub URL 입력:" in result.stderr
+    assert "예: https://github.com/openai/openai-python" in result.stderr
+    assert "[B] 뒤로" in result.stderr
+    assert "분석 중..." in result.stderr
     assert "RESULT:" in result.stderr
-    assert "Open full report:" in result.stderr
-    assert "Open with: open result/" in plain_output(result.stderr)
+    assert "전체 리포트 열기:" in result.stderr
+    assert (tmp_path / "result").exists()
 
 
 def test_direct_cli_interactive_json_export_uses_generic_target_prompt(tmp_path, monkeypatch):
@@ -1113,13 +1120,13 @@ def test_direct_cli_interactive_json_export_uses_generic_target_prompt(tmp_path,
     stderr = plain_output(result.stderr)
 
     assert result.exit_code == 0
-    assert "Selected: JSON export" in stderr
-    assert "Enter repository target:" in stderr
-    assert "Enter GitHub URL:" not in stderr
-    assert "Example: https://github.com/openai/openai-python" not in stderr
-    assert "Running analysis..." in stderr
-    assert "Open full report:" in stderr
-    assert "Open with: open result/" in stderr
+    assert "선택됨: JSON 내보내기" in stderr
+    assert "검사할 대상 입력:" in stderr
+    assert "GitHub URL 입력:" not in stderr
+    assert "예: https://github.com/openai/openai-python" not in stderr
+    assert "분석 중..." in stderr
+    assert "전체 리포트 열기:" in stderr
+    assert (tmp_path / "result").exists()
 
 
 def test_direct_cli_interactive_safe_install_workflow():
@@ -1132,14 +1139,13 @@ def test_direct_cli_interactive_safe_install_workflow():
     stderr = plain_output(result.stderr)
 
     assert result.exit_code == 0
-    assert "Selected: Safe install advice" in stderr
-    assert "Enter repository target:" in stderr
-    assert "Running analysis..." in stderr
-    assert "RepoTrust Safe Install Advice" in stderr
-    assert "Before you run anything:" in stderr
-    assert "README install commands found:" in stderr
-    assert "Do not run the README install commands yet." in stderr
-    assert "install.risky.shell_pipe_install" in stderr
+    assert "선택됨: 안전 설치 안내" in stderr
+    assert "검사할 대상 입력:" in stderr
+    assert "분석 중..." in stderr
+    assert "RepoTrust 안전 설치 안내" in stderr
+    assert "실행 전 체크리스트:" in stderr
+    assert "아직 README 설치 명령을 실행하지 마세요." in stderr
+    assert "고위험 설치 근거" in stderr
 
 
 def test_direct_cli_interactive_next_steps_workflow():
@@ -1152,10 +1158,10 @@ def test_direct_cli_interactive_next_steps_workflow():
     stderr = plain_output(result.stderr)
 
     assert result.exit_code == 0
-    assert "Selected: Next steps plan" in stderr
-    assert "RepoTrust Next Steps" in stderr
-    assert "1. Stop: do not run the README install commands yet." in stderr
-    assert "repo-trust explain install.risky.shell_pipe_install" in stderr
+    assert "선택됨: 다음 조치 계획" in stderr
+    assert "RepoTrust 다음 조치" in stderr
+    assert "1. 중단: 아직 README 설치 명령을 실행하지 마세요." in stderr
+    assert "repo-trust-kr explain install.risky.shell_pipe_install" in stderr
 
 
 def test_direct_kr_cli_interactive_safe_install_workflow():
@@ -1199,11 +1205,11 @@ def test_direct_cli_interactive_back_returns_to_home_without_scan():
     stderr = plain_output(result.stderr)
 
     assert result.exit_code == 0
-    assert "Selected: Local repository" in stderr
-    assert "[B] Back" in stderr
-    assert "Back to action selection." in stderr
-    assert stderr.count("Select action:") == 2
-    assert "Running analysis..." not in stderr
+    assert "선택됨: 로컬 저장소" in stderr
+    assert "[B] 뒤로" in stderr
+    assert "작업 선택으로 돌아갑니다." in stderr
+    assert stderr.count("작업 선택:") == 2
+    assert "분석 중..." not in stderr
 
 
 def test_direct_cli_html_github_url_defaults_to_parse_only(monkeypatch, tmp_path):
