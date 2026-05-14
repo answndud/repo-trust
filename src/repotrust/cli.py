@@ -12,7 +12,7 @@ import typer
 from rich.console import Console
 
 from . import __version__
-from .compare_reports import CompareFormat, render_compare_reports
+from .compare_reports import render_compare_reports
 from .config import (
     VERDICT_RANK,
     ConfigError,
@@ -769,18 +769,6 @@ def compare(
     ctx: typer.Context,
     old_report: Annotated[Path, typer.Argument(help="Older RepoTrust JSON report.")],
     new_report: Annotated[Path, typer.Argument(help="Newer RepoTrust JSON report.")],
-    output_format: Annotated[
-        CompareFormat,
-        typer.Option(
-            "--format",
-            "-f",
-            help="Comparison output format: text, markdown, or html.",
-        ),
-    ] = CompareFormat.TEXT,
-    output: Annotated[
-        Path | None,
-        typer.Option("--output", "-o", help="Write the comparison report to this file."),
-    ] = None,
     help_requested: Annotated[
         bool,
         typer.Option(
@@ -803,23 +791,8 @@ def compare(
     rendered = render_compare_reports(
         old_data,
         new_data,
-        output_format=output_format,
         locale=locale,
     )
-    if output:
-        output_path = _resolve_output_path(output)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(rendered, encoding="utf-8")
-        if locale == "ko":
-            status_console.print(
-                f"{output_format.value} 비교 리포트를 [bold]{output_path}[/bold]에 저장했습니다."
-            )
-        else:
-            status_console.print(
-                f"Wrote {output_format.value} comparison report to [bold]{output_path}[/bold]"
-            )
-        return
-
     typer.echo(rendered)
 
 

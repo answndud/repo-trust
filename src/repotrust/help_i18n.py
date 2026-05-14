@@ -369,8 +369,6 @@ Arguments:
   NEW_JSON  Newer RepoTrust JSON report.
 
 Options:
-  --format, -f  Comparison output format: text, markdown, or html.
-  --output, -o  Write the comparison report to this file.
   --help  Show this help and exit.
 """,
         "ko": """사용법: repo-trust compare [옵션] OLD_JSON NEW_JSON
@@ -382,8 +380,6 @@ Options:
   NEW_JSON  최신 RepoTrust JSON 리포트입니다.
 
 옵션:
-  --format, -f  비교 출력 형식입니다: text, markdown, html.
-  --output, -o  비교 리포트를 이 파일에 저장합니다.
   --help  이 도움말을 출력하고 종료합니다.
 """,
     },
