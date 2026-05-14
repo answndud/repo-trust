@@ -97,15 +97,6 @@ Open issues for bugs, send pull requests for small fixes, and review the changel
                 "content": b64encode(readme.encode()).decode(),
             },
         ),
-        GitHubResponse(
-            status_code=200,
-            data={"workflows": [{"path": ".github/workflows/ci.yml"}]},
-        ),
-        GitHubResponse(
-            status_code=200,
-            data={"name": "dependabot.yml", "path": ".github/dependabot.yml"},
-        ),
-        GitHubResponse(status_code=404),
     ]
 
 
@@ -206,7 +197,7 @@ def test_remote_enabled_or_unknown_issues_metadata_does_not_deduct():
     ]
 
 
-def test_remote_success_detects_files_from_contents_and_workflows():
+def test_remote_success_detects_files_from_root_contents_and_readme_only():
     result, transport = _scan(_successful_responses())
 
     assert result.detected_files.readme == "README.md"
@@ -214,9 +205,13 @@ def test_remote_success_detects_files_from_contents_and_workflows():
     assert result.detected_files.security == "SECURITY.md"
     assert result.detected_files.dependency_manifests == ["pyproject.toml"]
     assert result.detected_files.lockfiles == ["pylock.toml"]
-    assert result.detected_files.ci_workflows == [".github/workflows/ci.yml"]
-    assert result.detected_files.dependabot == ".github/dependabot.yml"
+    assert result.detected_files.ci_workflows == []
+    assert result.detected_files.dependabot is None
     assert result.score.total == 100
+    assert len(transport.requests) == 3
+    assert all("/actions/workflows" not in request[1] for request in transport.requests)
+    assert all("dependabot" not in request[1] for request in transport.requests)
+    assert all(".github/SECURITY.md" not in request[1] for request in transport.requests)
     assert all("/releases/" not in request[1] for request in transport.requests)
     assert all("/tags" not in request[1] for request in transport.requests)
     assert all("/commits/" not in request[1] for request in transport.requests)
@@ -233,40 +228,18 @@ def test_remote_subpath_url_reports_root_scope_limitation():
     assert "does not assess only the requested subdirectory" in result.assessment.reasons[0]
 
 
-def test_remote_detects_github_security_policy_without_root_security():
+def test_remote_does_not_fetch_nested_security_policy_or_deduct_as_missing():
     responses = _successful_responses()
     responses[1] = _remove_root_security(responses[1])
-    responses.append(
-        GitHubResponse(
-            status_code=200,
-            data={"name": "SECURITY.md", "path": ".github/SECURITY.md"},
-        )
-    )
 
     result, transport = _scan(responses)
 
     ids = {finding.id for finding in result.findings}
-    assert result.detected_files.security == ".github/SECURITY.md"
-    assert "security.no_policy" not in ids
-    assert transport.requests[-1][1] == (
-        "https://api.github.com/repos/owner/repo/contents/.github/SECURITY.md"
-    )
-
-
-def test_remote_security_policy_partial_failure_does_not_deduct_as_missing_policy():
-    responses = _successful_responses()
-    responses[1] = _remove_root_security(responses[1])
-    responses.append(GitHubResponse(status_code=403))
-
-    result, _ = _scan(responses)
-
-    ids = [finding.id for finding in result.findings]
-    assert "remote.github_partial_scan" in ids
-    assert "security.no_policy" not in ids
     assert result.detected_files.security is None
-    assert any(
-        "repository security policy endpoint returned HTTP 403." == finding.evidence
-        for finding in result.findings
+    assert "security.no_policy" not in ids
+    assert all(
+        ".github/SECURITY.md" not in request[1]
+        for request in transport.requests
     )
 
 
@@ -306,9 +279,8 @@ def test_remote_report_rendering_uses_existing_contract():
         "subpath": None,
     }
     assert json_report["detected_files"]["readme"] == "README.md"
-    assert json_report["detected_files"]["ci_workflows"] == [
-        ".github/workflows/ci.yml"
-    ]
+    assert json_report["detected_files"]["ci_workflows"] == []
+    assert json_report["detected_files"]["dependabot"] is None
     assert json_report["findings"][0]["id"] == "remote.github_metadata_collected"
     assert json_report["findings"][0]["severity"] == "info"
     assert "# RepoTrust Report" in markdown_report
@@ -321,12 +293,6 @@ def test_remote_partial_scan_json_contract_has_stable_findings():
             GitHubResponse(status_code=200, data={"full_name": "owner/repo"}),
             GitHubResponse(status_code=500),
             GitHubResponse(status_code=404),
-            GitHubResponse(
-                status_code=200,
-                data={"workflows": [{"path": ".github/workflows/ci.yml"}]},
-            ),
-            GitHubResponse(status_code=404),
-            GitHubResponse(status_code=404),
         ]
     )
 
@@ -335,7 +301,7 @@ def test_remote_partial_scan_json_contract_has_stable_findings():
     assert data["schema_version"] == "1.2"
     assert data["target"]["kind"] == "github"
     assert data["detected_files"]["readme"] is None
-    assert data["detected_files"]["ci_workflows"] == [".github/workflows/ci.yml"]
+    assert data["detected_files"]["ci_workflows"] == []
     assert [finding["id"] for finding in data["findings"][:2]] == [
         "remote.github_metadata_collected",
         "remote.github_partial_scan",
@@ -375,19 +341,13 @@ def test_remote_contents_partial_failure_does_not_look_like_missing_files():
             GitHubResponse(status_code=200, data={"full_name": "owner/repo"}),
             GitHubResponse(status_code=500),
             GitHubResponse(status_code=404),
-            GitHubResponse(
-                status_code=200,
-                data={"workflows": [{"path": ".github/workflows/ci.yml"}]},
-            ),
-            GitHubResponse(status_code=404),
-            GitHubResponse(status_code=404),
         ]
     )
 
     ids = [finding.id for finding in result.findings]
     assert ids[:2] == ["remote.github_metadata_collected", "remote.github_partial_scan"]
     assert result.detected_files.readme is None
-    assert result.detected_files.ci_workflows == [".github/workflows/ci.yml"]
+    assert result.detected_files.ci_workflows == []
     assert "repository contents" in result.findings[1].evidence
     assert "readme.missing" not in ids
     assert "hygiene.no_license" not in ids
@@ -399,12 +359,6 @@ def test_remote_partial_scan_finding_renders_in_static_html():
             GitHubResponse(status_code=200, data={"full_name": "owner/repo"}),
             GitHubResponse(status_code=500),
             GitHubResponse(status_code=404),
-            GitHubResponse(
-                status_code=200,
-                data={"workflows": [{"path": ".github/workflows/ci.yml"}]},
-            ),
-            GitHubResponse(status_code=404),
-            GitHubResponse(status_code=404),
         ]
     )
 
@@ -414,12 +368,11 @@ def test_remote_partial_scan_finding_renders_in_static_html():
     assert "remote.github_partial_scan" in html_report
     assert "GitHub remote scan completed with partial metadata." in html_report
     assert "repository contents endpoint returned HTTP 500." in html_report
-    assert ".github/workflows/ci.yml" in html_report
     assert "확인 못함" in html_report
     assert "Evidence Matrix" in html_report
 
 
-def test_remote_workflows_partial_failure_preserves_contents_detection():
+def test_remote_readme_partial_failure_preserves_root_contents_detection():
     result, _ = _scan(
         [
             GitHubResponse(status_code=200, data={"full_name": "owner/repo"}),
@@ -428,35 +381,30 @@ def test_remote_workflows_partial_failure_preserves_contents_detection():
                 data=[{"type": "file", "name": "README.md", "path": "README.md"}],
             ),
             GitHubResponse(status_code=500),
-            GitHubResponse(status_code=403),
-            GitHubResponse(status_code=404),
-            GitHubResponse(status_code=404),
         ]
     )
 
     ids = [finding.id for finding in result.findings]
-    assert ids[:3] == [
+    assert ids[:2] == [
         "remote.github_metadata_collected",
-        "remote.github_partial_scan",
         "remote.github_partial_scan",
     ]
     assert result.detected_files.readme == "README.md"
     assert result.detected_files.ci_workflows == []
     assert "repository README" in result.findings[1].evidence
-    assert "GitHub Actions workflows" in result.findings[2].evidence
+    assert "remote.readme_content_unavailable" in ids
     assert "security.no_ci" not in ids
 
 
-def test_remote_dependabot_partial_failure_does_not_deduct_as_missing_dependabot():
+def test_remote_does_not_fetch_dependabot_or_deduct_as_missing():
     responses = _successful_responses()
-    responses[4] = GitHubResponse(status_code=403)
-    responses[5] = GitHubResponse(status_code=403)
 
-    result, _ = _scan(responses)
+    result, transport = _scan(responses)
 
     ids = [finding.id for finding in result.findings]
-    assert "remote.github_partial_scan" in ids
     assert "security.no_dependabot" not in ids
+    assert result.detected_files.dependabot is None
+    assert all("dependabot" not in request[1] for request in transport.requests)
 
 
 def test_remote_detects_risky_readme_install_commands():

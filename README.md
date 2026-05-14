@@ -426,7 +426,7 @@ repo-trust-kr check https://github.com/openai/codex
 
 이 경우 README, LICENSE, CI 같은 원격 파일은 확인하지 않습니다. 결과에는 `근거 부족`, `기본 정보만 확인`, `확인 못함` 같은 표시가 나올 수 있습니다.
 
-GitHub API read-only metadata까지 확인하고 싶을 때만 `--remote`를 명시합니다. Public repository는 token 없이 시도할 수 있지만 rate limit이나 private repository 접근이 필요하면 `GITHUB_TOKEN`을 환경 변수로 설정합니다.
+GitHub API read-only metadata까지 확인하고 싶을 때만 `--remote`를 명시합니다. 현재 remote scan은 repository metadata, root contents, README content만 확인합니다. GitHub Actions workflow, Dependabot 설정, `.github/SECURITY.md` 같은 중첩 GitHub 설정까지 판단해야 하면 로컬로 checkout한 뒤 검사하세요. Public repository는 token 없이 시도할 수 있지만 rate limit이나 private repository 접근이 필요하면 `GITHUB_TOKEN`을 환경 변수로 설정합니다.
 
 **입력할 명령**
 

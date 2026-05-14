@@ -51,8 +51,8 @@ TEXT = {
 }
 
 RECOMMENDATION_KO = {
-    "Continue remote scan with repository contents and workflow metadata.": (
-        "원격 저장소 내용과 자동 검사 정보를 계속 확인하세요."
+    "Continue remote scan with repository root contents and README content.": (
+        "원격 저장소 root 파일과 README 내용을 계속 확인하세요."
     ),
     "Retry later or provide a GITHUB_TOKEN with sufficient rate limit.": (
         "나중에 다시 실행하거나 충분한 rate limit이 있는 GITHUB_TOKEN을 설정하세요."
