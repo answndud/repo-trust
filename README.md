@@ -473,6 +473,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다. 실제 tok
 | 다음 행동 | 지금 바로 실행할 후속 조치 |
 | HTML `Next Steps` | 위험 finding을 어떤 순서로 확인하고 멈출지 |
 | HTML `Safe Install` | README 설치 명령을 실행해도 되는지와 격리된 검토/설치 대안 |
+| HTML `Prioritized Findings` | 각 finding의 위험 이유, 지금 할 일, 수용 가능한 조건, 실제 근거 |
 | 리포트 | 저장된 HTML/JSON 리포트 위치 |
 | DETAILS | 분석이 충분할 때만 보여주는 세부 점수와 근거 |
 
@@ -481,7 +482,7 @@ Token 값은 리포트나 터미널 출력에 남기지 않습니다. 실제 tok
 1. 터미널의 `RESULT`와 `이유`/`WHY`에서 최종 판단과 상위 위험을 확인합니다.
 2. HTML 리포트를 만들었다면 `Next Steps`를 먼저 보고, 설치를 멈춰야 하는지 판단합니다.
 3. README의 설치 명령을 복사하기 전에는 `Safe Install`의 `Next isolated step`과 체크리스트를 확인합니다.
-4. 더 자세한 근거가 필요하면 `Prioritized Findings` 또는 JSON의 `findings` 배열을 확인합니다.
+4. 더 자세한 근거가 필요하면 `Prioritized Findings`에서 `왜 위험한가요?`, `지금 할 일`, `언제 수용할 수 있나요?`, `실제 근거`를 확인합니다.
 5. finding card의 `ID 복사`와 `explain 명령 복사` 버튼으로 `repo-trust explain <finding-id>` 설명을 이어서 봅니다.
 
 HTML/JSON 리포트를 저장한 뒤 터미널의 `Open with: open <path>` 또는 `열기 명령: open <경로>` 안내를 복사하면 macOS에서 바로 파일을 열 수 있습니다. Windows에서는 파일 탐색기에서 `result` 폴더를 열거나 PowerShell에서 `ii .\result\<파일명>.html`을 실행할 수 있습니다.

@@ -363,7 +363,10 @@ def test_direct_cli_samples_writes_good_and_risky_gallery(tmp_path):
     assert good_html.name in result.stderr.replace("\n", "")
     for path in [good_html, good_json, risky_html, risky_json]:
         assert path.exists()
-    assert "Next isolated step" in risky_html.read_text(encoding="utf-8")
+    risky_report = risky_html.read_text(encoding="utf-8")
+    assert "Next isolated step" in risky_report
+    assert "<dt>지금 할 일</dt>" in risky_report
+    assert "<dt>언제 수용할 수 있나요?</dt>" in risky_report
     assert json.loads(good_json.read_text(encoding="utf-8"))["score"]["grade"] == "A"
     assert json.loads(risky_json.read_text(encoding="utf-8"))["score"]["grade"] == "F"
 

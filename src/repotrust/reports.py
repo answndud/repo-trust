@@ -452,7 +452,7 @@ def render_html(result: ScanResult) -> str:
       </ul>
 
       <h2>Prioritized Findings</h2>
-      <p>Assessment와 Purpose Profiles의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {finding_count}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 실제 근거, 추천 조치를 포함합니다.</p>
+      <p>Assessment와 Purpose Profiles의 priority ID는 상위 3개 항목만 요약합니다. 이 섹션은 전체 {finding_count}개 finding을 심각도 순으로 모두 나열하며, 각 항목은 안정적인 ID, 왜 위험한지, 지금 할 일, 수용 가능한 조건, 실제 근거를 함께 보여줍니다.</p>
       <div class="finding-controls" aria-label="Finding filters">
         <button type="button" data-filter-type="all" data-filter-value="all" aria-pressed="true">전체</button>
         <button type="button" data-filter-type="severity" data-filter-value="high" aria-pressed="false">높음</button>
@@ -712,6 +712,8 @@ def _finding_html(finding: Finding) -> str:
     category = html.escape(finding.category.value)
     finding_id = html.escape(finding.id)
     explain_command = html.escape(f"repo-trust explain {finding.id}")
+    action = _finding_action(finding)
+    acceptance_note = _finding_acceptance_note(finding)
     return f"""        <article class="finding severity-{severity}" data-severity="{severity}" data-category="{category}">
           <header>
             <div>
@@ -729,7 +731,9 @@ def _finding_html(finding: Finding) -> str:
             <dl>
               <dt>검사 영역</dt><dd>{html.escape(category_label)} <code>{category}</code></dd>
               <dt>심각도</dt><dd>{html.escape(severity_label)} <code>{severity}</code></dd>
-              <dt>무슨 뜻인가요?</dt><dd>{html.escape(_finding_explanation(finding))}</dd>
+              <dt>왜 위험한가요?</dt><dd>{html.escape(_finding_explanation(finding))}</dd>
+              <dt>지금 할 일</dt><dd>{html.escape(action)}</dd>
+              <dt>언제 수용할 수 있나요?</dt><dd>{html.escape(acceptance_note)}</dd>
               <dt>원문 메시지</dt><dd>{html.escape(finding.message)}</dd>
               <dt>실제 근거</dt><dd>{html.escape(finding.evidence)}</dd>
               <dt>추천 조치</dt><dd>{html.escape(finding.recommendation)}</dd>
@@ -898,6 +902,36 @@ def _finding_title(finding: Finding) -> str:
 
 def _finding_explanation(finding: Finding) -> str:
     return FINDING_EXPLANATIONS.get(finding.id, finding.message)
+
+
+def _finding_action(finding: Finding) -> str:
+    from .finding_catalog import get_finding_reference
+
+    reference = get_finding_reference(finding.id)
+    if reference:
+        return reference.action
+    return finding.recommendation
+
+
+def _finding_acceptance_note(finding: Finding) -> str:
+    severity = finding.severity.value
+    category = finding.category.value
+
+    if finding.id == "target.github_not_fetched":
+        return "GitHub URL 형식만 확인해도 충분한 단계라면 수용할 수 있습니다. 파일 근거가 필요하면 로컬 checkout을 검사하거나 --remote를 명시하세요."
+    if finding.id == "target.github_subpath_unsupported":
+        return "repository root 수준 판단이면 참고 정보로 둘 수 있습니다. 하위 폴더만 채택할지 결정해야 한다면 local scan과 --subdir로 다시 확인하세요."
+    if finding.id.startswith("remote.github_") or finding.id == "remote.readme_content_unavailable":
+        return "원격 근거가 일시적으로 부족한 상태라면 재시도하거나 로컬 checkout으로 보강한 뒤 수용하세요."
+    if severity == "high":
+        return "근거를 직접 검토하고 더 안전한 설치/채택 경로가 확인되기 전에는 수용하지 않는 편이 좋습니다."
+    if category == "install_safety":
+        return "격리 환경에서 명령과 스크립트를 먼저 검토했고, 실행 범위와 버전이 의도한 대로 제한된 경우에만 수용하세요."
+    if severity == "medium":
+        return "팀 정책이나 사용 맥락상 예외가 문서화되어 있고, dependency 채택 전에 보완 계획이 있으면 수용할 수 있습니다."
+    if severity == "low":
+        return "낮은 우선순위의 보완 항목입니다. lockfile, release note, 내부 정책 같은 다른 근거가 충분하면 backlog로 둘 수 있습니다."
+    return "정보성 항목입니다. 판단에 필요한 근거가 충분한지 확인한 뒤 참고로 남기면 됩니다."
 
 
 def _severity_ko(severity: str) -> str:

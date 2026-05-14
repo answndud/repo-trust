@@ -688,7 +688,11 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert 'class="finding severity-high"' in html
     assert "<dt>검사 영역</dt>" in html
     assert "<dt>심각도</dt>" in html
-    assert "<dt>무슨 뜻인가요?</dt>" in html
+    assert "<dt>왜 위험한가요?</dt>" in html
+    assert "<dt>지금 할 일</dt>" in html
+    assert "Add a README with purpose, installation, usage, and support information." in html
+    assert "<dt>언제 수용할 수 있나요?</dt>" in html
+    assert "더 안전한 설치/채택 경로가 확인되기 전에는 수용하지 않는 편이 좋습니다" in html
     assert "<dt>원문 메시지</dt>" in html
     assert "README가 없습니다." in html
     assert "readme.missing" in html
