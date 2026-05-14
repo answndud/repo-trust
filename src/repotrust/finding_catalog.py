@@ -83,6 +83,45 @@ FINDING_EXPLANATIONS = {
     "remote.readme_content_unavailable": "README 파일은 발견했지만 내용을 가져오지 못해 README 품질과 설치 명령 안전성을 완전히 검사하지 못했습니다.",
 }
 
+FINDING_ACTIONS_KO = {
+    "target.github_not_fetched": "--remote로 원격 조회를 명시하거나 로컬 checkout을 검사해 파일 수준 근거를 확인하세요.",
+    "target.github_subpath_unsupported": "하위 폴더 단위 평가가 중요하면 해당 폴더를 로컬 checkout으로 검사하세요.",
+    "target.local_path_missing": "평가를 신뢰하기 전에 존재하는 저장소 폴더 경로를 다시 입력하세요.",
+    "readme.missing": "목적, 설치, 사용법, 지원 정보를 담은 README를 추가하세요.",
+    "readme.too_short": "README에 프로젝트 목적, 설치 단계, 예시, 문제 해결 방법을 더 자세히 적으세요.",
+    "readme.no_project_purpose": "README 위쪽에 프로젝트 목적과 예상 사용 사례를 짧게 설명하세요.",
+    "readme.no_install_section": "지원하는 설치 방법을 담은 Installation 또는 Setup 섹션을 추가하세요.",
+    "readme.no_usage_section": "복사해서 실행할 수 있는 명령이 있는 Usage, Quickstart, Examples 섹션을 추가하세요.",
+    "readme.no_maintenance_signal": "문제 신고, 기여 방법, 릴리스 노트를 어디서 볼 수 있는지 문서화하세요.",
+    "install.no_readme_to_audit": "검토되지 않은 shell 실행을 피하는 설치 명령을 문서화하세요.",
+    "install.no_commands": "사용자와 자동화가 실행 전에 검토할 수 있도록 설치 명령을 명확히 적으세요.",
+    "install.risky.shell_pipe_install": "버전 고정, checksum, 검토된 스크립트가 있는 패키지 관리자 설치를 우선하세요.",
+    "install.risky.process_substitution_shell": "실행 전에 스크립트를 파일로 내려받아 검토하거나 패키지 설치 방식을 사용하세요.",
+    "install.risky.python_inline_execution": "inline 실행 대신 검토 가능한 스크립트나 패키지 관리자 설치로 바꾸세요.",
+    "install.risky.uses_sudo": "관리자 권한을 쓰기 전에 명령을 검토하고 사용자 범위나 격리 설치를 우선하세요.",
+    "install.risky.global_package_install": "전역 설치보다 프로젝트별 격리 환경이나 검토된 패키지를 우선하세요.",
+    "install.risky.vcs_direct_install": "고정된 release, package registry artifact, 검토된 commit hash를 우선하세요.",
+    "install.risky.marks_downloaded_code_executable": "실행 권한을 주기 전에 파일의 출처와 내용을 확인하세요.",
+    "dependency.npm_lifecycle_script": "설치하거나 agent에게 맡기기 전에 install lifecycle script 내용을 직접 확인하세요.",
+    "dependency.unpinned_node_dependency": "exact version을 사용하거나 커밋된 lockfile과 업데이트 정책을 함께 확인하세요.",
+    "dependency.unpinned_python_dependency": "exact pin을 사용하거나 커밋된 lockfile과 업데이트 정책을 함께 확인하세요.",
+    "security.no_policy": "사용자가 찾을 수 있는 위치에 SECURITY.md나 취약점 신고 방법을 추가하세요.",
+    "security.no_dependabot": "Dependabot 또는 다른 의존성 업데이트 절차를 추가하세요.",
+    "security.no_ci": "자동 검사가 실행되는 CI workflow를 추가하거나 문서화하세요.",
+    "security.no_lockfile": "애플리케이션이라면 lockfile을 커밋하고, 의도적으로 생략한다면 이유를 문서화하세요.",
+    "hygiene.no_license": "다른 사람이 채택하거나 재배포하기 전에 라이선스 파일을 추가하세요.",
+    "hygiene.no_manifest": "표준 package manifest를 추가하거나 설치 가능한 저장소가 아닌 이유를 문서화하세요.",
+    "remote.github_metadata_collected": "조치가 필요 없습니다. --remote가 읽기 전용 메타데이터를 수집했다는 정보입니다.",
+    "remote.github_rate_limited": "나중에 다시 시도하거나 더 높은 rate limit을 위해 GITHUB_TOKEN을 설정하세요.",
+    "remote.github_unauthorized": "저장소 공개 상태와 token 권한을 확인하세요.",
+    "remote.github_not_found": "owner/repo URL과 token 접근 권한을 확인하세요.",
+    "remote.github_api_error": "원격 근거를 신뢰하기 전에 다시 시도하거나 GitHub API 상태를 확인하세요.",
+    "remote.github_partial_scan": "사용할 수 없는 원격 신호는 unknown으로 보고, 다시 시도하거나 로컬 checkout을 검사하세요.",
+    "remote.readme_content_unavailable": "전체 README와 설치 안전 분석이 필요하면 로컬 checkout을 검사하세요.",
+    "remote.github_archived": "관리되는 fork를 찾거나 archived 상태가 사용 목적에 허용되는지 확인하세요.",
+    "remote.github_issues_disabled": "채택 전에 지원 또는 이슈 신고 채널을 확인하세요.",
+}
+
 
 @dataclass(frozen=True)
 class FindingReference:
@@ -98,6 +137,10 @@ class FindingReference:
     @property
     def explanation(self) -> str:
         return FINDING_EXPLANATIONS.get(self.id, "No detailed explanation is registered yet.")
+
+    @property
+    def action_ko(self) -> str:
+        return FINDING_ACTIONS_KO.get(self.id, self.action)
 
 
 FINDING_REFERENCES: dict[str, FindingReference] = {

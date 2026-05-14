@@ -12,10 +12,10 @@ from .dashboard_i18n import (
     evidence_label,
     format_label,
     localized_actions,
-    message_text,
+    finding_message_text,
+    finding_recommendation_text,
     mode_label,
     profile_label,
-    recommendation_text,
     risk_label as localized_risk_label,
     severity_label,
     status_text,
@@ -115,7 +115,7 @@ def print_findings(*, console: Console, result: ScanResult, locale: str = "en") 
         finding_table.add_row(
             severity_label(finding.severity.value, locale),
             finding.id,
-            message_text(finding.message, locale),
+            finding_message_text(finding, locale),
         )
     console.print(finding_table)
 
@@ -197,8 +197,8 @@ def _why_text(result: ScanResult, *, locale: str) -> str:
     lines: list[str] = []
     for finding in findings:
         prefix = "!" if finding.severity.value in {"high", "medium"} else "-"
-        message = message_text(finding.message, locale)
-        recommendation = recommendation_text(finding.recommendation, locale)
+        message = finding_message_text(finding, locale)
+        recommendation = finding_recommendation_text(finding, locale)
         lines.append(f"{prefix} {message}\n  → {recommendation}")
     if len(result.findings) > len(findings):
         if locale == "ko":

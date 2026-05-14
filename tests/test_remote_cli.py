@@ -170,4 +170,4 @@ def test_direct_kr_cli_check_github_url_prints_korean_parse_only_status(monkeypa
 
     assert result.exit_code == 0
     assert "GitHub URL만 확인" in stderr
-    assert "GitHub URL 형식만 확인했고 원격 정보는 가져오지 않았습니다." in stderr
+    assert "GitHub URL을 원격 조회 없이 파싱만 했습니다." in stderr
