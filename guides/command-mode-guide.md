@@ -102,7 +102,7 @@ HTML 리포트는 정적 evidence artifact입니다. Safe Install이나 Next Ste
 
 ## JSON 리포트 만들기
 
-자동화, 비교, 다른 도구 연동이 필요하면 `json`을 사용합니다.
+자동화나 다른 도구 연동이 필요하면 `json`을 사용합니다.
 
 ```bash
 repo-trust-kr json . --output reports/current.json
@@ -110,7 +110,7 @@ repo-trust-kr json . --output reports/current.json
 
 JSON은 기계가 읽는 계약입니다. `schema_version`, `target`, `detected_files`, `findings`, `score`, `assessment`, `generated_at`을 포함합니다.
 
-나중에 두 JSON을 비교하거나, 저장된 JSON에서 다음 조치를 다시 볼 수 있습니다.
+나중에 저장된 JSON에서 다음 조치를 다시 볼 수 있습니다.
 
 ## 설치해도 되는지 보기
 

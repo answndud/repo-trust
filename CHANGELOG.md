@@ -4,7 +4,9 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
-No unreleased changes yet.
+### Fixed
+
+- Command Mode beginner guide no longer implies a built-in JSON compare workflow after the `compare` command removal.
 
 ## v0.3.0 - 2026-05-14
 
