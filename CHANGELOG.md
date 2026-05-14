@@ -4,8 +4,24 @@ All notable changes to RepoTrust are documented here.
 
 ## Unreleased
 
+### Removed
+
+- Removed Console Mode. Running `repo-trust` or `repo-trust-kr` without a command now prints localized command help and the beginner guide path.
+- Removed the legacy `repotrust scan` entrypoint. Use `repo-trust check`, `repo-trust json`, or `repo-trust html`.
+- Removed `repo-trust compare`, `repo-trust init-policy`, and the compatibility `audit-install` command from the public command surface.
+- Removed config policy surface beyond `[policy] fail_under`; category weights, disabled findings, severity overrides, and profile gates are intentionally unsupported.
+- Removed Safe Install and Purpose Profiles sections from static HTML reports. HTML now stays a saved evidence artifact; use terminal commands and JSON `assessment.profiles` for stepwise guidance and purpose-specific verdicts.
+
+### Changed
+
+- `safe-install --audit` now separates responsibilities: Safe Install Advice owns README install commands and risky README patterns, while the audit section focuses on local install-time execution surfaces.
+- `--remote` is documented as a frozen GitHub API scope that fetches only repository metadata, root contents, and README content.
+- Korean dashboard finding translations now use stable finding IDs through the finding catalog instead of matching English message strings.
+- CLI and UX tests were reduced to core behavior contracts; the current suite has 83 tests.
+
 ### Fixed
 
+- README now states the Python 3.10+ requirement before the wheel install commands.
 - README sample gallery expectations now match the v0.2.10 built-in `sample-risky` output.
 
 ## v0.2.10 - 2026-05-14
