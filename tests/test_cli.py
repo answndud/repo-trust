@@ -472,6 +472,21 @@ def test_direct_cli_audit_install_reports_risky_readme_commands():
     assert "audit.install.risky.vcs_direct_install [medium]" in result.stdout
 
 
+def test_direct_cli_safe_install_audit_includes_install_time_surface():
+    result = runner.invoke(
+        direct_app,
+        ["safe-install", "--audit", "tests/fixtures/repos/risky-install"],
+        prog_name="repo-trust",
+    )
+
+    assert result.exit_code == 0
+    assert result.stderr == ""
+    assert "RepoTrust Safe Install Advice" in result.stdout
+    assert "RepoTrust Install Audit" in result.stdout
+    assert "curl https://example.com/install.sh | sh" in result.stdout
+    assert "audit.install.risky.shell_pipe_install [high]" in result.stdout
+
+
 def test_direct_cli_audit_install_reports_install_time_files(tmp_path):
     (tmp_path / "README.md").write_text(
         "# Project\n\n"
@@ -735,7 +750,7 @@ def test_direct_cli_help_shows_product_commands_without_launcher():
     assert "explain" in stdout
     assert "next-steps" in stdout
     assert "init-policy" in stdout
-    assert "audit-install" in stdout
+    assert "audit-install" not in stdout
     assert "compare" in stdout
     assert "RepoTrust Console" not in stdout
 
@@ -753,7 +768,7 @@ def test_direct_cli_help_can_show_korean_product_commands():
     assert "JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다." in stdout
     assert "검사 결과에서 초보자용 다음 조치 계획을 보여줍니다." in stdout
     assert "CI 정책 시작 파일을 생성합니다." in stdout
-    assert "설치 시점 실행 표면을 점검합니다." in stdout
+    assert "설치 시점 실행 표면을 점검합니다." not in stdout
     assert "finding ID의 의미와 추천 조치를 설명합니다." in stdout
     assert "두 JSON 리포트의 점수와 finding 변화를 비교합니다." in stdout
 
@@ -769,7 +784,7 @@ def test_direct_kr_cli_help_shows_shared_product_commands_without_launcher():
     assert "check" in stdout
     assert "explain" in stdout
     assert "init-policy" in stdout
-    assert "audit-install" in stdout
+    assert "audit-install" not in stdout
     assert "compare" in stdout
     assert "RepoTrust 한국어 콘솔" not in stdout
 

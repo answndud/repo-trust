@@ -538,6 +538,10 @@ def safe_install(
             help="For GitHub URLs, call the GitHub API for read-only repository metadata.",
         ),
     ] = False,
+    audit: Annotated[
+        bool,
+        typer.Option("--audit", help="Also audit local install-time execution surfaces."),
+    ] = False,
 ) -> None:
     """Print install advice without running repository install commands."""
     target = _target_with_subdir(target, subdir)
@@ -548,7 +552,11 @@ def safe_install(
         remote=remote,
     )
     result = _scan_result(target=target, config=config, remote=remote_scan)
-    typer.echo(render_safe_install_advice(result, locale=_product_locale(ctx)), nl=False)
+    locale = _product_locale(ctx)
+    output = render_safe_install_advice(result, locale=locale)
+    if audit:
+        output += "\n" + render_install_audit(audit_install(target), locale=locale)
+    typer.echo(output, nl=False)
 
 
 @direct_app.command("next-steps", add_help_option=False)

@@ -21,7 +21,6 @@ Commands:
   tutorial Print a beginner tutorial with copyable commands.
   samples Write built-in good/risky sample reports.
   init-policy Create starter CI policy files.
-  audit-install Audit install-time execution surfaces.
   gate   Write JSON and fail when policy requirements are not met.
   explain Explain a finding ID.
   compare Compare two JSON reports.
@@ -47,7 +46,6 @@ Console Mode:
   tutorial 초보자가 처음 따라 할 명령을 보여줍니다.
   samples 좋은/위험 샘플 리포트를 생성합니다.
   init-policy CI 정책 시작 파일을 생성합니다.
-  audit-install 설치 시점 실행 표면을 점검합니다.
   gate   JSON 리포트를 출력하고 정책 실패를 exit code로 표시합니다.
   explain finding ID의 의미와 추천 조치를 설명합니다.
   compare 두 JSON 리포트의 점수와 finding 변화를 비교합니다.
@@ -186,7 +184,8 @@ CI 정책 시작 파일을 생성합니다.
     "audit-install": {
         "en": """Usage: repo-trust audit-install [OPTIONS] TARGET
 
-Audit install-time execution surfaces without running commands.
+Compatibility command for install-time execution auditing.
+Prefer `repo-trust safe-install --audit TARGET` for new usage.
 
 Arguments:
   TARGET  Local path or GitHub URL to inspect.
@@ -197,7 +196,8 @@ Options:
 """,
         "ko": """사용법: repo-trust audit-install [옵션] 대상
 
-설치 시점 실행 표면을 명령 실행 없이 점검합니다.
+설치 시점 실행 표면 점검을 위한 호환 명령입니다.
+새 사용법은 `repo-trust-kr safe-install --audit 대상`을 권장합니다.
 
 인자:
   대상  검사할 로컬 경로 또는 GitHub URL입니다.
@@ -220,6 +220,7 @@ Options:
   --subdir PATH  Scan this relative subdirectory of a local target.
   --remote       For GitHub URLs, call the GitHub API for read-only metadata.
   --parse-only   For GitHub URLs, force URL-only mode without the GitHub API.
+  --audit        Also audit local install-time execution surfaces.
   --help         Choose English or Korean help and exit.
 """,
         "ko": """사용법: repo-trust safe-install [옵션] 대상
@@ -234,6 +235,7 @@ Options:
   --subdir PATH  로컬 대상의 상대 하위 디렉터리를 검사합니다.
   --remote       GitHub URL에서 GitHub API read-only metadata를 조회합니다.
   --parse-only   GitHub URL을 API 호출 없이 URL 형식만 확인합니다.
+  --audit        로컬 설치 시점 실행 표면도 함께 점검합니다.
   --help         영어 또는 한국어 도움말을 선택해 봅니다.
 """,
     },
