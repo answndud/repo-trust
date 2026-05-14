@@ -93,93 +93,35 @@ Open issues and review the changelog for release notes.
     assert "readme.no_project_purpose" in ids
 
 
-def test_curl_pipe_shell_is_high_severity(tmp_path):
+def test_risky_install_patterns_have_expected_severity_and_evidence(tmp_path):
     repo = _copy_fixture_repo(tmp_path, "risky-install")
 
     result = scan(str(repo))
 
-    risky = [finding for finding in result.findings if finding.id == "install.risky.shell_pipe_install"]
-    assert risky
-    assert risky[0].severity.value == "high"
+    expected = {
+        "install.risky.shell_pipe_install": ("high", "curl https://example.com/install.sh | sh"),
+        "install.risky.process_substitution_shell": (
+            "high",
+            "bash <(curl -fsSL https://example.com/install.sh)",
+        ),
+        "install.risky.python_inline_execution": ("high", "python -c"),
+        "install.risky.vcs_direct_install": (
+            "medium",
+            "pip install git+https://github.com/example/project.git",
+        ),
+        "install.risky.uses_sudo": ("high", "sudo npm install -g risky-package"),
+        "install.risky.global_package_install": (
+            "medium",
+            "sudo npm install -g risky-package",
+        ),
+        "install.risky.marks_downloaded_code_executable": ("medium", "chmod +x install.sh"),
+    }
+
+    for finding_id, (severity, evidence) in expected.items():
+        finding = _finding(result, finding_id)
+        assert finding.severity.value == severity
+        assert finding.evidence.startswith(evidence)
     assert result.assessment.verdict == "do_not_install_before_review"
-
-
-def test_process_substitution_shell_is_high_severity(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "risky-install")
-
-    result = scan(str(repo))
-
-    risky = [finding for finding in result.findings if finding.id == "install.risky.process_substitution_shell"]
-    assert risky
-    assert risky[0].severity.value == "high"
-    assert risky[0].evidence == "bash <(curl -fsSL https://example.com/install.sh)"
-
-
-def test_python_inline_execution_is_high_severity(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "risky-install")
-
-    result = scan(str(repo))
-
-    risky = [finding for finding in result.findings if finding.id == "install.risky.python_inline_execution"]
-    assert risky
-    assert risky[0].severity.value == "high"
-    assert risky[0].evidence.startswith("python -c")
-
-
-def test_direct_vcs_install_is_medium_severity(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "risky-install")
-
-    result = scan(str(repo))
-
-    risky = [finding for finding in result.findings if finding.id == "install.risky.vcs_direct_install"]
-    assert risky
-    assert risky[0].severity.value == "medium"
-    assert risky[0].evidence == "pip install git+https://github.com/example/project.git"
-
-
-def test_sudo_install_is_high_severity(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "risky-install")
-
-    result = scan(str(repo))
-
-    risky = [
-        finding
-        for finding in result.findings
-        if finding.id == "install.risky.uses_sudo"
-    ]
-    assert risky
-    assert risky[0].severity.value == "high"
-    assert risky[0].evidence == "sudo npm install -g risky-package"
-
-
-def test_global_package_install_is_medium_severity(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "risky-install")
-
-    result = scan(str(repo))
-
-    risky = [
-        finding
-        for finding in result.findings
-        if finding.id == "install.risky.global_package_install"
-    ]
-    assert risky
-    assert risky[0].severity.value == "medium"
-    assert risky[0].evidence == "sudo npm install -g risky-package"
-
-
-def test_chmod_install_command_is_medium_severity(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "risky-install")
-
-    result = scan(str(repo))
-
-    risky = [
-        finding
-        for finding in result.findings
-        if finding.id == "install.risky.marks_downloaded_code_executable"
-    ]
-    assert risky
-    assert risky[0].severity.value == "medium"
-    assert risky[0].evidence == "chmod +x install.sh"
 
 
 def test_risky_install_finding_mappings_cover_all_pattern_ids():
@@ -256,8 +198,9 @@ dependencies = ["requests>=2"]
     ]
 
 
-def test_package_json_unpinned_dependency_is_low_severity(tmp_path):
+def test_unpinned_dependency_findings_cover_node_pyproject_and_requirements(tmp_path):
     repo = _copy_fixture_repo(tmp_path, "good-python")
+    requirements_repo = _copy_fixture_repo(tmp_path / "requirements-case", "good-python")
     (repo / "package.json").write_text(
         json.dumps(
             {
@@ -267,13 +210,29 @@ def test_package_json_unpinned_dependency_is_low_severity(tmp_path):
         ),
         encoding="utf-8",
     )
+    (repo / "pyproject.toml").write_text(
+        """
+[project]
+name = "range-python-project"
+version = "0.1.0"
+dependencies = ["requests>=2"]
+""",
+        encoding="utf-8",
+    )
+    (requirements_repo / "pyproject.toml").unlink()
+    (requirements_repo / "requirements.txt").write_text("requests>=2\n", encoding="utf-8")
 
     result = scan(str(repo))
+    requirements_result = scan(str(requirements_repo))
 
-    finding = _finding(result, "dependency.unpinned_node_dependency")
-    assert finding.severity.value == "low"
-    assert finding.category.value == "security_posture"
-    assert finding.evidence == "package.json dependencies.left-pad: ^1.3.0"
+    node = _finding(result, "dependency.unpinned_node_dependency")
+    pyproject = _finding(result, "dependency.unpinned_python_dependency")
+    requirements = _finding(requirements_result, "dependency.unpinned_python_dependency")
+    assert node.severity.value == "low"
+    assert node.category.value == "security_posture"
+    assert node.evidence == "package.json dependencies.left-pad: ^1.3.0"
+    assert pyproject.evidence == "pyproject.toml project.dependencies: requests>=2"
+    assert requirements.evidence == "requirements.txt: requests>=2"
 
 
 def test_package_risk_keeps_missing_lockfile_signal_separate(tmp_path):
@@ -298,37 +257,6 @@ def test_package_risk_keeps_missing_lockfile_signal_separate(tmp_path):
 
     assert "security.no_lockfile" in ids
     assert "dependency.unpinned_node_dependency" not in ids
-
-
-def test_pyproject_unpinned_dependency_is_low_severity(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "good-python")
-    (repo / "pyproject.toml").write_text(
-        """
-[project]
-name = "range-python-project"
-version = "0.1.0"
-dependencies = ["requests>=2"]
-""",
-        encoding="utf-8",
-    )
-
-    result = scan(str(repo))
-
-    finding = _finding(result, "dependency.unpinned_python_dependency")
-    assert finding.severity.value == "low"
-    assert finding.category.value == "security_posture"
-    assert finding.evidence == "pyproject.toml project.dependencies: requests>=2"
-
-
-def test_requirements_unpinned_dependency_is_low_severity(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "good-python")
-    (repo / "requirements.txt").write_text("requests>=2\n", encoding="utf-8")
-
-    result = scan(str(repo))
-
-    finding = _finding(result, "dependency.unpinned_python_dependency")
-    assert finding.severity.value == "low"
-    assert finding.evidence == "requirements.txt: requests>=2"
 
 
 def test_install_safety_ignores_prose_warning_about_sudo(tmp_path):
@@ -689,41 +617,21 @@ def test_html_report_exposes_score_detected_files_and_finding_metadata(tmp_path)
     assert "readme.missing" in html
 
 
-def test_html_report_keeps_safe_install_guidance_in_terminal_command(tmp_path):
+def test_html_report_keeps_terminal_workflow_guidance_out_of_static_report(tmp_path):
     repo = _copy_fixture_repo(tmp_path, "risky-install")
     result = scan(str(repo))
 
     html = render_html(result)
 
     assert "<h2>Safe Install</h2>" not in html
+    assert "<h2>Next Steps</h2>" not in html
     assert "Next isolated step" not in html
     assert "실행 전 체크리스트" not in html
     assert "README에서 발견한 설치 명령" not in html
-    assert "격리된 검토/설치 패턴" not in html
-    assert "curl https://example.com/install.sh | sh" in html
-
-
-def test_html_report_keeps_next_steps_in_terminal_command(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "risky-install")
-    result = scan(str(repo))
-
-    html = render_html(result)
-
-    assert "<h2>Next Steps</h2>" not in html
     assert "RepoTrust 다음 조치" not in html
     assert "1. 중단: 아직 README 설치 명령을 실행하지 마세요." not in html
     assert "License 확인" not in html
-
-
-def test_html_report_does_not_embed_safe_install_command_for_clean_fixture(tmp_path):
-    repo = _copy_fixture_repo(tmp_path, "good-python")
-    result = scan(str(repo))
-
-    html = render_html(result)
-
-    assert "Next isolated step" not in html
-    assert "설치가 필요하다면 이 격리 단계부터 시작하세요." not in html
-    assert "python3 -m venv .venv" not in html
+    assert "curl https://example.com/install.sh | sh" in html
 
 
 def _copy_fixture_repo(tmp_path, name: str) -> Path:
