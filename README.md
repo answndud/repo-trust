@@ -87,7 +87,7 @@ RepoTrust는 같은 검사 기능을 두 가지 방식으로 제공합니다.
 
 | 방식 | 명령 | 추천 상황 | 결과 |
 | --- | --- | --- | --- |
-| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 튜토리얼, 샘플 리포트, 검사, 안전 설치 안내, 다음 조치 계획, JSON 저장, JSON 비교 workflow 선택 |
+| Console Mode | `repo-trust-kr` 또는 `repo-trust` | 메뉴에서 고르고 싶을 때 | 튜토리얼, 샘플 리포트, 검사, 안전 설치 안내, 다음 조치 계획, JSON 저장 |
 | Command Mode | 아래 명령별 형식을 직접 입력 | 반복 실행, 자동화, 문서화할 때 | 튜토리얼, 샘플 리포트, HTML/JSON 파일, 터미널 대시보드, 안전 설치 안내, 다음 조치 계획, finding 설명, 리포트 비교 |
 
 Command Mode는 명령마다 받는 인자가 다릅니다.
@@ -109,7 +109,7 @@ Command Mode는 명령마다 받는 인자가 다릅니다.
 
 `repo-trust-kr`은 메뉴, 프롬프트, 저장 안내, 검사 결과 대시보드, 다음에 할 일을 한국어로 보여줍니다. `repo-trust`는 같은 기능을 영어 화면으로 보여줍니다.
 
-차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[N]`, `[T]`, `[P]`, `[M]` 단축키로 작업을 고릅니다. 실제 터미널에서는 `git log`처럼 별도 화면에서 열려 이전 터미널 내역을 가리고, 작업을 끝내면 원래 화면으로 돌아갑니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`, `safe-install`, `next-steps`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
+차이는 진입 방식입니다. Console Mode는 `repo-trust-kr`처럼 명령만 입력한 뒤 `[G]`, `[L]`, `[C]`, `[J]`, `[S]`, `[N]`, `[T]`, `[P]` 단축키로 작업을 고릅니다. Command Mode는 `repo-trust html https://github.com/openai/codex`처럼 처음부터 할 일을 한 줄에 적어 실행합니다. 파일 저장 규칙과 검사 기준은 같지만, `check`, `safe-install`, `next-steps`, `tutorial`은 파일을 저장하지 않고 터미널에만 결과를 보여줍니다.
 
 Monorepo에서 특정 package만 검사하려면 로컬 checkout을 대상으로 `--subdir <상대경로>`를 사용할 수 있습니다.
 
@@ -124,7 +124,7 @@ repo-trust audit-install . --subdir packages/cli
 ## Console Mode
 
 명령어 옵션을 외우지 않아도 되는 메뉴 방식입니다.
-실제 터미널에서는 alternate screen을 사용하므로 이전 터미널 출력이 뒤에 보이지 않습니다. scan이나 recent reports 같은 workflow를 실행한 뒤에는 결과를 읽고 Enter를 누르면 원래 화면으로 돌아갑니다.
+선택한 workflow의 결과는 같은 터미널에 바로 출력됩니다.
 
 **입력할 명령**
 
@@ -148,7 +148,6 @@ S  안전 설치      설치 전 다음 단계 안내
 N  다음 조치      검사 후 우선순위별 행동 계획
 T  튜토리얼       처음 따라 할 명령 보기
 P  샘플           좋은/위험 리포트 예시 생성
-M  JSON 비교      개선 전/후 HTML 만들기
 ────────────────────────────────────
 최근 리포트: 3개
 [R] 리포트   [?] 도움말   [Q] 종료
@@ -158,27 +157,6 @@ M  JSON 비교      개선 전/후 HTML 만들기
 단축키는 대소문자를 구분하지 않습니다. 잘못 선택했다면 입력 단계에서 `[B]`를 눌러 작업 선택 화면으로 돌아갈 수 있습니다. 기존 숫자 입력도 호환되므로 `1` 또는 `01`은 로컬 리포트, `5` 또는 `05`는 최근 리포트 목록으로 동작합니다. `[R]` workflow는 파일을 직접 열거나 브라우저를 실행하지 않습니다. `result/` 폴더에 있는 최근 HTML/JSON/Markdown 리포트 목록과 macOS에서 `open <경로>`로 여는 힌트를 보여줍니다.
 
 영어 화면이 필요하면 `repo-trust`를 입력하면 됩니다.
-
-### Console Mode에서 JSON 비교 HTML 만들기
-
-명령어 옵션을 외우기 어렵다면 `repo-trust-kr`에서 `[M] JSON 비교`를 선택하세요. `result/`에 저장된 최근 JSON 리포트가 있으면 목록이 먼저 보이고, 번호를 입력해 이전/최신 리포트를 고를 수 있습니다. 목록에 없는 파일은 경로를 직접 입력해도 됩니다.
-
-```text
-→ 키를 누르세요
-m
-최근 JSON 리포트
-번호  경로                                      수정 시간
-1     result/repotrust-after-2026-05-06.json   2026-05-06 13:20
-2     result/repotrust-before-2026-05-06.json  2026-05-06 13:10
-이전 JSON 리포트 경로 입력:
-> 2
-최신 JSON 리포트 경로 입력:
-> 1
-비교 HTML 저장 경로 입력: (기본값 repotrust-compare.html)
->
-```
-
-마지막 입력에서 Enter만 누르면 `result/repotrust-compare-YYYY-MM-DD.html` 형태로 저장됩니다. 저장 후에는 `[R] 리포트`에서 `비교 HTML` 항목으로 다시 찾을 수 있습니다.
 
 ## Command Mode
 

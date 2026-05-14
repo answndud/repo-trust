@@ -20,7 +20,6 @@ from .config import (
     load_config,
 )
 from .console import ConsoleWorkflow, run_console_mode
-from .console_i18n import console_text
 from .dashboard import print_assessment_dashboard, print_command_header, print_legacy_summary
 from .finding_catalog import get_finding_reference
 from .help_i18n import HELP_OPTION_HELP, localized_help_text, show_localized_help
@@ -849,9 +848,6 @@ def _run_console_shell(ctx: typer.Context, *, locale: str) -> None:
 
 
 def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
-    if workflow.workflow_kind == "compare":
-        _run_console_compare_workflow(workflow)
-        return
     if workflow.workflow_kind == "safe_install":
         _run_console_safe_install_workflow(workflow)
         return
@@ -881,36 +877,6 @@ def _run_console_workflow(workflow: ConsoleWorkflow) -> None:
         terminal_only=workflow.terminal_only,
         locale=workflow.locale,
     )
-
-
-def _run_console_compare_workflow(workflow: ConsoleWorkflow) -> None:
-    if workflow.old_report is None or workflow.new_report is None:
-        status_console.print("Missing comparison input reports.")
-        raise typer.Exit(code=1)
-
-    try:
-        old_data = _load_report_json(workflow.old_report)
-        new_data = _load_report_json(workflow.new_report)
-    except ValueError as exc:
-        status_console.print(str(exc))
-        raise typer.Exit(code=1) from exc
-
-    output = _resolve_output_path(workflow.output or Path("repotrust-compare.html"))
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        render_compare_reports(
-            old_data,
-            new_data,
-            output_format=CompareFormat.HTML,
-            locale=workflow.locale,
-        ),
-        encoding="utf-8",
-    )
-    if workflow.locale == "ko":
-        status_console.print(f"html 비교 리포트를 [bold]{output}[/bold]에 저장했습니다.")
-    else:
-        status_console.print(f"Wrote html comparison report to [bold]{output}[/bold]")
-    status_console.print(f"[dim]{console_text(workflow.locale)['compare_saved_hint']}[/dim]")
 
 
 def _run_console_safe_install_workflow(workflow: ConsoleWorkflow) -> None:

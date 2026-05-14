@@ -1,5 +1,4 @@
 import json
-import os
 import re
 from datetime import date
 from pathlib import Path
@@ -159,8 +158,8 @@ def test_direct_cli_root_starts_interactive_launcher():
     assert "Copyable first-run commands" in stderr
     assert "[P]  Samples" in stderr
     assert "Generate good/risky sample reports" in stderr
-    assert "[M]  Compare JSON" in stderr
-    assert "Create before/after HTML report" in stderr
+    assert "[M]  Compare JSON" not in stderr
+    assert "Create before/after HTML report" not in stderr
     assert "Recent:" in stderr
     assert "[R] Reports   [?] Help   [Q] Quit" in stderr
     assert "→ Press a key" in stderr
@@ -193,8 +192,8 @@ def test_direct_kr_cli_root_starts_korean_interactive_launcher():
     assert "처음 따라 할 명령 보기" in stderr
     assert "[P]  샘플" in stderr
     assert "좋은/위험 리포트 예시 생성" in stderr
-    assert "[M]  JSON 비교" in stderr
-    assert "개선 전/후 HTML 만들기" in stderr
+    assert "[M]  JSON 비교" not in stderr
+    assert "개선 전/후 HTML 만들기" not in stderr
     assert "최근 리포트:" in stderr
     assert "[R] 리포트   [?] 도움말   [Q] 종료" in stderr
     assert "→ 키를 누르세요" in stderr
@@ -667,23 +666,14 @@ def test_direct_kr_cli_safe_install_outputs_korean_advice():
     assert "고위험 설치 근거" in result.stdout
 
 
-def test_console_mode_uses_alternate_screen_for_real_terminals():
+def test_console_mode_does_not_use_alternate_screen_for_real_terminals():
     events = []
-
-    class FakeScreen:
-        def __enter__(self):
-            events.append("screen-enter")
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            events.append("screen-exit")
 
     class FakeConsole:
         is_terminal = True
 
         def screen(self, hide_cursor=False):
-            events.append(f"hide_cursor={hide_cursor}")
-            return FakeScreen()
+            raise AssertionError("Console Mode should not use alternate screen")
 
         def print(self, *args, **kwargs):
             events.append("print")
@@ -699,29 +689,18 @@ def test_console_mode_uses_alternate_screen_for_real_terminals():
         run_workflow=lambda workflow: None,
     )
 
-    assert events[0] == "hide_cursor=False"
-    assert "screen-enter" in events
-    assert "screen-exit" in events
     assert len([event for event in events if event.startswith("input:")]) == 1
 
 
-def test_console_mode_pauses_before_restoring_after_workflow():
+def test_console_mode_recent_reports_returns_without_close_prompt_for_real_terminals():
     events = []
-    inputs = iter(["5", ""])
-
-    class FakeScreen:
-        def __enter__(self):
-            events.append("screen-enter")
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            events.append("screen-exit")
+    inputs = iter(["5"])
 
     class FakeConsole:
         is_terminal = True
 
         def screen(self, hide_cursor=False):
-            return FakeScreen()
+            raise AssertionError("Console Mode should not use alternate screen")
 
         def print(self, *args, **kwargs):
             events.append("print")
@@ -738,8 +717,7 @@ def test_console_mode_pauses_before_restoring_after_workflow():
     )
 
     input_events = [event for event in events if event.startswith("input:")]
-    assert len(input_events) == 2
-    assert events.index(input_events[-1]) < events.index("screen-exit")
+    assert len(input_events) == 1
 
 
 def test_direct_cli_help_shows_product_commands_without_launcher():
@@ -1216,112 +1194,6 @@ def test_direct_kr_cli_interactive_safe_install_workflow():
     assert "실행 전 체크리스트:" in stderr
     assert "아직 README 설치 명령을 실행하지 마세요." in stderr
     assert "고위험 설치 근거" in stderr
-
-
-def test_direct_cli_interactive_compare_json_workflow_writes_html(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    old_report = tmp_path / "old.json"
-    new_report = tmp_path / "new.json"
-    old_report.write_text(
-        json.dumps(
-            {
-                "schema_version": "1.2",
-                "score": {"total": 50, "grade": "F"},
-                "assessment": {"verdict": "do_not_install_before_review"},
-                "target": {"raw": "before"},
-                "findings": [{"id": "security.no_policy", "severity": "medium"}],
-            }
-        ),
-        encoding="utf-8",
-    )
-    new_report.write_text(
-        json.dumps(
-            {
-                "schema_version": "1.2",
-                "score": {"total": 100, "grade": "A"},
-                "assessment": {"verdict": "usable_by_current_checks"},
-                "target": {"raw": "after"},
-                "findings": [],
-            }
-        ),
-        encoding="utf-8",
-    )
-
-    result = runner.invoke(
-        direct_app,
-        [],
-        input=f"m\n{old_report}\n{new_report}\n\n",
-        prog_name="repo-trust",
-    )
-    stderr = plain_output(result.stderr)
-    compare_reports = list((tmp_path / "result").glob("repotrust-compare-*.html"))
-
-    assert result.exit_code == 0
-    assert "Selected: JSON report compare" in stderr
-    assert "Enter older JSON report path:" in stderr
-    assert "Enter newer JSON report path:" in stderr
-    assert "Enter comparison HTML output path:" in stderr
-    assert "Wrote html comparison report" in stderr
-    assert "Use [R] Reports from Console Mode to find this file later." in stderr
-    assert len(compare_reports) == 1
-    html = compare_reports[0].read_text(encoding="utf-8")
-    assert "Improved" in html
-    assert "Improvements: 1" in html
-    assert "security.no_policy" in html
-
-
-def test_direct_cli_interactive_compare_json_workflow_accepts_recent_numbers(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    result_dir = tmp_path / "result"
-    result_dir.mkdir()
-    old_report = result_dir / "before.json"
-    new_report = result_dir / "after.json"
-    old_report.write_text(
-        json.dumps(
-            {
-                "schema_version": "1.2",
-                "score": {"total": 50, "grade": "F"},
-                "assessment": {"verdict": "do_not_install_before_review"},
-                "target": {"raw": "before"},
-                "findings": [{"id": "security.no_policy", "severity": "medium"}],
-            }
-        ),
-        encoding="utf-8",
-    )
-    new_report.write_text(
-        json.dumps(
-            {
-                "schema_version": "1.2",
-                "score": {"total": 100, "grade": "A"},
-                "assessment": {"verdict": "usable_by_current_checks"},
-                "target": {"raw": "after"},
-                "findings": [],
-            }
-        ),
-        encoding="utf-8",
-    )
-    os.utime(old_report, (100, 100))
-    os.utime(new_report, (200, 200))
-
-    result = runner.invoke(
-        direct_app,
-        [],
-        input="m\n2\n1\ncompare.html\n",
-        prog_name="repo-trust",
-    )
-    stderr = plain_output(result.stderr)
-    output = tmp_path / "result" / f"compare-{date.today().isoformat()}.html"
-
-    assert result.exit_code == 0
-    assert "recent json reports" in stderr
-    assert "Enter a number from the list, or type a path." in stderr
-    assert "before.json" in stderr
-    assert "after.json" in stderr
-    assert output.exists()
-    html = output.read_text(encoding="utf-8")
-    assert "Improved" in html
-    assert "Improvements: 1" in html
-    assert "security.no_policy" in html
 
 
 def test_direct_kr_cli_interactive_local_html_workflow(tmp_path, monkeypatch):

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 from typing import Final
 
@@ -23,9 +22,6 @@ class ConsoleWorkflow:
     remote: bool = False
     verbose: bool = False
     locale: ConsoleLocale = "en"
-    old_report: Path | None = None
-    new_report: Path | None = None
-    output: Path | None = None
 
 
 RunWorkflow = Callable[[ConsoleWorkflow], None]
@@ -42,21 +38,6 @@ def run_console_mode(
     locale: ConsoleLocale = "en",
 ) -> None:
     """Run the interactive product shell for humans."""
-    if console.is_terminal:
-        with console.screen(hide_cursor=False):
-            pause_before_restore = _run_console_mode_body(
-                console=console,
-                help_text=help_text,
-                version=version,
-                run_workflow=run_workflow,
-                result_dir=result_dir,
-                locale=locale,
-            )
-            if pause_before_restore:
-                close_prompt = str(console_text(locale)["close_prompt"]).replace("└─$", "[blue]└─$[/]")
-                console.input(close_prompt)
-        return
-
     _run_console_mode_body(
         console=console,
         help_text=help_text,
@@ -75,27 +56,26 @@ def _run_console_mode_body(
     run_workflow: RunWorkflow,
     result_dir: Path,
     locale: ConsoleLocale,
-) -> bool:
+) -> None:
     text = console_text(locale)
     while True:
         _print_console_home(console=console, version=version, result_dir=result_dir, text=text)
         choice = _ask_menu_choice(console=console, text=text)
         if choice == "q":
             console.print(f"[dim]{text['session_closed']}[/dim]")
-            return False
+            return
         if choice == "r":
             _print_recent_reports(console=console, result_dir=result_dir, text=text)
-            return True
+            return
         if choice == "?":
             console.print(help_text())
-            return True
+            return
 
         workflow = _prompt_workflow(
             choice,
             console=console,
             text=text,
             locale=locale,
-            result_dir=result_dir,
         )
         if workflow is None:
             console.print(muted(text["back_message"]))
@@ -103,7 +83,7 @@ def _run_console_mode_body(
         console.print()
         console.print(f"[bright_black]{text['processing_message']}[/]")
         run_workflow(workflow)
-        return True
+        return
 
 
 def _print_console_home(
@@ -176,27 +156,6 @@ def _print_recent_reports(
     console.print(muted(text["recent_reports_open_hint"]))
 
 
-def _print_recent_json_reports(
-    *,
-    console: Console,
-    result_dir: Path,
-    text: ConsoleText,
-) -> list[Path]:
-    reports = _recent_json_reports(result_dir, limit=10)
-    console.print(kali_section(str(text["recent_json_reports_title"]).lower()))
-    table = kali_table()
-    table.add_column(str(text["number_column"]), justify="right", style="blue")
-    table.add_column(str(text["path_column"]))
-    table.add_column(str(text["modified_column"]))
-    if reports:
-        for index, path in enumerate(reports, start=1):
-            table.add_row(str(index), str(path), _mtime_label(path))
-    else:
-        table.add_row("-", str(text["no_json_reports_found"]), "-")
-    console.print(table)
-    return reports
-
-
 def _recent_reports(result_dir: Path, limit: int) -> list[Path]:
     if not result_dir.exists():
         return []
@@ -209,19 +168,12 @@ def _recent_reports(result_dir: Path, limit: int) -> list[Path]:
     return reports[:limit]
 
 
-def _recent_json_reports(result_dir: Path, limit: int) -> list[Path]:
-    return [path for path in _recent_reports(result_dir, limit=10_000) if path.suffix.lower() == ".json"][
-        :limit
-    ]
-
-
 def _prompt_workflow(
     choice: str,
     *,
     console: Console,
     text: ConsoleText,
     locale: ConsoleLocale,
-    result_dir: Path,
 ) -> ConsoleWorkflow | None:
     if choice == "l":
         _print_selected(console=console, label=str(text["selected_local"]))
@@ -269,47 +221,6 @@ def _prompt_workflow(
             target=target,
             report_format="json",
             locale=locale,
-        )
-    if choice == "m":
-        _print_selected(console=console, label=str(text["selected_compare"]))
-        recent_json_reports = _print_recent_json_reports(
-            console=console,
-            result_dir=result_dir,
-            text=text,
-        )
-        old_report = _ask_report_path(
-            console=console,
-            prompt=str(text["old_json_prompt"]),
-            reports=recent_json_reports,
-            number_hint=str(text["report_number_hint"]),
-            controls=str(text["input_controls"]),
-        )
-        if old_report == BACK:
-            return None
-        new_report = _ask_report_path(
-            console=console,
-            prompt=str(text["new_json_prompt"]),
-            reports=recent_json_reports,
-            number_hint=str(text["report_number_hint"]),
-            controls=str(text["input_controls"]),
-        )
-        if new_report == BACK:
-            return None
-        output = _ask_value(
-            console=console,
-            prompt=str(text["compare_output_prompt"]),
-            default="repotrust-compare.html",
-            default_hint=str(text["default_hint"]),
-            controls=str(text["input_controls"]),
-        )
-        if output == BACK:
-            return None
-        return ConsoleWorkflow(
-            workflow_kind="compare",
-            locale=locale,
-            old_report=old_report,
-            new_report=new_report,
-            output=Path(output),
         )
     if choice == "s":
         _print_selected(console=console, label=str(text["selected_safe_install"]))
@@ -375,7 +286,7 @@ def _prompt_workflow(
 
 
 def _ask_menu_choice(*, console: Console, text: ConsoleText) -> str:
-    choices = {"g", "l", "c", "j", "s", "n", "t", "p", "m", "r", "?", "q"}
+    choices = {"g", "l", "c", "j", "s", "n", "t", "p", "r", "?", "q"}
     while True:
         value = _input_command(console, prompt=f"[cyan]→[/] {text['select_prompt']} ").strip() or "1"
         normalized = _normalize_menu_choice(value)
@@ -407,29 +318,6 @@ def _ask_value(
     return value
 
 
-def _ask_report_path(
-    *,
-    console: Console,
-    prompt: str,
-    reports: list[Path],
-    number_hint: str,
-    controls: str | None = None,
-) -> Path | str:
-    value = _ask_value(
-        console=console,
-        prompt=prompt,
-        example=number_hint if reports else None,
-        controls=controls,
-    )
-    if value == BACK:
-        return BACK
-    if value.isdigit():
-        index = int(value)
-        if 1 <= index <= len(reports):
-            return reports[index - 1]
-    return Path(value)
-
-
 def _print_selected(*, console: Console, label: str) -> None:
     console.print()
     console.print(f"[green]{label}[/]")
@@ -445,14 +333,9 @@ def _normalize_menu_choice(value: str) -> str:
             "4": "c",
             "5": "r",
             "6": "?",
-            "7": "m",
             "8": "s",
         }.get(str(int(normalized)), normalized)
     return normalized
-
-
-def _mtime_label(path: Path) -> str:
-    return datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
 
 
 def _report_type_label(path: Path, text: ConsoleText) -> str:
